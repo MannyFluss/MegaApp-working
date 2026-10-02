@@ -1,0 +1,68 @@
+.meta-open {
+  position: fixed;
+  z-index: 30;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  min-width: 52px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+.meta-open:hover { color: var(--accent); border-color: var(--accent); }
+.meta-edge {
+  position: fixed;
+  z-index: 29;
+  top: max(76px, env(safe-area-inset-top));
+  bottom: max(76px, env(safe-area-inset-bottom));
+  right: calc(max(12px, env(safe-area-inset-right)) + 2px);
+  width: 18px;
+  touch-action: none;
+  pointer-events: none;
+}
+body.meta-is-open { overflow: hidden; }
+.meta-dialog {
+  width: min(440px, calc(100vw - 28px));
+  max-height: calc(100dvh - 40px);
+  margin: auto;
+  padding: 24px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 24px 90px #14204433;
+}
+.meta-dialog::backdrop { background: #14204480; }
+.meta-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.meta-heading h1 { font-size: 32px; letter-spacing: -.05em; }
+.meta-help { margin-top: 5px; color: var(--muted); font-size: 14px; }
+.meta-dialog .dock {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 20px 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.meta-dialog .dock-button { min-height: 78px; padding: 12px 4px; font-size: 12px; gap: 8px; }
+.meta-dialog .dock-button svg { width: 24px; height: 24px; }
+.meta-dialog .topbar { display: block; padding: 18px 0 0; border: 0; border-top: 1px solid var(--line); background: transparent; }
+.meta-dialog .brand { width: fit-content; margin-bottom: 12px; font-size: 15px; gap: 8px; }
+.meta-dialog .brand-mark { width: 24px; height: 24px; border-radius: 7px; font-size: 19px; }
+.meta-dialog .edition { display: none; }
+.meta-dialog .topbar-actions { justify-content: flex-start; gap: 8px; margin: 0; }
+.meta-dialog .topbar-actions .connection { padding: 10px 0; margin-right: auto; }
+.meta-dialog .topbar-actions .dock-button { flex-direction: row; min-height: 44px; padding: 9px 13px; gap: 7px; font-size: 14px; }
+.meta-dialog .topbar-actions .dock-button svg { width: 18px; height: 18px; }
+.meta-shortcut { margin-top: 18px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+@media (max-width: 420px) {
+  .meta-dialog { padding: 18px; }
+  .meta-dialog .dock { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .meta-dialog .topbar-actions .connection { flex: 1 1 100%; }
+}

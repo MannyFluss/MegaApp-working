@@ -1,0 +1,331 @@
+{
+  "version": 1,
+  "environment": "working",
+  "sourceDigest": "f4f7c495587ef8c2b0c733afa8b71f26efdcc1e276806e8c8c12ae7997cf2ddb",
+  "files": [
+    {
+      "path": "docs/canvas-apis.md",
+      "sha256": "40728a1896d0ea9c4c6937b68521eda3e6154f0ecd96eed089404d108d876913"
+    },
+    {
+      "path": "docs/pdf-library.md",
+      "sha256": "6b4661fb63b3e8ca09e176088e0537209ab2f6e20f5f474a670b14a537ee4911"
+    },
+    {
+      "path": "docs/safari-apis.md",
+      "sha256": "d92399094ed70c83702fa379b118377d7d51f198c293074b1fcd200353a5be5b"
+    },
+    {
+      "path": "favicon.svg",
+      "sha256": "4a1cef505486b18773cdcec78292203b272bb1fbe4cfe26d353b8a45a7c2b45d"
+    },
+    {
+      "path": "files-demo.css",
+      "sha256": "e5eb35f1861f28b2db1051d9b06c771930ffccd5870bfaab857015af38b0992d"
+    },
+    {
+      "path": "icons/apple-touch-icon.png",
+      "sha256": "43f2a0328c6f891dc832dc78632fc863240221dc99bde034ab64fa676dba91a6"
+    },
+    {
+      "path": "icons/icon-192.png",
+      "sha256": "04b5755a8b2a9e459bcc05ff52c70c70b84e3d5ceace86649b8de2e32a0f9964"
+    },
+    {
+      "path": "icons/icon-512.png",
+      "sha256": "79ef24fdb54d1073d295f20a29ead373cf9c9e8683bedb6292fc5cb3bffa8449"
+    },
+    {
+      "path": "index.html",
+      "sha256": "66774c3bbfbd0f85f0bce6f67bc51715365da6b72a863d85d43808112bc21605"
+    },
+    {
+      "path": "manifest.webmanifest",
+      "sha256": "923e8cd5ca17f7a6294dfd3efe5b6cd3fb23df1550147a718c19ceea005b30d2"
+    },
+    {
+      "path": "meta.css",
+      "sha256": "72a0916ae13682ff4a5cc4611c9fb37c1f8723f7e8ce79219b2c7f372e14493a"
+    },
+    {
+      "path": "output/pdf/a-place-for-papers.pdf",
+      "sha256": "665d027c7561420b234962ae0d55c09ed057e3cff75dc19e141f3b67190510bd"
+    },
+    {
+      "path": "reading.css",
+      "sha256": "5019d41c897741dfc532a5d080ff75ca3e8f626a5a8bc76d0bbb4577e9b47c23"
+    },
+    {
+      "path": "reading/care-and-consequence.html",
+      "sha256": "726c13681a8d2f626c006ddeb2e9ade776e602d2f8024ecc0d386961d3dbb64e"
+    },
+    {
+      "path": "reading/git-guide.html",
+      "sha256": "d43be07bd35ca65fd5ad0c0a5e66b3d3871130e758b1ccde849d24f986ff7bcb"
+    },
+    {
+      "path": "src/app.js",
+      "sha256": "3d6890a47c6cfed7ef8d591cd267f536735fb06f24ef161c9e836474ff13ed3a"
+    },
+    {
+      "path": "src/audio-worklet.js",
+      "sha256": "364867693d871fd969b853605552d51b14e020e685b835bf665a1d48c17ecb2e"
+    },
+    {
+      "path": "src/canvas.js",
+      "sha256": "2953e763468c3a0ec9b023a572772a6bfb1ed48b63100fad91c58179d13927ca"
+    },
+    {
+      "path": "src/capabilities.js",
+      "sha256": "85904f71e0c3cef7437c7462d2b436a1a06a3d74e8300f7e64e610a57908c227"
+    },
+    {
+      "path": "src/drive-adapter.js",
+      "sha256": "61d8469101290a1d22d01fdda74b82cedcab0f229c3764492ac523812a9167aa"
+    },
+    {
+      "path": "src/drive-picker-bridge.js",
+      "sha256": "57d7664d11dcbb0d5edef613f7a8458b0696039a4fd9e6df0c32a74de36a0c75"
+    },
+    {
+      "path": "src/drive-picker.js",
+      "sha256": "1b3b42048aba547e2691a7ab67eac79635ea085334617568bfbadf91188645f0"
+    },
+    {
+      "path": "src/environment.js",
+      "sha256": "7b2f7e43ac7efd16c63a0cf39eb4ba9691b9033dbf8ec78d91a23bd5e42095f6"
+    },
+    {
+      "path": "src/file-export.js",
+      "sha256": "6ef354372f15f3f66a98ae96f3e34f2e07efedeefc5393514a6b57c05f5afe7d"
+    },
+    {
+      "path": "src/file-fingerprint.js",
+      "sha256": "6f56e02012e2055ac8cfc598b2ec47442f74e700cf824b5ad6ae75ea09fb526d"
+    },
+    {
+      "path": "src/file-repository.js",
+      "sha256": "56edf12ebf85cdee6c9131aab1828c02f15c2bc7e83459724a5df0769489c3d6"
+    },
+    {
+      "path": "src/file-workspace.js",
+      "sha256": "23239aa4862b65b91ab93c72791ddb4f79de404714c4f74df91cf0766d808af9"
+    },
+    {
+      "path": "src/files-demo.js",
+      "sha256": "6c033eca0ad50b1fd015ccd6fd1531c655e6bae389699b168f2424cc73360150"
+    },
+    {
+      "path": "src/intro.js",
+      "sha256": "49f43856eb2aee5b36477416da367973b483cdf2d33d457c6909cf1ea6c0c619"
+    },
+    {
+      "path": "src/marble-physics.js",
+      "sha256": "4f5221082b367b35e1f970de8992a64068611aa6b63349c901c6f0944ab3536c"
+    },
+    {
+      "path": "src/marble.js",
+      "sha256": "c9f3bf3befa57095d1a05215cb934c60c3efbf208ef20cabfc7a34c576fb846e"
+    },
+    {
+      "path": "src/meta.js",
+      "sha256": "e2694f3efdb10f037f580ef0847a0a2fbc5a9834859f4c1a48070951bf5de902"
+    },
+    {
+      "path": "src/mock-drive.js",
+      "sha256": "6693b9bc76f98d24f449c08a7605714b3bfd7184e63aee4598a9d079e47f2331"
+    },
+    {
+      "path": "src/pdf-workspace.js",
+      "sha256": "b85720eee200053406a2d2beafb548b288fcda87803cfc19e3041a6776bb926d"
+    },
+    {
+      "path": "src/platformer-engine.js",
+      "sha256": "9d8f8c48727dff43bcd602983785c3959dd6b66580a9b91b8149a2f0ea4005ac"
+    },
+    {
+      "path": "src/platformer.js",
+      "sha256": "b90492d9eb10a59acca87d68be121283286d85b6fb8df33b1c0b3d66c068a8a9"
+    },
+    {
+      "path": "src/probes.js",
+      "sha256": "140b22f95cb9dab61dc95fbf06efb5df66df85809def5f0d4c37aefd39881f8f"
+    },
+    {
+      "path": "src/reading-assets.js",
+      "sha256": "9a76ee4f4461443602db4b73d49097d25e1ec5862e5376211acd29d4cd85c603"
+    },
+    {
+      "path": "src/reading-config.js",
+      "sha256": "f3422f6a421839b903d009a55b8ca85de2f40279da579aa4122af15d9c99b3ee"
+    },
+    {
+      "path": "src/reading-git.js",
+      "sha256": "e2b9451b56a737af8996da6b0af49a85b9e3c2738656b69b39fb6b9f29277349"
+    },
+    {
+      "path": "src/reading-library.js",
+      "sha256": "8f58a271292e7527b617a0f6e75891981fbd0d0814e007be46b60a75a90251ce"
+    },
+    {
+      "path": "src/reading.js",
+      "sha256": "7272b3144a7293707202f86f020d7d01498128b8d070f4a3169818624265c258"
+    },
+    {
+      "path": "src/render-worker.js",
+      "sha256": "41b81dce37de0384fa35dd5f4b31b3173f7e705a768ddb6fdaf724d063a6824b"
+    },
+    {
+      "path": "src/state.js",
+      "sha256": "2414b50eb30db961385bcf7fab1c284ef59174217ef72be1c79a2c08fdc18b3e"
+    },
+    {
+      "path": "src/webmcp.js",
+      "sha256": "b26b35577b518849a0daa81b64f8a7c3081fb9f5dad86b29f4dac7d64d4467b9"
+    },
+    {
+      "path": "styles.css",
+      "sha256": "d9a6c8f0ca53a9218d56d75d790ea32f2b80ba9ce1aff1afb216746d6c0832bd"
+    },
+    {
+      "path": "sw.js",
+      "sha256": "27e5fdfa8af245d94066ec60f42a132fe8289883ddf769e9086d152f4cd8b7aa"
+    },
+    {
+      "path": "vendor/pdfjs/LICENSE",
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+    },
+    {
+      "path": "vendor/pdfjs/pdf.mjs",
+      "sha256": "f401927e692efc7735e0cd528c490d0dd31b7f0972c122b7040df805be45cce4"
+    },
+    {
+      "path": "vendor/pdfjs/pdf.worker.mjs",
+      "sha256": "a33cfe728c584fdba4fcc1fd54bcdc2f9f2f13889ddbb5b2bd1d0f8cbe49b84e"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/FoxitDingbats.pfb",
+      "sha256": "845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/FoxitFixed.pfb",
+      "sha256": "b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/FoxitFixedBold.pfb",
+      "sha256": "f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/FoxitFixedBoldItalic.pfb",
+      "sha256": "8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/FoxitFixedItalic.pfb",
+      "sha256": "5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/FoxitSerif.pfb",
+      "sha256": "4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/FoxitSerifBold.pfb",
+      "sha256": "0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/FoxitSerifBoldItalic.pfb",
+      "sha256": "a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/FoxitSerifItalic.pfb",
+      "sha256": "610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/FoxitSymbol.pfb",
+      "sha256": "47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/LICENSE_FOXIT",
+      "sha256": "b578cdd2345840ada550bd12519533812320d5f1d21cf4c1c7e1b1b0a31c98b7"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/LICENSE_LIBERATION",
+      "sha256": "d2c4d5b3e115a519cb58eb691aa64538397e2611f9ebe801392cf9667997e7dc"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/LiberationSans-Bold.ttf",
+      "sha256": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/LiberationSans-BoldItalic.ttf",
+      "sha256": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/LiberationSans-Italic.ttf",
+      "sha256": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512"
+    },
+    {
+      "path": "vendor/pdfjs/standard_fonts/LiberationSans-Regular.ttf",
+      "sha256": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/LICENSE_JBIG2",
+      "sha256": "9e66b7f1b934a28b37f3bc4dac97915de1674271e79a0a88182a18ed9731b4d1"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/LICENSE_OPENJPEG",
+      "sha256": "a6af136f3e15038a666b61f376612a07d9a4e48cb7c01adbf3e33b3f14ab49b6"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/LICENSE_PDFJS_JBIG2",
+      "sha256": "aad3cce09842e00e9e11ad5e8fef8cc02fbc3a3768fe2f007443b9cee37aaee5"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/LICENSE_PDFJS_OPENJPEG",
+      "sha256": "717fc62da03292dbb4dd0c8280bd4ce7bb8550dcf31d772bc93455fb50313425"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/LICENSE_PDFJS_QCMS",
+      "sha256": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/LICENSE_QCMS",
+      "sha256": "36d847ae882f6574ebc72f56a4f354e4f104fde4a584373496482e97d52d31bc"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/jbig2.wasm",
+      "sha256": "e6bee67724a7b5436fe8162638e3708cfc8d52b6342db69a49715e30ff27cfdc"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/jbig2_nowasm_fallback.js",
+      "sha256": "04c795a6657a4553a64b781ea3e85256203d913c3b71b72b85fa3ce00622f458"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/openjpeg.wasm",
+      "sha256": "004a0e62db930ba9ff2a22212f4554d0bb57a0635a8287caf70f98117cee14ba"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/openjpeg_nowasm_fallback.js",
+      "sha256": "0f998419819da4491d8302222aa9e2ff2494685641aa2a6c21c3760c29f3e319"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/qcms_bg.wasm",
+      "sha256": "663d86126d5f5fcb1c61490f94353e2a8375660b8c5498ab3ebab5a34b08800e"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/quickjs-eval.js",
+      "sha256": "fe7930418e869791ce892567dbd0bc4698152b7e550b5cefa553992c56ddc325"
+    },
+    {
+      "path": "vendor/pdfjs/wasm/quickjs-eval.wasm",
+      "sha256": "7bcacc9f22cacf7e9b23866d2a6d1639693d40c7f144e41b7c69ed37ba9cbe8f"
+    },
+    {
+      "path": ".nojekyll",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".gitattributes",
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    }
+  ]
+}

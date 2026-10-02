@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#3558f5" />
+    <meta
+      name="description"
+      content="A personal creative playground for iPad, Pencil, and the web."
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>MegaApp · Working</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./files-demo.css" />
+    <link rel="stylesheet" href="./reading.css" />
+    <link rel="stylesheet" href="./meta.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="MegaApp home"
+          ><span class="brand-mark" aria-hidden="true">m</span
+          ><span>MegaApp</span><span class="edition">Working</span></a
+        >
+        <div class="topbar-actions">
+          <span id="connection-status" class="connection">Online</span
+          ><button id="install-help" class="quiet-button">Add to iPad</button>
+        </div>
+      </header>
+      <nav class="dock" aria-label="Playground" role="tablist">
+        <button
+          class="dock-button selected"
+          id="tab-marble"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-marble"
+          data-panel="marble"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="8" cy="7" r="3" />
+            <circle cx="17" cy="13" r="2" />
+            <path d="m3 14 10 5 8-4" /></svg
+          ><span>Marbles</span>
+        </button>
+        <button
+          class="dock-button"
+          id="tab-jump"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-jump"
+          tabindex="-1"
+          data-panel="jump"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M3 20h6m6 0h6M7 14l4-7 4 4 3-1M11 7l-1-3m1 3 4-2M11 13l-1 5m3-5 3 5"
+            />
+            <circle cx="15" cy="3" r="1.5" /></svg
+          ><span>Jump</span>
+        </button>
+        <button
+          class="dock-button"
+          id="tab-canvas"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-canvas"
+          tabindex="-1"
+          data-panel="canvas"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m5 17 12-12 3 3-12 12-4 1Z M14 8l3 3" /></svg
+          ><span>Canvas</span>
+        </button>
+        <button
+          class="dock-button"
+          id="tab-files"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-files"
+          tabindex="-1"
+          data-panel="files"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 7h7l2 2h9v11H3Z M3 7V4h7l2 3" />
+            <path d="M8 14h8 M8 17h5" /></svg
+          ><span>Files</span>
+        </button>
+        <button class="dock-button" id="tab-reading" role="tab" aria-selected="false" aria-controls="panel-reading" tabindex="-1" data-panel="reading"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5Z M14 3v5h5 M8 12h8 M8 16h6" /></svg><span>Reading</span></button>
+        <button
+          class="dock-button"
+          id="tab-device"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-device"
+          tabindex="-1"
+          data-panel="device"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="6" y="3" width="12" height="18" rx="3" />
+            <path d="M10 17h4" /></svg
+          ><span>Device</span>
+        </button>
+        <button
+          class="dock-button"
+          id="tab-state"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-state"
+          tabindex="-1"
+          data-panel="state"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m12 3 9 5-9 5-9-5Z m-9 9 9 5 9-5 M3 16l9 5 9-5" /></svg
+          ><span>State</span>
+        </button>
+        <button
+          class="dock-button"
+          id="tab-design"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-design"
+          tabindex="-1"
+          data-panel="design"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 5v15M3 4h5a4 4 0 0 1 4 2 4 4 0 0 1 4-2h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3Z"
+            /></svg
+          ><span>Design</span>
+        </button>
+        <span class="dock-spacer"></span
+        ><button
+          id="theme-toggle"
+          class="dock-button"
+          aria-label="Switch color theme"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 14A8 8 0 0 1 10 5a8 8 0 1 0 9 9Z" /></svg
+          ><span>Theme</span>
+        </button>
+      </nav>
+      <main>
+        <section
+          id="panel-marble"
+          class="panel marble-panel"
+          role="tabpanel"
+          aria-labelledby="tab-marble"
+        >
+          <div class="panel-heading marble-heading">
+            <div>
+              <h1>Marble Music</h1>
+              <p>Draw a line. Let a little melody fall.</p>
+            </div>
+            <button
+              id="marble-play"
+              class="primary-button marble-play"
+              aria-pressed="false"
+              disabled
+            >
+              Play
+            </button>
+          </div>
+          <div class="marble-toolbar" aria-label="Marble tools">
+            <div class="segmented">
+              <button id="marble-tool-draw" class="active" aria-pressed="true">
+                Draw rails
+              </button>
+              <button id="marble-tool-drop" aria-pressed="false">
+                Drop marbles
+              </button>
+            </div>
+            <label class="marble-note-control"
+              >Next rail
+              <select id="marble-note">
+                <option value="0">C4</option>
+                <option value="1">D4</option>
+                <option value="2">E4</option>
+                <option value="3">G4</option>
+                <option value="4">A4</option>
+                <option value="5">C5</option>
+                <option value="6">D5</option>
+                <option value="7">E5</option>
+              </select>
+            </label>
+            <div class="toolbar-spacer"></div>
+            <button id="marble-undo" class="quiet-button" disabled>Undo</button>
+            <button id="marble-clear" class="quiet-button">Clear</button>
+          </div>
+          <div class="marble-workspace">
+            <div id="marble-stage" class="marble-stage">
+              <canvas
+                id="marble-canvas"
+                tabindex="0"
+                aria-label="Marble Music board. Draw rails or drop marbles with Pencil, touch, or mouse. Use the controls to play. Keyboard: Space to play or pause, Command Z to undo."
+              ></canvas>
+            </div>
+            <aside class="marble-instrument" aria-label="Instrument controls">
+              <div class="marble-control-title">
+                <h2>A tiny instrument</h2>
+                <span class="marble-note-symbol" aria-hidden="true">♫</span>
+              </div>
+              <button
+                id="marble-sound"
+                class="quiet-button marble-sound"
+                aria-pressed="true"
+              >
+                Sound on
+              </button>
+              <label class="marble-slider"
+                >Gravity
+                <output id="marble-gravity-value" for="marble-gravity"
+                  >600</output
+                >
+                <input
+                  id="marble-gravity"
+                  type="range"
+                  min="100"
+                  max="1200"
+                  step="1"
+                  value="600"
+                />
+              </label>
+              <label class="marble-slider"
+                >Volume
+                <output id="marble-volume-value" for="marble-volume"
+                  >35%</output
+                >
+                <input
+                  id="marble-volume"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value="0.35"
+                />
+              </label>
+              <p id="marble-instruction" class="marble-instruction">
+                Draw musical rails, then press Play. Choose Drop marbles to add
+                your own.
+              </p>
+              <div class="marble-scene-actions">
+                <button id="marble-reset" class="quiet-button">Restart</button>
+                <button id="marble-demo" class="quiet-button">Load demo</button>
+              </div>
+              <div class="marble-file-actions">
+                <button id="marble-export" class="quiet-button">
+                  Save scene
+                </button>
+                <button id="marble-import" class="quiet-button">
+                  Open scene
+                </button>
+                <input
+                  id="marble-file"
+                  type="file"
+                  accept="application/json,.json"
+                  hidden
+                />
+              </div>
+            </aside>
+          </div>
+          <footer class="marble-footer">
+            <span id="marble-status" role="status"
+              >Getting the marbles ready…</span
+            >
+            <div class="marble-counters">
+              <span><output id="marble-ball-count">0</output> marbles</span
+              ><span><output id="marble-hit-count">0</output> notes</span>
+            </div>
+          </footer>
+        </section>
+        <section
+          id="panel-jump"
+          class="panel platformer-panel"
+          role="tabpanel"
+          aria-labelledby="tab-jump"
+          hidden
+        >
+          <div class="panel-heading platformer-heading">
+            <div>
+              <h1>Pocket Jump</h1>
+              <p>Run, jump, grab coins. Reach the flag.</p>
+            </div>
+            <div class="platformer-actions">
+              <button
+                id="platformer-sound"
+                class="quiet-button"
+                aria-pressed="true"
+              >
+                Sound on
+              </button>
+              <button id="platformer-restart" class="quiet-button">
+                Restart
+              </button>
+              <button id="platformer-play" class="primary-button">Start</button>
+            </div>
+          </div>
+          <div class="platformer-machine">
+            <div class="platformer-hud" aria-label="Game score">
+              <span>Score <output id="platformer-score">0</output></span>
+              <span>Coins <output id="platformer-coins">0</output></span>
+              <span>Lives <output id="platformer-lives">3</output></span>
+            </div>
+            <div id="platformer-stage" class="platformer-stage">
+              <canvas
+                id="platformer-canvas"
+                tabindex="0"
+                aria-label="Pocket Jump game. Use left and right arrows or A and D to move. Space, up arrow, or W to jump. On a touchscreen use the move and Jump buttons below."
+                aria-describedby="platformer-status"
+              ></canvas>
+              <div id="platformer-overlay" class="platformer-overlay">
+                <div class="platformer-prompt">
+                  <h2 id="platformer-overlay-title">A little adventure.</h2>
+                  <p id="platformer-overlay-text">
+                    Jump over gaps and stomp the blobs. Three lives, one flag.
+                  </p>
+                  <button id="platformer-action" class="primary-button">
+                    Start
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="platformer-controls" aria-label="Touch game controls">
+              <div class="platformer-directions">
+                <button
+                  id="platformer-left"
+                  class="platformer-pad"
+                  aria-label="Move left"
+                  aria-pressed="false"
+                >
+                  <span aria-hidden="true">←</span>
+                </button>
+                <button
+                  id="platformer-right"
+                  class="platformer-pad"
+                  aria-label="Move right"
+                  aria-pressed="false"
+                >
+                  <span aria-hidden="true">→</span>
+                </button>
+              </div>
+              <span class="platformer-touch-hint"
+                >Hold to move. Tap to jump.</span
+              >
+              <button
+                id="platformer-jump"
+                class="platformer-pad platformer-jump"
+                aria-label="Jump"
+                aria-pressed="false"
+              >
+                Jump <span aria-hidden="true">↑</span>
+              </button>
+            </div>
+          </div>
+          <footer class="platformer-footer">
+            <span id="platformer-status" role="status"
+              >Your adventure is ready.</span
+            >
+            <span class="platformer-keyboard-hint"
+              >Keyboard: ← → or A D · Space to jump</span
+            >
+          </footer>
+        </section>
+        <section
+          id="panel-canvas"
+          class="panel canvas-panel"
+          role="tabpanel"
+          aria-labelledby="tab-canvas"
+          hidden
+        >
+          <div class="panel-heading">
+            <div>
+              <h1>A little room to make things.</h1>
+              <p>Pencil, finger, mouse. Try a mark.</p>
+            </div>
+            <button id="canvas-fullscreen" class="quiet-button">
+              Fullscreen
+            </button>
+          </div>
+          <div class="canvas-toolbar" aria-label="Drawing controls">
+            <div class="segmented">
+              <button id="tool-draw" class="active" aria-pressed="true">
+                Draw</button
+              ><button id="tool-erase" aria-pressed="false">Erase</button>
+            </div>
+            <label class="color-control"
+              >Ink <input type="color" id="ink-color" value="#3558f5"
+            /></label>
+            <label class="width-control"
+              >Size
+              <input
+                type="range"
+                id="brush-size"
+                min="1"
+                max="48"
+                value="8"
+              /><output id="brush-value" for="brush-size">8</output></label
+            >
+            <label class="toggle-control"
+              ><input type="checkbox" id="pressure-toggle" checked />
+              Pressure</label
+            >
+            <label class="toggle-control"
+              ><input type="checkbox" id="pen-only" /> Pencil only</label
+            >
+            <div class="toolbar-spacer"></div>
+            <button id="undo" class="quiet-button" disabled>Undo</button
+            ><button id="redo" class="quiet-button" disabled>Redo</button
+            ><button id="clear-canvas" class="quiet-button">Clear</button>
+          </div>
+          <div class="canvas-workspace">
+            <div class="canvas-stage" id="canvas-stage">
+              <canvas
+                id="drawing-canvas"
+                aria-label="Drawing canvas. Use Pencil, touch, or mouse. Keyboard shortcuts: Command Z to undo; plus and minus to zoom."
+                tabindex="0"
+              ></canvas>
+              <div class="canvas-welcome" id="canvas-welcome">
+                <span class="welcome-spark" aria-hidden="true">✳</span
+                ><strong>Hey. What happens if…</strong
+                ><span>Make a mark and find out.</span>
+              </div>
+              <div class="zoom-controls">
+                <button id="zoom-out" aria-label="Zoom out">−</button
+                ><output id="zoom-value">100%</output
+                ><button id="zoom-in" aria-label="Zoom in">+</button
+                ><button id="zoom-fit">Fit</button>
+              </div>
+            </div>
+            <aside class="input-rack" aria-label="Live input">
+              <div class="rack-heading">
+                <h2>Under your fingertips</h2>
+                <span id="pointer-type" class="small-badge">Waiting</span>
+              </div>
+              <div class="pressure-meter">
+                <span>Pressure</span><strong id="pressure-value">0.00</strong>
+                <div class="meter-track"><span id="pressure-fill"></span></div>
+              </div>
+              <dl class="telemetry">
+                <div>
+                  <dt>Position</dt>
+                  <dd id="pointer-position">—</dd>
+                </div>
+                <div>
+                  <dt>Tilt</dt>
+                  <dd id="pointer-tilt">—</dd>
+                </div>
+                <div>
+                  <dt>Altitude</dt>
+                  <dd id="pointer-altitude">—</dd>
+                </div>
+                <div>
+                  <dt>Azimuth</dt>
+                  <dd id="pointer-azimuth">—</dd>
+                </div>
+                <div>
+                  <dt>Twist</dt>
+                  <dd id="pointer-twist">—</dd>
+                </div>
+                <div>
+                  <dt>Contact</dt>
+                  <dd id="pointer-contact">—</dd>
+                </div>
+                <div>
+                  <dt>Samples</dt>
+                  <dd id="pointer-samples">—</dd>
+                </div>
+                <div>
+                  <dt>Prediction</dt>
+                  <dd id="pointer-prediction">—</dd>
+                </div>
+                <div>
+                  <dt>Display</dt>
+                  <dd id="display-density">—</dd>
+                </div>
+              </dl>
+              <p class="rack-note">
+                Two fingers to pan and zoom. Predicted marks are a preview; only
+                actual input is saved to your export.
+              </p>
+              <div class="export-actions">
+                <button id="export-png" class="primary-button">
+                  Save image</button
+                ><button id="export-svg" class="quiet-button">Save SVG</button
+                ><button id="share-canvas" class="quiet-button">Share</button>
+              </div>
+            </aside>
+          </div>
+          <footer class="canvas-footer">
+            <span id="canvas-summary">Your canvas is ready.</span
+            ><span>960 × 640</span>
+          </footer>
+        </section>
+        <section id="panel-reading" class="panel reading-panel" role="tabpanel" aria-labelledby="tab-reading" hidden>
+          <div id="reading-surface" class="reading-surface" tabindex="0" role="application" aria-label="PDF and scratch workspace. Pencil draws; fingers move. Use the tool options to draw with a finger.">
+            <canvas id="reading-canvas" aria-label="PDF pages and handwritten notes"></canvas>
+          </div>
+          <button id="reading-menu" class="reading-document-button" aria-haspopup="dialog" aria-label="Open document menu">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5Z M14 3v5h5 M8 12h8 M8 16h6" /></svg>
+            <span id="reading-title">Opening paper…</span><span aria-hidden="true">⌄</span>
+          </button>
+          <output id="reading-page-label" class="reading-position" aria-live="polite">Opening PDF…</output>
+          <span id="reading-save-state" class="reading-save-state" role="status"></span>
+          <div class="reading-toolbar" aria-label="PDF drawing tools">
+            <button id="reading-tool-pen" aria-label="Pen" title="Pen (P)" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 16 11-11 3 3-11 11-5 2Z M13 8l3 3" /></svg><span>Pen</span></button>
+            <button id="reading-tool-highlight" aria-label="Highlighter" title="Highlighter (H)" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 15 7-10 4 4-10 7Z M8 15l-3 4h5l2-3 M3 21h18" /></svg><span>Highlight</span></button>
+            <button id="reading-tool-erase" aria-label="Eraser" title="Eraser (E)" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 14 10-10 7 7-10 10H7Z M9 9l7 7 M11 21h10" /></svg><span>Erase</span></button>
+            <button id="reading-tool-move" aria-label="Move workspace" title="Move (V)" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18 M3 12h18 M8 7l4-4 4 4 M8 17l4 4 4-4 M7 8l-4 4 4 4 M17 8l4 4-4 4" /></svg><span>Move</span></button>
+            <span class="reading-tool-divider" aria-hidden="true"></span>
+            <button id="reading-tool-options-button" aria-label="Ink and input options" title="Ink and input options" aria-expanded="false" aria-controls="reading-tool-options"><span id="reading-color-swatch" class="reading-color-swatch"></span></button>
+            <button id="reading-undo" aria-label="Undo" title="Undo" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 3 10l5 5 M3 10h10a7 7 0 0 1 7 7v3" /></svg></button>
+            <button id="reading-redo" aria-label="Redo" title="Redo" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 5 5 5-5 5 M21 10H11a7 7 0 0 0-7 7v3" /></svg></button>
+          </div>
+          <div id="reading-tool-options" class="reading-tool-options" hidden>
+            <div class="reading-ink-options"><label for="reading-color">Color</label><input id="reading-color" type="color" value="#182b49" /><label for="reading-size">Size</label><input id="reading-size" type="range" min="1" max="40" step="1" value="2" /><output id="reading-size-label">2</output></div>
+            <label class="reading-finger-option"><input id="reading-finger" type="checkbox" /> Draw with a finger</label>
+            <p>Otherwise, fingers pan and pinch to zoom.</p>
+          </div>
+          <input id="reading-file" type="file" accept="application/pdf,.pdf" hidden />
+          <dialog id="reading-document-dialog" class="reading-document-dialog" aria-labelledby="reading-dialog-title">
+            <header class="reading-dialog-heading"><h2 id="reading-dialog-title">Document</h2><button id="reading-menu-close" class="quiet-button" aria-label="Close document menu">Done</button></header>
+            <div class="reading-document-actions"><button id="reading-import" class="primary-button">Open PDF</button><button id="reading-new-copy" class="quiet-button" disabled>New working copy</button><button id="reading-download" class="quiet-button" disabled>Export marked PDF</button><button id="reading-original" class="quiet-button" disabled>Save original PDF</button><button id="reading-workspace-export" class="quiet-button" disabled>Back up workspace</button></div>
+            <p class="reading-export-note">Outlined pages are the print area. PDF export keeps their original sizes and order, and includes your marks inside those boundaries. The workspace backup also keeps the surrounding scratch work.</p>
+            <div class="reading-navigation"><button id="reading-prev" class="quiet-button" aria-label="Previous page" disabled>‹</button><form id="reading-page-form"><label for="reading-page-input">Page</label><input id="reading-page-input" type="number" min="1" value="1" aria-label="Page number" /><button class="quiet-button" type="submit">Go</button></form><button id="reading-next" class="quiet-button" aria-label="Next page" disabled>›</button><button id="reading-fit" class="quiet-button" disabled>Fit page</button><button id="reading-zoom-out" class="quiet-button" aria-label="Zoom out" disabled>−</button><span id="reading-zoom-label">100%</span><button id="reading-zoom-in" class="quiet-button" aria-label="Zoom in" disabled>+</button></div>
+            <p id="reading-status" class="reading-status" role="status">Work saves on this device. Connect your library to sync it.</p>
+            <section id="reading-conflict" class="reading-conflict" hidden aria-label="Workspace conflict"><h3>Two saved versions</h3><p>Another device has different work. Choose the version to continue; the other version will be kept as a separate working copy.</p><div><button id="reading-conflict-local" class="primary-button">Continue my work</button><button id="reading-conflict-remote" class="quiet-button">Use other-device work</button></div></section>
+            <section class="reading-library" aria-label="PDF library"><div class="reading-library-heading"><h3>Library</h3><button id="reading-upload" class="primary-button" disabled>Sync workspace</button><button id="reading-refresh" class="quiet-button" disabled>Refresh</button></div><p id="reading-cache-warning" role="status" hidden></p><h4>On this device</h4><p id="reading-count"></p><div id="reading-local-list" class="reading-local-list"></div><h4>In GitHub library</h4><div id="reading-cloud-list" class="reading-cloud-list"></div><p id="reading-cloud-empty">Connect your private repository to open work from another device.</p></section>
+            <details id="reading-setup" class="reading-setup"><summary>Library connection and settings</summary><div class="reading-connection"><p id="reading-account" class="reading-account">GitHub disconnected</p><label id="reading-key-label" for="reading-key">Repository key</label><input id="reading-key" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Paste fine-grained key" /><button id="reading-connect" class="primary-button">Connect library</button><button id="reading-disconnect" class="quiet-button" hidden>Disconnect</button><p><a class="reading-guide" href="./reading/git-guide.html" target="_blank" rel="noopener">Get a repository key</a></p></div><label for="reading-repository">Repository location</label><input id="reading-repository" type="url" autocomplete="off" autocapitalize="none" spellcheck="false" /><button id="reading-save-repository" class="quiet-button">Save repository setting</button><p>The location also lives in State as MEGAAPP_ASSET_REPOSITORY. Your key stays in memory for up to one hour; reconnect after reloading.</p></details>
+            <details id="reading-text-details" class="reading-text"><summary>Selectable text from this page</summary><pre id="reading-text"></pre></details>
+          </dialog>
+        </section>
+        <section
+          id="panel-files"
+          class="panel files-panel"
+          role="tabpanel"
+          aria-labelledby="tab-files"
+          hidden
+        >
+          <div class="panel-heading files-heading">
+            <div>
+              <h1>Files that travel with you.</h1>
+              <p>Work here. Keep an original in Drive. Take a copy anywhere.</p>
+            </div>
+            <button id="files-walkthrough" class="primary-button">Start walkthrough</button>
+          </div>
+          <div class="files-simulation-note">
+            <span class="files-simulation-badge">Interactive simulation</span>
+            <p>Try it safely. These Drive copies live in this browser; no Google account is connected.</p>
+          </div>
+          <p id="files-session-warning" class="files-warning" role="status" hidden>
+            Session only: this browser could not save files on this device. Export your work before closing this tab.
+          </p>
+          <div id="files-live-connection" class="files-live-connection" hidden>
+            <div><strong id="files-live-title">Google Drive connection</strong><p id="files-live-detail">Checking the private Drive connection…</p></div>
+            <div><button id="files-connect" class="primary-button" hidden>Connect for this session</button><button id="files-pick-drive" class="primary-button" hidden>Pick existing Drive file</button><button id="files-drive-refresh" class="quiet-button" hidden>Refresh Drive files</button><button id="files-disconnect" class="quiet-button" hidden>End Drive session</button></div>
+          </div>
+          <p id="files-picker-setup" class="files-warning" hidden>Choosing existing files needs the approved Google Picker setup: a restricted API key and the same Cloud project number. Local files remain available.</p>
+          <p id="files-upload-setup" class="files-warning" hidden>Drive uploads need the private server’s recovery storage configured first. You can still open chosen Drive files, edit locally, and export your copies.</p>
+          <div class="files-copy-map" aria-label="Where your file lives">
+            <article class="files-place files-place-device">
+              <div class="files-place-heading">
+                <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="5" width="24" height="17" rx="3"/><path d="M12 22v5m8-5v5M9 27h14"/></svg>
+                <h2>This device</h2>
+                <span id="files-device-state" class="files-place-state">Ready</span>
+              </div>
+              <div class="files-copy-sheet">
+                <strong id="files-device-name">Your working copy</strong>
+                <span id="files-device-detail">Open a file to keep it close.</span>
+              </div>
+              <p id="files-device-explanation">Edits stay on this device, even when you’re offline.</p>
+            </article>
+            <div id="files-bridge" class="files-bridge" aria-hidden="true">
+              <svg viewBox="0 0 100 32"><path d="M3 16h92m-9-8 9 8-9 8"/></svg>
+              <span id="files-bridge-label">Open · edit · save</span>
+            </div>
+            <article class="files-place files-place-drive">
+              <div class="files-place-heading">
+                <svg viewBox="0 0 32 32" aria-hidden="true"><path d="m12 4-9 16 5 8h18l4-8-9-16Z M12 4l9 16H3m5 8 5-8m17 0H13l8-16"/></svg>
+                <h2>Google Drive</h2>
+                <span id="files-drive-state" class="files-place-state">Simulation</span>
+              </div>
+              <div class="files-copy-sheet">
+                <strong id="files-drive-name">Your original</strong>
+                <span id="files-drive-detail">Save a file to make a Drive copy.</span>
+              </div>
+              <p id="files-drive-explanation">Opening checks the original for changes. Saving checks again.</p>
+            </article>
+          </div>
+          <div class="files-demo-controls" aria-label="Simulation controls">
+            <div class="files-network-state"><span id="files-network-dot" aria-hidden="true"></span><strong id="files-network-label">Simulated connection on</strong></div>
+            <div class="files-simulation-actions">
+              <button id="files-network" class="quiet-button" aria-pressed="false">Go offline</button>
+              <button id="files-external" class="quiet-button" disabled>Change Drive copy</button>
+              <button id="files-fail" class="quiet-button">Fail next upload</button>
+            </div>
+          </div>
+          <div id="files-guide" class="files-guide" role="status">
+            <span id="files-guide-title">See what happens to a file.</span>
+            <p id="files-guide-text">Start a walkthrough, or bring in a file of your own. The simulation never removes your work.</p>
+            <button id="files-guide-action" class="quiet-button" hidden></button>
+          </div>
+          <div class="files-workspace">
+            <aside class="files-library" aria-label="Files on this device">
+              <div class="files-library-heading"><h2>Your files</h2><span id="files-count">0</span></div>
+              <div class="files-library-actions">
+                <button id="files-new" class="quiet-button">New note</button>
+                <button id="files-import" class="quiet-button">Import file</button>
+                <input id="files-import-input" type="file" hidden />
+              </div>
+              <div id="files-list" class="files-list"></div>
+              <button id="files-large" class="files-large-button">Try a 12 MiB file <span>A sample you can open and export</span></button>
+              <p id="files-library-note" class="files-library-note">Files and earlier copies live outside the ordinary State values.</p>
+            </aside>
+            <div class="files-editor-area">
+              <div id="files-empty" class="files-empty">
+                <svg viewBox="0 0 80 90" aria-hidden="true"><path d="M16 6h31l17 17v58H16Z M47 6v17h17 M27 38h26m-26 10h26m-26 10h17"/></svg>
+                <h2>A file in two places.</h2>
+                <p>Open it, make a change, lose the connection.<br />Your work stays with you.</p>
+              </div>
+              <div id="files-editor-content" hidden>
+                <div class="files-editor-heading">
+                  <div><h2 id="files-editor-name"></h2><span id="files-editor-meta" class="files-editor-meta"></span></div>
+                  <span id="files-status" class="files-status" role="status"></span>
+                </div>
+                <div class="files-editor-toolbar">
+                  <button id="files-save" class="primary-button">Save to Drive</button>
+                  <button id="files-refresh" class="quiet-button">Refresh</button>
+                  <button id="files-export" class="quiet-button">Export all copies</button>
+                </div>
+                <p id="files-draft-status" class="files-draft-status" role="status"></p>
+                <div id="files-draft-recovery" class="files-recovery" hidden>
+                  <p>Your typing is still here, but this file changed elsewhere. Keep it as a new file or download it before opening another file.</p>
+                  <div><button id="files-recover" class="primary-button">Keep typing as a new file</button><button id="files-download-typing" class="quiet-button">Download typing</button></div>
+                </div>
+                <label id="files-text-label" class="files-text-label" for="files-editor">Working copy</label>
+                <textarea id="files-editor" class="files-editor" spellcheck="true" aria-describedby="files-draft-status"></textarea>
+                <div id="files-binary" class="files-binary" hidden><svg viewBox="0 0 48 56" aria-hidden="true"><path d="M8 4h21l11 11v37H8Z M29 4v11h11 M18 29l-5 5 5 5m12-10 5 5-5 5"/></svg><strong id="files-binary-name"></strong><p>This file is kept as its original bytes. You can save, refresh, and export it.</p></div>
+                <div id="files-conflict" class="files-conflict" hidden>
+                  <div class="files-conflict-title"><h3>Two changes. Both kept.</h3><span class="files-status" data-status="conflict">Needs your choice</span></div>
+                  <p id="files-conflict-description">Your working copy and the changed Drive original are safe. Compare them, then choose what to keep working on.</p>
+                  <div class="files-comparison"><div><h4>Your working copy</h4><pre id="files-local-preview"></pre></div><div><h4 id="files-remote-heading">Changed Drive copy</h4><pre id="files-remote-preview"></pre></div></div>
+                  <div class="files-conflict-actions"><button id="files-keep-both" class="primary-button">Keep both as files</button><button id="files-use-drive" class="quiet-button">Use Drive copy</button></div>
+                  <p class="files-conflict-footnote">Use Drive copy also keeps your local draft in earlier copies and in your export.</p>
+                </div>
+                <details id="files-history" class="files-history"><summary>Earlier copies <span id="files-history-count">0</span></summary><div id="files-history-list"></div></details>
+              </div>
+            </div>
+          </div>
+          <details class="files-setup">
+            <summary>How a real Drive connection will work</summary>
+            <p>A private server keeps credentials outside files, ordinary State values, exports, and browser source. Google will ask you to approve access only to files you choose or create with MegaApp.</p>
+            <p>Real setup needs your approval for the Google OAuth application and its redirect address. The first connection lasts for a server session. Persistent access would require a separate approval.</p>
+          </details>
+        </section>
+        <section
+          id="panel-device"
+          class="panel document-panel"
+          role="tabpanel"
+          aria-labelledby="tab-device"
+          hidden
+        >
+          <div class="panel-heading">
+            <div>
+              <h1>What can this device do?</h1>
+              <p>Live checks for the browser you’re using.</p>
+            </div>
+            <button id="refresh-capabilities" class="quiet-button">
+              Refresh
+            </button>
+          </div>
+          <div id="device-summary" class="device-summary"></div>
+          <div class="capability-filters">
+            <label
+              >Find a capability
+              <input
+                id="capability-search"
+                type="search"
+                placeholder="Pencil, audio, files…" /></label
+            ><label
+              >Show
+              <select id="capability-filter">
+                <option value="all">Everything</option>
+                <option value="available">API exposed</option>
+                <option value="unavailable">Not exposed</option>
+              </select></label
+            >
+          </div>
+          <div id="capability-list"></div>
+          <div
+            id="probe-output"
+            class="probe-output"
+            aria-live="polite"
+            hidden
+          ></div>
+        </section>
+        <section
+          id="panel-state"
+          class="panel document-panel"
+          role="tabpanel"
+          aria-labelledby="tab-state"
+          hidden
+        >
+          <div class="panel-heading">
+            <div>
+              <h1>A few things to remember.</h1>
+              <p>
+                A small persistence experiment. Come back and your values will
+                still be here.
+              </p>
+            </div>
+            <span id="storage-status" class="small-badge">Loading</span>
+          </div>
+          <div class="state-actions">
+            <button id="export-state" class="primary-button">
+              Export sample</button
+            ><button id="import-state" class="quiet-button">
+              Import sample</button
+            ><input
+              id="state-file"
+              type="file"
+              accept="application/json,.json"
+              hidden
+            /><button id="reset-state" class="quiet-button">
+              Reset sample
+            </button>
+          </div>
+          <form id="variable-form" class="variable-form">
+            <label
+              >Name
+              <input
+                id="variable-name"
+                required
+                placeholder="apps.demo.tempo"
+                autocomplete="off"
+                maxlength="100" /></label
+            ><label
+              >Type
+              <select id="variable-type">
+                <option>string</option>
+                <option>number</option>
+                <option>boolean</option>
+                <option>object</option>
+                <option>array</option>
+                <option>null</option>
+              </select></label
+            ><label class="value-label"
+              >Value
+              <input id="variable-value" value="" autocomplete="off" /></label
+            ><button class="primary-button" type="submit">Save value</button>
+            <p id="variable-error" class="form-error" role="alert" hidden></p>
+          </form>
+          <div id="variable-list" class="variable-list"></div>
+          <p class="state-note">
+            These are sample values for this device, not a credential store.
+            Export a copy to move or back them up. Production state and cloud
+            sync come later.
+          </p>
+        </section>
+        <section
+          id="panel-design"
+          class="panel design-panel"
+          role="tabpanel"
+          aria-labelledby="tab-design"
+          hidden
+        >
+          <div class="panel-heading design-heading">
+            <div>
+              <h1>Design reading</h1>
+              <p>Care &amp; consequence: our interactive Jony Ive study.</p>
+            </div>
+            <div class="design-reading-actions">
+              <button id="intro-replay" class="quiet-button">Try intro</button>
+              <a
+                class="quiet-button design-open"
+                href="./reading/care-and-consequence.html"
+                target="_blank"
+                rel="noopener"
+                >Open full page</a
+              >
+            </div>
+          </div>
+          <iframe
+            id="design-reader"
+            class="design-reader"
+            title="Care and consequence, an interactive field guide to Jony Ive"
+            src="./reading/care-and-consequence.html"
+            loading="lazy"
+          ></iframe>
+        </section>
+      </main>
+    </div>
+    <div
+      id="workspace-intro"
+      class="workspace-intro"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="intro-title"
+      tabindex="-1"
+      hidden
+    >
+      <div class="intro-topline">
+        <span class="intro-brand">MegaApp</span>
+        <button id="intro-skip" class="intro-skip">Skip intro</button>
+      </div>
+      <div class="intro-composition">
+        <div class="intro-copy">
+          <h1 id="intro-title">Your<br />workspace.</h1>
+          <p>Draw, make music, play.</p>
+        </div>
+        <canvas
+          id="intro-art"
+          class="intro-art"
+          role="img"
+          aria-label="An original ASCII computer with a luminous M on its screen"
+        ></canvas>
+      </div>
+      <div class="intro-entry">
+        <button id="intro-enter" class="intro-enter">
+          Enter workspace <span aria-hidden="true">↗</span>
+        </button>
+        <span class="intro-swipe"
+          ><span aria-hidden="true">←</span> Swipe left to enter</span
+        >
+      </div>
+      <p class="intro-tools">Marbles / Canvas / Jump / Design</p>
+      <div class="intro-blade" aria-hidden="true"></div>
+    </div>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <dialog id="files-picker-dialog" class="files-picker-dialog" aria-labelledby="files-picker-title">
+      <h2 id="files-picker-title">Choose an existing Drive file</h2>
+      <p>Google’s chooser opens in a separate window. Choose one uploaded file to give MegaApp access to that file. Your current working copy stays safe here.</p>
+      <p id="files-picker-status" class="files-picker-status" role="status">The chooser is ready to open.</p>
+      <div class="files-picker-actions"><a id="files-picker-open" class="primary-button" target="_blank" rel="noopener noreferrer">Open Google chooser</a><button id="files-picker-cancel" class="quiet-button" type="button">Cancel</button></div>
+    </dialog>
+    <dialog id="install-dialog" aria-labelledby="install-title">
+      <form method="dialog">
+        <button class="dialog-close quiet-button" aria-label="Close">
+          Close
+        </button>
+      </form>
+      <h2 id="install-title">Add MegaApp to your Home Screen</h2>
+      <p>
+        In Safari or Chrome on iPad, open the Share menu and choose
+        <strong>Add to Home Screen</strong>. Enable
+        <strong>Open as Web App</strong> if offered.
+      </p>
+      <p>After the first connected visit, the playground can open offline.</p>
+      <p>
+        Each browser and the Home Screen app keep separate local values. Export
+        and import a sample snapshot to move them between contexts.
+      </p>
+    </dialog>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
