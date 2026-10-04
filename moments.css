@@ -43,5 +43,11 @@ body.intro-open .moment-keep, body.meta-is-open .moment-keep { visibility: hidde
 #moment-saved-list { list-style: none; padding: 0; display: grid; gap: 8px; }
 #moment-saved-list button { text-align: left; width: 100%; min-width: 0; white-space: normal; overflow-wrap: anywhere; }
 .design-footnote { padding-bottom: 55px; }
-@media(min-width: 900px) { .design-footnote { padding-right: 220px; padding-bottom: 0; } }
+@media(min-width: 900px) {
+  .design-footnote { padding-right: 220px; padding-bottom: 0; }
+  .design-masthead { margin-bottom: 15px; }
+  .design-principles { row-gap: 8px; }
+  .design-principle { padding-top: 8px; }
+  .design-principle > p { margin-top: 6px; }
+}
 @media(max-width: 600px) { .moment-dialog { padding: 18px; border-radius: 18px; } .moment-trim { gap: 8px; } .moment-heading h1 { font-size: 1.9rem; } .moment-review-actions button { flex: 1; } .moment-keep { right: 88px; font-size: .75rem; padding: 10px 12px; } }

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "e443279a9d1f11c05f0722fe529f3e0d72269de8b282dd0e4d8faa332874d78e",
+  "sourceDigest": "e7f7c6cd1a87d5aa5a7d06e90bcb2c127789924726071cef444e69118a176fa8",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -61,7 +61,7 @@
     },
     {
       "path": "moments.css",
-      "sha256": "467637f13f7f721ea72377961f978fc41b560f57a0e9ef1123ab4245449861fa"
+      "sha256": "72c6109b8a5070a40d384412ea27273655a39a50533c520134e1c2aa01412b35"
     },
     {
       "path": "output/pdf/a-place-for-papers.pdf",
