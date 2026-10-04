@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "8eb8e5cf4818a890a7a4aa9539b1d6aea259d385bc0d05ade5284168e4ce8bd0",
+  "sourceDigest": "7fee7a8f1a40c9158bca4127e7940e964a5f78583cb652642cf03e600c43b7d2",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -13,7 +13,7 @@
     },
     {
       "path": "docs/design.md",
-      "sha256": "27eb07e0f98426d4f7dc3efdf02508501328626ebfd6e8a04199275a10e12a30"
+      "sha256": "ca11a1fc6523cbbfa26f1487bd02c3edab8a3b4c2b0ab883ca91f86e7dbef461"
     },
     {
       "path": "docs/pdf-library.md",
@@ -33,7 +33,7 @@
     },
     {
       "path": "frontend.css",
-      "sha256": "d5d6e76733dedfc469975e2b182db3c7e62d16a93181ac53c4b175b8d0b589a6"
+      "sha256": "afc6c167451988d57434d4c5848937403edf23df4d27665ac62c264ed82efb5b"
     },
     {
       "path": "icons/apple-touch-icon.png",
@@ -61,7 +61,7 @@
     },
     {
       "path": "moments.css",
-      "sha256": "c9676ca147f09236d59c51dcfd04e6441c6e4fc511bb7257a857c293f72621ba"
+      "sha256": "e48e291eb79f0e3f1f8bdca0f5ae00739f0a7f64862ff209ad89467b50ac1de9"
     },
     {
       "path": "output/pdf/a-place-for-papers.pdf",
@@ -101,11 +101,19 @@
     },
     {
       "path": "src/design-content.js",
-      "sha256": "d222ebe95e86f03be389179c3f1f2c4941864afb0babaee693e7ef7d33be6f67"
+      "sha256": "cdc28c8226cf9f1d7a3747aaec782e0a10ecc7998bc57c0b1a45fbc0c041e326"
+    },
+    {
+      "path": "src/design-edition.js",
+      "sha256": "e5ed9b4ebb680221fa9fd56d58bb5c0e7b4afd9cacd94ecccd00ee0cc6aa3993"
+    },
+    {
+      "path": "src/design-editor.js",
+      "sha256": "9e3bfde41b77bad5183f057b50693b402709e6690cf8a48751c239a4fff9a9fe"
     },
     {
       "path": "src/design.js",
-      "sha256": "1404d1797fc6c165814f88342a817290d7aa40a4bbaf2f78c1f58a503e2c279e"
+      "sha256": "f99c26432abfc0f75c1919b8c1b65aacaf6b27da841308f88fc285b011885462"
     },
     {
       "path": "src/drive-adapter.js",
@@ -173,7 +181,7 @@
     },
     {
       "path": "src/moment-replay.js",
-      "sha256": "620acab884e6c7dbd8e95989d150c09f499c988485874844f5b621d526738f03"
+      "sha256": "3cbd370018ba354e1370496e04fd28dbb95541b228c9b5d57e1f4808b43e2134"
     },
     {
       "path": "src/moments.js",
@@ -233,7 +241,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "bdae046a4d20947fb91c7501416f40909cb3ddfe8934efa4a04c97f05c2e6abb"
+      "sha256": "21045fe618a80c4a6f96449a8101c7f96930baebd59644eae53c6f0b87a39a85"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

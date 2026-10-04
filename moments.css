@@ -54,3 +54,8 @@ body.intro-open .moment-keep, body.meta-is-open .moment-keep { visibility: hidde
   .design-principle > p { margin-top: 6px; }
 }
 @media(max-width: 600px) { .moment-dialog { padding: 18px; border-radius: 18px; } .moment-trim { gap: 8px; } .moment-heading h1 { font-size: 1.9rem; } .moment-review-actions button { flex: 1; } .moment-keep { right: 88px; font-size: .75rem; padding: 10px 12px; } }
+.moment-replay-document { margin: 12px 0; font-size: .8rem; }
+.moment-replay-document summary { min-height: 44px; cursor: pointer; padding-block: 12px; }
+.moment-replay-document h3 { font-family: var(--display-font); font-size: 1.3rem; margin-block: 8px; }
+.moment-replay-document h4 { margin-block: 12px 6px; }
+.moment-replay-document p { white-space: pre-wrap; color: var(--muted); line-height: 1.6; }

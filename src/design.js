@@ -1,9 +1,11 @@
 import { designContent } from "./design-content.js";
 import { createPhysicalSurface } from "./input.js";
 import { createBoundaryExample } from "./design-boundaries.js";
+import { createDesignEditor } from "./design-editor.js";
 import { storageName } from "./environment.js";
 
 export function createDesign({ input, onSettings, notify, onMoment = () => {} }) {
+  let editor;
   const root = document.getElementById("design-guide");
   root.innerHTML = `<header class="design-masthead"><div><h1></h1><p class="design-introduction"></p></div><div class="design-signature">MegaApp<br><span>Manny’s design</span></div></header><div class="design-principles"></div><footer class="design-footnote"><details class="design-about"><summary>About this page</summary><p></p></details><details class="design-dictionary"><summary>Dictionary</summary><div class="design-term-links" aria-label="Dictionary terms"></div></details></footer>`;
   root.querySelector("h1").textContent = designContent.title;
@@ -13,7 +15,7 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {} })
   const sections = new Map();
   for (const principle of designContent.principles) {
     const section = document.createElement("section");
-    section.className = `design-principle design-${principle.id}`;
+    section.className = `design-principle design-${principle.id}`; section.dataset.principle = principle.id;
     const title = document.createElement("h2"), text = document.createElement("p");
     title.textContent = principle.title; text.textContent = principle.text;
     section.append(title, text); sections.set(principle.id, section);
@@ -58,10 +60,10 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {} })
   const workKey = storageName("megaapp.design.example.v1");
   let saved;
   try { saved = JSON.parse(localStorage.getItem(workKey)); } catch { /* Corrupt/unavailable saves leave the original intact. */ }
-  let example = createBoundaryExample(original, saved), anchor = null, dragging = false, keyboardWord = 0, touchTap = null, selectionSave;
+  let example = createBoundaryExample(original, saved), anchor = null, dragging = false, keyboardWord = 0, touchTap = null, selectionSave, lastRenderedWords;
   const text = scope.querySelector("#design-scope-text"), status = scope.querySelector("#design-scope-status"), editButton = scope.querySelector("#design-edit-selection");
   function persist() {
-    try { localStorage.setItem(workKey, JSON.stringify(example.snapshot())); scope.querySelector("#design-work-save").textContent = "Your material and unfinished edits stay on this device."; }
+    try { localStorage.setItem(workKey, JSON.stringify({ ...example.snapshot(), materialDraft: scope.querySelector("#design-material-text").value })); scope.querySelector("#design-work-save").textContent = "Your material and unfinished edits stay on this device."; }
     catch { scope.querySelector("#design-work-save").textContent = "Could not save this example. Keep this page open to retain it."; }
   }
   function paintBoundary() {
@@ -84,7 +86,9 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {} })
   function renderWords() {
     text.replaceChildren();
     example.words.forEach((word, index) => { const span = document.createElement("span"); span.dataset.word = String(index); span.textContent = word + (index === example.words.length - 1 ? "" : " "); text.append(span); });
-    scope.querySelector("#design-material-text").value = example.words.join(" ");
+    const material = scope.querySelector("#design-material-text"), value = example.words.join(" ");
+    if (lastRenderedWords === undefined || material.value === lastRenderedWords) material.value = value;
+    lastRenderedWords = value;
     paintBoundary();
   }
   function renderEdits() {
@@ -173,7 +177,10 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {} })
     anchor = null; renderWords(); renderEdits(); persist(); status.textContent = "Restored the material and boundaries from before your last change."; record("Undo text change", "Previous work restored");
   };
   scope.querySelector("#design-example-reset").onclick = () => { example.reset(original); anchor = null; renderWords(); renderEdits(); persist(); status.textContent = "Original example restored. You define the next boundary."; record("Reset text example", "Original text restored"); };
-  renderWords(); renderEdits(); if (saved) scope.querySelector("#design-work-save").textContent = "Your working material restored on this device.";
+  renderWords(); renderEdits();
+  scope.querySelector("#design-material-text").oninput = persist;
+  if (typeof saved?.materialDraft === "string" && saved.materialDraft.length <= 10000) { scope.querySelector("#design-material-text").value = saved.materialDraft; if (saved.materialDraft !== example.words.join(" ")) scope.querySelector(".design-material").open = true; }
+  if (saved) scope.querySelector("#design-work-save").textContent = "Your working material restored on this device.";
 
   const dialog = document.createElement("dialog"); dialog.className = "design-term-dialog"; dialog.id = "design-term-dialog"; dialog.setAttribute("aria-labelledby", "design-term-title");
   dialog.innerHTML = `<div class="design-term-heading"><h2 id="design-term-title"></h2><button class="quiet-button" type="button">Close</button></div><p id="design-term-definition"></p><p class="design-term-note">Working vocabulary. The full dictionary is a separate decision.</p>`;
@@ -185,14 +192,14 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {} })
   function explain(term, trigger) {
     if (dialog.open) return;
     priorTerm = trigger; dialog.querySelector("h2").textContent = term;
-    dialog.querySelector("#design-term-definition").textContent = designContent.terms[term]; dialog.showModal();
+    dialog.querySelector("#design-term-definition").textContent = (editor?.content || designContent).terms[term]; dialog.showModal();
     record(`Understand ${term}`, "Definition shown in context");
   }
-  const termCancellations = [];
+  const termCancellations = new Set(), termCleanup = new WeakMap();
   function bindTerm(element, term) {
     element.setAttribute("aria-haspopup", "dialog");
     let timer, point, held = false;
-    const cancel = () => { clearTimeout(timer); timer = null; }; termCancellations.push(cancel);
+    const cancel = () => { clearTimeout(timer); timer = null; }; termCancellations.add(cancel); termCleanup.set(element, () => { cancel(); termCancellations.delete(cancel); });
     element.addEventListener("pointerdown", event => {
       held = false; point = { x: event.clientX, y: event.clientY };
       timer = setTimeout(() => { held = true; explain(term, element); }, 500);
@@ -202,28 +209,39 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {} })
     element.addEventListener("contextmenu", event => { if (dialog.open) event.preventDefault(); });
     element.addEventListener("click", event => { event.preventDefault(); cancel(); if (!held) explain(term, element); held = false; });
   }
-  for (const [term] of Object.entries(designContent.terms)) {
-    const button = document.createElement("button"); button.className = "design-term-link"; button.type = "button"; button.textContent = term;
-    bindTerm(button, term); root.querySelector(".design-term-links").append(button);
-  }
-  for (const button of root.querySelectorAll("[data-term]")) bindTerm(button, button.dataset.term);
-  // Native inline links preserve readable prose and text selection. Definitions
-  // stay accessible from the full-sized dictionary controls as well.
-  for (const paragraph of root.querySelectorAll(".design-principle > p")) {
-    const value = paragraph.textContent, terms = Object.keys(designContent.terms).sort((a,b) => b.length - a.length);
-    const pattern = new RegExp(`\\b(${terms.join("|")})\\b`, "gi"); let position = 0, match;
+  function vocabulary(paragraph, value, terms, editing = false) {
+    for (const link of paragraph.querySelectorAll("[data-term]")) termCleanup.get(link)?.();
     paragraph.replaceChildren();
+    if (editing) { paragraph.textContent = value; return; }
+    const names = Object.keys(terms).sort((a,b) => b.length - a.length), escape = value => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`\\b(${names.map(escape).join("|")})\\b`, "gi"); let position = 0, match;
     while ((match = pattern.exec(value))) {
       paragraph.append(document.createTextNode(value.slice(position, match.index)));
-      const term = terms.find(t => t.toLowerCase() === match[0].toLowerCase()), link = document.createElement("a");
+      const term = names.find(t => t.toLowerCase() === match[0].toLowerCase()), link = document.createElement("a");
       link.href = "#design-term-dialog"; link.className = "design-vocabulary"; link.textContent = match[0]; link.dataset.term = term;
       bindTerm(link, term); paragraph.append(link); position = pattern.lastIndex;
     }
     paragraph.append(document.createTextNode(value.slice(position)));
   }
-  let selectedExplanation;
+  for (const button of root.querySelectorAll("[data-term]")) bindTerm(button, button.dataset.term);
+  let renderedTerms, selectedExplanation;
+  editor = createDesignEditor({ root, sections, defaults: designContent,
+    onModeChange() { termCancellations.forEach(cancel => cancel()); if (dialog.open) dialog.close(); selectedExplanation?.remove(); },
+    onRender(content, editing) {
+      root.querySelector("h1").textContent = content.title;
+      root.querySelector(".design-introduction").textContent = content.introduction;
+      root.querySelector(".design-about p").textContent = content.note;
+      for (const principle of content.principles) { const section = sections.get(principle.id); section.querySelector("h2").textContent = principle.title; vocabulary(section.querySelector(":scope > p"), principle.text, content.terms, editing); }
+      if (renderedTerms !== JSON.stringify(content.terms)) {
+        const links = root.querySelector(".design-term-links"); for (const link of links.children) termCleanup.get(link)?.(); links.replaceChildren();
+        for (const [term] of Object.entries(content.terms)) { const button = document.createElement("button"); button.className = "design-term-link"; button.type = "button"; button.textContent = term; bindTerm(button, term); links.append(button); }
+        renderedTerms = JSON.stringify(content.terms);
+      }
+    },
+    onMutation: (action, outcome) => record(action, outcome),
+  });
   document.addEventListener("selectionchange", () => {
-    const selected = getSelection(), term = Object.keys(designContent.terms).find(t => t.toLowerCase() === selected?.toString().trim().toLowerCase());
+    const selected = getSelection(), term = Object.keys(editor?.content.terms || designContent.terms).find(t => t.toLowerCase() === selected?.toString().trim().toLowerCase());
     selectedExplanation?.remove(); selectedExplanation = null;
     if (!term || selected?.isCollapsed) return;
     const parent = selected.anchorNode?.parentElement?.closest(".design-principle");
@@ -234,7 +252,7 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {} })
   });
   function captureContext() {
     const board = root.querySelector("#design-touch-board"), tile = root.querySelector("#design-touch-object"), position = new DOMMatrix(getComputedStyle(tile).transform);
-    return { app: "design", coverage: "Design example frames, text boundaries, outcomes and shared tuning", title: designContent.title,
+    return { app: "design", coverage: "Design document edition, example frames, text boundaries, outcomes and shared tuning", title: editor ? editor.content.title : designContent.title, designDocument: editor?.content,
       surface: { x: position.m41 / Math.max(1, board.clientWidth), y: position.m42 / Math.max(1, board.clientHeight), dragging: tile.dataset.dragging === "true" },
       words: example.words, edits: example.edits.map(({ start, end, label }) => ({ start, end, label })),
       selection: example.selection, collision: example.collision,
@@ -244,6 +262,6 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {} })
   return {
     captureContext,
     applySettings() { if (document.activeElement === response || document.activeElement === settling) return; response.value = String(input.response); settling.value = String(input.settling); controls(); },
-    setVisible(visible) { if (!visible) { surface.reset(); cancelDrag(); termCancellations.forEach(cancel => cancel()); selectedExplanation?.remove(); if (dialog.open) dialog.close(); } },
+    setVisible(visible) { if (!visible) { surface.reset(); cancelDrag(); editor?.hide(); termCancellations.forEach(cancel => cancel()); selectedExplanation?.remove(); if (dialog.open) dialog.close(); } },
   };
 }

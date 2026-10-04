@@ -290,3 +290,44 @@ select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 .design-vocabulary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 2px; }
 .design-selected-help { margin-top: 8px; font-size: .75rem; }
 @media (max-width: 620px) { .design-active-edit { grid-template-columns: 1fr auto; } .design-active-edit label { grid-column: 1 / -1; } }
+
+/* The document edits itself. The tools appear at the scope they affect. */
+.design-masthead-right { display: flex; flex-direction: column; align-items: end; gap: 10px; flex-shrink: 0; }
+.design-reshape { font-size: .75rem; margin-top: 2px; }
+.design-principles[data-columns="1"] { grid-template-columns: minmax(0, 1fr); }
+.design-edit-tools { border-block: 1px solid var(--line); padding: 10px 0 14px; margin-bottom: 20px; }
+.design-edit-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.design-edit-actions button, .design-edit-actions label, .design-page-versions { font-size: .75rem; }
+.design-edit-actions label { display: flex; gap: 8px; align-items: center; }
+.design-edit-actions select { min-height: 44px; max-width: 160px; font: inherit; }
+.design-edit-explanation, #design-page-status { color: var(--muted); font-size: .75rem; line-height: 1.5; margin-top: 10px; max-width: 90ch; }
+.design-page-versions summary { min-height: 44px; padding-block: 12px; cursor: pointer; width: fit-content; }
+#design-page-history { display: flex; gap: 8px; flex-wrap: wrap; font-size: .75rem; color: var(--muted); }
+.design-page-versions > button { margin-top: 10px; }
+.design-page-field { display: block; width: 100%; min-width: 0; min-height: 44px; padding: 8px 0; border: 0; border-bottom: 1px dashed var(--line); border-radius: 0; background: transparent; color: var(--ink); font: inherit; line-height: 1.5; resize: none; overflow: hidden; }
+.design-page-field:focus { border-bottom-color: var(--accent); outline: 0; box-shadow: 0 2px 0 var(--accent); }
+.design-page-title { font-family: var(--display-font); font-size: clamp(2.2rem,3.5vw,2.8rem); font-weight: 500; letter-spacing: -.045em; line-height: 1.18; }
+.design-page-introduction { color: var(--muted); font-size: .93rem; margin-top: 10px; }
+.design-page-heading { font-size: 1.05rem; font-weight: 600; letter-spacing: -.02em; }
+.design-page-wording, .design-page-note { font-size: .84rem; color: var(--muted); }
+.design-principle-shape { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+.design-principle-shape button { min-width: 44px; min-height: 44px; padding: 8px; background: transparent; color: var(--muted); box-shadow: none; }
+.design-principle-shape label { display: flex; align-items: center; gap: 7px; min-height: 44px; font-size: .72rem; color: var(--muted); margin-left: auto; }
+.design-principle-shape input { width: 20px; height: 20px; margin: 0; }
+.design-move-handle { touch-action: none; cursor: grab; font-size: 1.4rem; }
+.design-principle[data-moving="true"] { opacity: .55; }
+.design-principle[data-drop="before"] { box-shadow: 0 -3px 0 var(--accent); }
+.design-principle[data-drop="after"] { box-shadow: 0 3px 0 var(--accent); }
+.design-order-ghost { position: fixed; left: 0; top: 0; max-width: 240px; z-index: 110; padding: 12px 18px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--floating-shadow); pointer-events: none; font-size: .84rem; }
+#design-guide [hidden] { display: none !important; }
+@media (max-width: 620px) {
+  .design-masthead-right { align-items: start; margin-top: 8px; }
+  .design-principles[data-columns="2"] { grid-template-columns: minmax(0, 1fr); }
+  .design-page-title { font-size: 2.5rem; }
+  .design-edit-actions { gap: 6px; }
+}
+.design-masthead > div:first-child { min-width: 0; flex: 1; }
+.design-masthead h1, .design-principle > h2, .design-principle > p, .design-introduction { overflow-wrap: anywhere; white-space: pre-wrap; }
+.design-order-ghost { max-height: 120px; overflow: hidden; overflow-wrap: anywhere; }
+.design-page-introduction, .design-page-wording { max-width: 72ch; }
+.design-edition-label { font-size: .72rem; color: var(--muted); }

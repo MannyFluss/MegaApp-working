@@ -2,6 +2,7 @@
 export const designContent = {
   title: "My personal operating system.",
   introduction: "MegaApp is my single most powerful tool for creative and productive work. Tactile first. Editorial second. Precise third. Quiet and focused by default.",
+  layout: { order: ["touch", "scope", "still", "capability", "context", "continuity", "override"], wide: ["override"], columns: 2 },
   principles: [
     { id: "touch", title: "Input belongs to me.", text: "Apps adapt to a shared input system I can reshape. Response follows my hand: direction, pace, and character. The action stays consistent; its smallest details express how I performed it." },
     { id: "still", title: "Stillness is the resting state.", text: "Motion follows interaction or ongoing work. The touched object responds directly; surroundings respond subtly. Response comes first. Apps choose their resting surfaces." },
@@ -25,5 +26,5 @@ export const designContent = {
     "Internal context": "Context about me that helps agents make better decisions for me, including patterns I may not yet recognize.",
     "Moment": "A kept interval of observed interactions, declared app context and my own explanation. An agent's interpretation is separate from the record.",
   },
-  note: "One living surface for my design. Change the material, define a boundary, feel a response. Tap or hold an underlined term to understand it. Working material and unfinished edits are saved on this device; the governing text is shared with agents.",
+  note: "One living surface for my design. Change the material, define a boundary, feel a response. Tap or hold an underlined term to understand it. Reshape this page to edit its wording and arrangement. Your edition and working material save on this device; export your edition for agents to read or apply to the shared guide.",
 };

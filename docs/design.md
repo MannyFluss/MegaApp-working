@@ -6,13 +6,13 @@ MegaApp is my single most powerful tool for creative and productive work. Tactil
 
 Apps adapt to a shared input system I can reshape. Response follows my hand: direction, pace, and character. The action stays consistent; its smallest details express how I performed it.
 
-## Stillness is the resting state.
-
-Motion follows interaction or ongoing work. The touched object responds directly; surroundings respond subtly. Response comes first. Apps choose their resting surfaces.
-
 ## Work has a visible boundary.
 
 I define the boundary. Show activity where it acts, and its scope before it changes anything. Selections may overlap; concurrent edits to the same region may not. I can finish, cancel, or reconsider.
+
+## Stillness is the resting state.
+
+Motion follows interaction or ongoing work. The touched object responds directly; surroundings respond subtly. Response comes first. Apps choose their resting surfaces.
 
 ## Capability stays close to the work.
 
@@ -30,6 +30,8 @@ Restore useful state when I return. Save locally, sync deliberately, and make re
 
 Software is material I can reshape through use. Apps can change appearance, layout, and task interactions. Shared promises remain: understandable access, accessible controls, preserved work, and agent-operable actions. Policy governs authority; protocol governs interaction.
 
-One living surface for my design. Change the material, define a boundary, feel a response. Tap or hold an underlined term to understand it. Working material and unfinished edits are saved on this device; the governing text is shared with agents.
+One living surface for my design. Change the material, define a boundary, feel a response. Tap or hold an underlined term to understand it. Reshape this page to edit its wording and arrangement. Your edition and working material save on this device; export your edition for agents to read or apply to the shared guide.
+
+<!-- MegaApp layout: {"order":["touch","scope","still","capability","context","continuity","override"],"wide":["override"],"columns":2} -->
 
 [Working examples](https://mannyfluss.github.io/MegaApp-pages/#design) · [Dictionary terms](./design-dictionary.md)
