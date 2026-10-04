@@ -1,7 +1,7 @@
 import { designContent } from "./design-content.js";
 import { createPhysicalSurface } from "./input.js";
 
-export function createDesign({ input, onSettings, notify }) {
+export function createDesign({ input, onSettings, notify, onMoment = () => {} }) {
   const root = document.getElementById("design-guide");
   root.innerHTML = `<header class="design-masthead"><div><h1></h1><p class="design-introduction"></p></div><div class="design-signature">MegaApp<br><span>Manny’s design</span></div></header><div class="design-principles"></div><footer class="design-footnote"><details class="design-about"><summary>About this page</summary><p></p></details><details class="design-dictionary"><summary>Dictionary</summary><div class="design-term-links" aria-label="Dictionary terms"></div></details></footer>`;
   root.querySelector("h1").textContent = designContent.title;
@@ -20,7 +20,7 @@ export function createDesign({ input, onSettings, notify }) {
   const demo = document.createElement("div");
   demo.innerHTML = `<div id="design-touch-board" class="design-touch-board"><span class="design-touch-instruction">Move this with your hand.</span><button id="design-touch-object" class="design-touch-object" data-direct-input type="button" aria-label="Move the surface. Drag, or use arrow keys. Enter resets its position."><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M15 18h18M15 24h18M15 30h18"/></svg><span>Follow me</span></button></div><details class="design-input-settings"><summary>Tune the shared response</summary><div class="design-tuning"><label for="design-response">Response <output id="design-response-value"></output></label><input id="design-response" type="range" min="0" max="1.5" step="0.05" value="0.8"><label for="design-settling">Settling <output id="design-settling-value"></output></label><input id="design-settling" type="range" min="120" max="500" step="10" value="280"><button id="design-input-reset" class="quiet-button" type="button">Restore defaults</button><span id="design-input-status" role="status">Applies to the shared response across apps.</span></div></details>`;
   sections.get("touch").append(demo);
-  const surface = createPhysicalSurface(root.querySelector("#design-touch-object"), root.querySelector("#design-touch-board"), input);
+  const surface = createPhysicalSurface(root.querySelector("#design-touch-object"), root.querySelector("#design-touch-board"), input, () => record("Surface position", "Recorded position", "frame"));
   const response = root.querySelector("#design-response"), settling = root.querySelector("#design-settling");
   let saveChain = Promise.resolve(), generation = 0;
   function controls() {
@@ -30,6 +30,7 @@ export function createDesign({ input, onSettings, notify }) {
   function preview() {
     input.configure({ "system.input.response": { value: Number(response.value) }, "system.input.settling": { value: Number(settling.value) } });
     controls();
+    record("Tune shared response", "Preview updated");
   }
   function save() {
     const values = { response: Number(response.value), settling: Number(settling.value) }, current = ++generation;
@@ -77,9 +78,10 @@ export function createDesign({ input, onSettings, notify }) {
         words.splice(edit.start, edit.end - edit.start, ...edit.replacement);
         edits = edits.filter(value => value !== edit); selection = null; collision = false; renderScopes();
         scope.querySelector("#design-scope-status").textContent = `${edit.label} changed. Other regions kept their place.`;
+        record(`Apply ${edit.label.toLowerCase()} edit`, "Text changed");
       };
       const cancel = document.createElement("button"); cancel.type = "button"; cancel.className = "quiet-button"; cancel.textContent = "Cancel"; cancel.setAttribute("aria-label", `Cancel ${edit.label.toLowerCase()} edit`);
-      cancel.onclick = () => { edits = edits.filter(value => value !== edit); selection = null; collision = false; renderScopes(); scope.querySelector("#design-scope-status").textContent = `${edit.label} edit cancelled. Text kept.`; };
+      cancel.onclick = () => { edits = edits.filter(value => value !== edit); selection = null; collision = false; renderScopes(); scope.querySelector("#design-scope-status").textContent = `${edit.label} edit cancelled. Text kept.`; record(`Cancel ${edit.label.toLowerCase()} edit`, "Text kept"); };
       row.append(name, finish, cancel); list.append(row);
     }
     scope.dataset.activeCount = String(edits.length);
@@ -93,11 +95,12 @@ export function createDesign({ input, onSettings, notify }) {
     scope.querySelector("#design-scope-status").textContent = collision
       ? "These regions overlap. Finish or cancel the existing edit before starting here."
       : `${selection.label} boundary shown. Apply or cancel this local edit.`;
+    record(`Begin ${selection.label.toLowerCase()} edit`, collision ? "Blocked: overlapping active boundary" : "Boundary reserved");
   }
   scope.querySelector("#design-edit-first").onclick = () => begin("first");
   scope.querySelector("#design-edit-overlap").onclick = () => begin("overlap");
   scope.querySelector("#design-edit-separate").onclick = () => begin("separate");
-  scope.querySelector("#design-example-reset").onclick = () => { words = [...original]; edits = []; selection = null; collision = false; renderScopes(); scope.querySelector("#design-scope-status").textContent = "Example restored. Choose a region to begin an edit."; };
+  scope.querySelector("#design-example-reset").onclick = () => { words = [...original]; edits = []; selection = null; collision = false; renderScopes(); scope.querySelector("#design-scope-status").textContent = "Example restored. Choose a region to begin an edit."; record("Reset text example", "Original text restored"); };
   renderScopes();
 
   const dialog = document.createElement("dialog"); dialog.className = "design-term-dialog"; dialog.id = "design-term-dialog"; dialog.setAttribute("aria-labelledby", "design-term-title");
@@ -112,7 +115,17 @@ export function createDesign({ input, onSettings, notify }) {
     button.onclick = () => { priorTerm = button; dialog.querySelector("h2").textContent = term; dialog.querySelector("#design-term-definition").textContent = definition; dialog.showModal(); };
     root.querySelector(".design-term-links").append(button);
   }
+  function captureContext() {
+    const board = root.querySelector("#design-touch-board"), tile = root.querySelector("#design-touch-object"), position = new DOMMatrix(getComputedStyle(tile).transform);
+    return { app: "design", coverage: "Design example frames, text boundaries, outcomes and shared tuning", title: designContent.title,
+      surface: { x: position.m41 / Math.max(1, board.clientWidth), y: position.m42 / Math.max(1, board.clientHeight), dragging: tile.dataset.dragging === "true" },
+      words: [...words], edits: edits.map(({ start, end, label }) => ({ start, end, label })),
+      selection: selection ? { start: selection.start, end: selection.end } : null, collision: Boolean(collision),
+      message: scope.querySelector("#design-scope-status").textContent, response: input.response, settling: input.settling };
+  }
+  function record(action, outcome, kind = "action") { onMoment({ kind, app: "design", action, outcome, context: captureContext() }); }
   return {
+    captureContext,
     applySettings() { if (document.activeElement === response || document.activeElement === settling) return; response.value = String(input.response); settling.value = String(input.settling); controls(); },
     setVisible(visible) { if (!visible) { surface.reset(); if (dialog.open) dialog.close(); } },
   };

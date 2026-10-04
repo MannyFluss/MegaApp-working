@@ -7,7 +7,7 @@ export const designContent = {
     { id: "still", title: "Stillness is the resting state.", text: "Motion follows interaction or ongoing work. The touched object responds directly; surroundings respond subtly. Response comes first. Apps choose their resting surfaces." },
     { id: "scope", title: "Work has a visible boundary.", text: "Show activity where it acts, and its boundary before it changes anything. Selections may overlap; concurrent edits to the same region may not. I can finish, cancel, or reconsider." },
     { id: "capability", title: "Capability stays close to the work.", text: "Essential actions stay beside what they affect. Further controls reveal predictably. Common commands offer another route; gestures have discoverable alternatives." },
-    { id: "context", title: "Context makes it personal.", text: "External context comes from the world. Internal context helps agents decide specifically for me. I supply, question, or discover it over time. Uncertainty stays visible." },
+    { id: "context", title: "Context makes it personal.", text: "External context comes from the world; internal context helps agents decide specifically for me. I can keep interactions, affected content and my explanation as a moment for an agent. I supply, question and discover context over time. Uncertainty stays visible." },
     { id: "continuity", title: "My work keeps its place.", text: "Restore useful state when I return. Save locally, sync deliberately, and make recovery possible. Keep competing versions safe. Feedback is immediate and specific." },
     { id: "override", title: "A default I can override.", text: "Apps can change appearance, layout, and task interactions. Shared promises remain: understandable access, accessible controls, preserved work, and agent-operable actions. Policy governs authority; protocol governs interaction." },
   ],
@@ -21,6 +21,7 @@ export const designContent = {
     "Override": "A deliberate change to a default for a particular context.",
     "External context": "Context I encounter in the world, including art and information I can look up or interact with.",
     "Internal context": "Context about me that helps agents make better decisions for me, including patterns I may not yet recognize.",
+    "Moment": "A kept interval of observed interactions, declared app context and my own explanation. An agent's interpretation is separate from the record.",
   },
   note: "Working examples of my design. Try them, then reshape them. The text-edit example is local.",
 };

@@ -67,7 +67,7 @@ export function createInputSystem() {
   return { configure, present, get response() { return response; }, get settling() { return settling; }, get reduced() { return reducedNow(); } };
 }
 
-export function createPhysicalSurface(element, board, input) {
+export function createPhysicalSurface(element, board, input, onChange = () => {}) {
   let drag, animation, x = 0, y = 0;
   const clamp = (value, max) => Math.max(-max, Math.min(max, value));
   function bounds() { return { x: Math.max(0, (board.clientWidth - element.offsetWidth) / 2 - 12), y: Math.max(0, (board.clientHeight - element.offsetHeight) / 2 - 10) }; }
@@ -76,6 +76,7 @@ export function createPhysicalSurface(element, board, input) {
     element.dataset.x = String(x); element.dataset.y = String(y);
     board.style.setProperty("--contact-x", `${x * 0.035}px`);
     board.style.setProperty("--contact-y", `${y * 0.035}px`);
+    onChange();
   }
   function stop() {
     if (animation) {
@@ -98,7 +99,14 @@ export function createPhysicalSurface(element, board, input) {
       { transform: "translate(0px,0px)" },
     ], { duration: input.settling + Math.min(150, Math.hypot(vx, vy) * 35), easing: "cubic-bezier(.18,.75,.3,1)" });
     const current = animation;
-    current.finished.catch(() => {}).finally(() => { if (animation === current) animation = null; });
+    let lastFrame = 0;
+    function observeFrame(time) {
+      if (animation !== current) return;
+      if (time - lastFrame >= 50) { onChange(); lastFrame = time; }
+      requestAnimationFrame(observeFrame);
+    }
+    requestAnimationFrame(observeFrame);
+    current.finished.catch(() => {}).finally(() => { if (animation === current) { animation = null; onChange(); } });
   }
   element.addEventListener("pointerdown", (event) => {
     if (event.button !== 0 || !event.isPrimary || drag) return;

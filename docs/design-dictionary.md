@@ -37,3 +37,7 @@ Context I encounter in the world, including art and information I can look up or
 ## Internal context
 
 Context about me that helps agents make better decisions for me, including patterns I may not yet recognize.
+
+## Moment
+
+A kept interval of observed interactions, declared app context and my own explanation. An agent's interpretation is separate from the record.

@@ -18,8 +18,10 @@ import { registerAgentTools } from "./webmcp.js";
 import { storageName } from "./environment.js";
 import { createInputSystem } from "./input.js";
 import { createDesign } from "./design.js";
+import { createMoments } from "./moments.js";
 
 const $ = (id) => document.getElementById(id);
+let moments;
 const input = createInputSystem();
 let toastTimer, store;
 function notify(text) {
@@ -92,7 +94,7 @@ const platformer = createPlatformer({ notify });
 platformer.setVisible(false);
 const files = createFilesDemo({ notify });
 const reading = createReading({ notify, stateReady: storeReady, onRepositorySaved: () => { storeReady.then((value) => { store = value; renderState(); }); } });
-const design = createDesign({ input, notify, onSettings: async ({ response, settling }) => {
+const design = createDesign({ input, notify, onMoment: event => moments?.record(event), onSettings: async ({ response, settling }) => {
   store = await storeReady;
   await store.set("system.input.response", "number", response);
   await store.set("system.input.settling", "number", settling);
@@ -139,6 +141,7 @@ function selectTab(tab, { route = true, focus = route } = {}) {
   if (wasOpen) meta.close({ restoreFocus: false });
   if (focus || wasOpen) focusApp();
   if (route && !input.reduced) input.present($(`panel-${activePanel}`));
+  moments?.appChanged(activePanel);
 }
 function selectFromHash() {
   const tab = tabs.find((value) => `#${value.dataset.panel}` === location.hash);
@@ -182,6 +185,7 @@ meta = createMeta({
   },
   focusApp,
 });
+moments = createMoments({ getApp: () => activePanel, getDesignContext: () => design.captureContext(), closeMeta: () => meta.close({ restoreFocus: false }), notify });
 for (const tab of tabs) {
   tab.onclick = () => selectTab(tab);
   tab.onkeydown = (e) => {

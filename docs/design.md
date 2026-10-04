@@ -20,7 +20,7 @@ Essential actions stay beside what they affect. Further controls reveal predicta
 
 ## Context makes it personal.
 
-External context comes from the world. Internal context helps agents decide specifically for me. I supply, question, or discover it over time. Uncertainty stays visible.
+External context comes from the world; internal context helps agents decide specifically for me. I can keep interactions, affected content and my explanation as a moment for an agent. I supply, question and discover context over time. Uncertainty stays visible.
 
 ## My work keeps its place.
 

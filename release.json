@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "9742844ab99c6a374b87c694735826f5430157f31433dbb88eba4107f65f7f69",
+  "sourceDigest": "e443279a9d1f11c05f0722fe529f3e0d72269de8b282dd0e4d8faa332874d78e",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -9,11 +9,11 @@
     },
     {
       "path": "docs/design-dictionary.md",
-      "sha256": "d47f6e58641f53e85670edf3cf680953efd2f5d9586c393b28dd81eec15b2fd6"
+      "sha256": "2ebec57d423bed154db14ac01669ebc1f97069346ff62bd4fb071851c795bb30"
     },
     {
       "path": "docs/design.md",
-      "sha256": "b5f0c437da4021facfde82fefa110eeca68af5f89acaaf5aca19e2691be44179"
+      "sha256": "09d04d022b037380cd2bf0540ea21cdc9d7bb005f1af9abb1d42713835a487fd"
     },
     {
       "path": "docs/pdf-library.md",
@@ -49,7 +49,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "8441eb4aaf65dc2f90b768192457dfb7e63737c362d277c5306d98fe8b48af44"
+      "sha256": "2a31ef6b92903702114970c361b2d7ed55601d9b88a86d82ac98125d323c1729"
     },
     {
       "path": "manifest.webmanifest",
@@ -58,6 +58,10 @@
     {
       "path": "meta.css",
       "sha256": "72a0916ae13682ff4a5cc4611c9fb37c1f8723f7e8ce79219b2c7f372e14493a"
+    },
+    {
+      "path": "moments.css",
+      "sha256": "467637f13f7f721ea72377961f978fc41b560f57a0e9ef1123ab4245449861fa"
     },
     {
       "path": "output/pdf/a-place-for-papers.pdf",
@@ -77,7 +81,7 @@
     },
     {
       "path": "src/app.js",
-      "sha256": "0067321939925fcef84e100bc58a0bbca785d5d293d73587ab78b816faa7210a"
+      "sha256": "afb65de316e86ce03e608a1dfae42c8a0a6770a2074b49118f2eca933bdc0077"
     },
     {
       "path": "src/audio-worklet.js",
@@ -93,11 +97,11 @@
     },
     {
       "path": "src/design-content.js",
-      "sha256": "4006e69826d8db94a2274c7d34caea55083fc84efd351e47054f7f81efafd06c"
+      "sha256": "12c89de258baa3ef8c006c8883a5d8bda155beb0324eb5591b062e79a1cbfd3e"
     },
     {
       "path": "src/design.js",
-      "sha256": "01c20546bbc061f3188f55865372d70b3616892c79924d3e46436d6f56646267"
+      "sha256": "91b1271f4cf989e1811510a731282f43ebd0c5d246fe233819882c763b180594"
     },
     {
       "path": "src/drive-adapter.js",
@@ -137,7 +141,7 @@
     },
     {
       "path": "src/input.js",
-      "sha256": "be0e8fb266894c1bce3c289f0db81cd1a9c4d358ced36ac37c280c827603b3b4"
+      "sha256": "288e97f201acdce0f65185f1aaffbe36a99607e667ae71185eb52ec6ebe973f7"
     },
     {
       "path": "src/intro.js",
@@ -158,6 +162,18 @@
     {
       "path": "src/mock-drive.js",
       "sha256": "6693b9bc76f98d24f449c08a7605714b3bfd7184e63aee4598a9d079e47f2331"
+    },
+    {
+      "path": "src/moment-record.js",
+      "sha256": "6045ca2c0abb66f6aac25089e8a317d620faf99b7432d5cc1fee38040c69a2de"
+    },
+    {
+      "path": "src/moment-replay.js",
+      "sha256": "1cb9fa6272abd765251e6aa36be6833f63531ab0eff71466d83e0011ef39d840"
+    },
+    {
+      "path": "src/moments.js",
+      "sha256": "a933dca30732162eff5aa2e070ac23bb50a899f28b4cae9404fd02079fef25c2"
     },
     {
       "path": "src/pdf-workspace.js",
@@ -213,7 +229,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "1f4dca30098894efd188fb25cd3a974148fa6f375f28312eb4874969e339c920"
+      "sha256": "982dae2394247b610bbe4c0f0204e1bd651fc2a2fbdc8ced6d92ee21e40e4389"
     },
     {
       "path": "vendor/pdfjs/LICENSE",
