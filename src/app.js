@@ -168,6 +168,11 @@ function renderDevice() {
 }
 meta = createMeta({
   input,
+  onReach: async side => {
+    store = await storeReady; await store.set("system.meta.side", "string", side); renderState(); applyPreferences();
+    moments?.record({ kind: "action", app: activePanel, action: "Set Meta reach", outcome: `Saved ${side} reach`, context: activePanel === "design" ? { ...design.captureContext(), meta: { side } } : { app: activePanel, coverage: "Meta reach preference only", meta: { side } } });
+    return store.mode !== "session";
+  },
   onOpenChange(open) {
     if (open) resumeAfterMeta = {
       panel: activePanel,
@@ -255,6 +260,7 @@ function applyPreferences() {
   $("theme-toggle").setAttribute("aria-label", `Switch to ${nextTheme} theme`);
   $("theme-toggle").title = `Switch to ${nextTheme} theme`;
   input.configure(values);
+  meta?.configure(values);
   design.applySettings();
   drawing.applySettings(values);
   drawing.redraw();

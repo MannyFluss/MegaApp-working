@@ -1,5 +1,5 @@
 // The environment is a temporary surface; the current app keeps the workspace.
-export function createMeta({ onOpenChange, focusApp, input }) {
+export function createMeta({ onOpenChange, focusApp, input, onReach = async () => true }) {
   const shell = document.querySelector(".app-shell");
   const topbar = shell.querySelector(".topbar");
   const dock = shell.querySelector(".dock");
@@ -29,17 +29,45 @@ export function createMeta({ onOpenChange, focusApp, input }) {
   dock.querySelector(".dock-spacer")?.remove();
   dialog.querySelector(".meta-apps").append(dock);
   dialog.querySelector(".meta-system").append(topbar);
-  shell.append(trigger, edge);
+  const peek = document.createElement("div"); peek.className = "meta-pull-preview"; peek.hidden = true; peek.setAttribute("aria-hidden", "true");
+  peek.innerHTML = '<strong>Meta</strong><span>Pull for apps and controls</span>';
+  shell.append(trigger, edge, peek);
   document.body.append(dialog);
 
-  let priorFocus, gesture;
-  const touches = new Set();
+  const about = document.createElement("details"); about.className = "meta-about";
+  about.innerHTML = '<summary>What is Meta?</summary><p>Meta is the temporary place for your apps and shared controls. Close it to return to your work. Hold the Meta button to open this explanation.</p>';
+  dialog.querySelector(".meta-help").after(about);
+  const reach = document.createElement("details"); reach.className = "meta-reach";
+  reach.innerHTML = '<summary>Reach and access</summary><label>Keep controls on the <select id="meta-side"><option value="right">Right</option><option value="left">Left</option></select></label><p>Meta and Keep moment travel together. Pull inward from the matching edge; mouse and Pencil keep their app input.</p><p id="meta-reach-status" role="status">A shared preference you can also edit in State.</p>';
+  dialog.querySelector(".meta-system").after(reach);
+  const sideControl = reach.querySelector("select"), reachStatus = reach.querySelector("#meta-reach-status");
+  let priorFocus, entryFocus, gesture, side = "right", holdTimer, holdPoint, saveChain = Promise.resolve(), saving = false, saveRevision = 0;
+  function configure(values = {}, force = false) {
+    if (saving && !force) return;
+    const next = values["system.meta.side"]?.value === "left" ? "left" : "right";
+    if (next !== side) cancelGesture(); side = next; sideControl.value = side;
+    document.documentElement.dataset.metaSide = side;
+    dialog.querySelector(".meta-shortcut").textContent = `Pull inward from the ${side} edge, or press ⌘ / Ctrl + Shift + M.`;
+  }
+  configure();
+  sideControl.onchange = () => {
+    const choice = sideControl.value, revision = ++saveRevision; configure({ "system.meta.side": { value: choice } }, true); saving = true;
+    reachStatus.textContent = "Saving reach…";
+    saveChain = saveChain.catch(() => {}).then(async () => {
+      try { const persistent = await onReach(choice); if (revision === saveRevision) reachStatus.textContent = persistent === false ? "Reach changed for this session." : "Reach saved on this device."; }
+      catch { if (revision === saveRevision) reachStatus.textContent = "Could not save. Reach is changed here for now; try again to keep it."; }
+      finally { if (revision === saveRevision) saving = false; }
+    });
+  };
+  const touches = new Set(), pens = new Set();
   const otherModal = () => Boolean(document.querySelector('dialog[open]:not(#meta-dialog)'));
-  const focusables = () => [...dialog.querySelectorAll('button, a[href], input, select, textarea, [tabindex]')]
+  const focusables = () => [...dialog.querySelectorAll('button, summary, a[href], input, select, textarea, [tabindex]')]
     .filter((element) => !element.disabled && element.tabIndex >= 0 && !element.closest("[hidden], [inert]") && element.getClientRects().length);
-  function open() {
+  function open({ explain = false, fromTrigger = false } = {}) {
     if (dialog.open || shell.inert || otherModal() || document.body.classList.contains("intro-open")) return;
-    priorFocus = document.activeElement;
+    cancelGesture();
+    priorFocus = fromTrigger && entryFocus ? entryFocus : document.activeElement; entryFocus = null;
+    if (explain) about.open = true;
     shell.inert = true;
     document.body.classList.add("meta-is-open");
     trigger.setAttribute("aria-expanded", "true");
@@ -53,7 +81,7 @@ export function createMeta({ onOpenChange, focusApp, input }) {
   function close({ restoreFocus = true } = {}) {
     if (!dialog.open) return;
     shell.inert = false;
-    dialog.close();
+    dialog.close(); about.open = false;
     document.body.classList.remove("meta-is-open");
     trigger.setAttribute("aria-expanded", "false");
     onOpenChange(false);
@@ -63,7 +91,15 @@ export function createMeta({ onOpenChange, focusApp, input }) {
     if (canRestore) priorFocus.focus({ preventScroll: true });
     else focusApp();
   }
-  trigger.onclick = open;
+  trigger.onclick = () => open({ fromTrigger: true });
+  trigger.addEventListener("pointerdown", event => {
+    if (event.button !== 0 || !event.isPrimary) return;
+    entryFocus = document.activeElement; holdPoint = { x: event.clientX, y: event.clientY }; clearTimeout(holdTimer);
+    holdTimer = setTimeout(() => open({ explain: true, fromTrigger: true }), 500);
+  });
+  trigger.addEventListener("pointermove", event => { if (holdPoint && Math.hypot(event.clientX - holdPoint.x, event.clientY - holdPoint.y) > 10) clearTimeout(holdTimer); });
+  for (const event of ["pointerup", "pointercancel", "lostpointercapture", "blur"]) trigger.addEventListener(event, () => clearTimeout(holdTimer));
+  trigger.addEventListener("contextmenu", event => { if (dialog.open && about.open) event.preventDefault(); });
   dialog.querySelector("#meta-close").onclick = () => close();
   dialog.addEventListener("cancel", (event) => { event.preventDefault(); close(); });
   dialog.addEventListener("click", (event) => {
@@ -108,9 +144,10 @@ export function createMeta({ onOpenChange, focusApp, input }) {
       return { x: event.clientX + (rect?.left || 0), y: event.clientY + (rect?.top || 0) };
     };
     doc.addEventListener("pointerdown", (event) => {
-      if (event.pointerType !== "touch") return;
+      if (event.pointerType === "pen") { pens.add(event.pointerId); cancelGesture(true); return; }
+      if (event.pointerType !== "touch" || pens.size) return;
       touches.add(event.pointerId);
-      if (touches.size > 1) gesture = null;
+      if (touches.size > 1) { cancelGesture(true); return; }
       const rect = edge.getBoundingClientRect(), current = point(event);
       const inEdge = current.x >= rect.left && current.x <= rect.right && current.y >= rect.top && current.y <= rect.bottom;
       if (!inEdge || !event.isPrimary || touches.size !== 1 || shell.inert || dialog.open || otherModal()) return;
@@ -124,24 +161,33 @@ export function createMeta({ onOpenChange, focusApp, input }) {
       const current = point(event);
       gesture.dx = current.x - gesture.x;
       gesture.dy = current.y - gesture.y;
+      const distance = Math.max(0, side === "left" ? gesture.dx : -gesture.dx), directional = Math.abs(gesture.dy) < Math.max(12, distance * .8);
+      peek.hidden = distance < 4 || !directional;
+      if (!peek.hidden) {
+        peek.style.top = `${Math.max(76, Math.min(innerHeight - 110, gesture.y - 24))}px`;
+        peek.style.transform = input?.reduced ? "none" : `translate(${(side === "left" ? 1 : -1) * Math.min(80, distance) * .35}px,${Math.max(-3, Math.min(3, gesture.dy * .025))}px)`;
+        peek.dataset.ready = String(distance > 56 && Math.abs(gesture.dy) < distance * .6);
+        peek.querySelector("span").textContent = peek.dataset.ready === "true" ? "Release to open" : "Pull for apps and controls";
+      }
     }, true);
-    const releaseTouch = (event, cancelled = false) => { touches.delete(event.pointerId); endGesture(event, cancelled); };
+    const releaseTouch = (event, cancelled = false) => { pens.delete(event.pointerId); touches.delete(event.pointerId); endGesture(event, cancelled); };
     doc.addEventListener("pointerup", (event) => releaseTouch(event), true);
     doc.addEventListener("pointercancel", (event) => releaseTouch(event, true), true);
-    doc.addEventListener("lostpointercapture", (event) => endGesture(event, true), true);
+    doc.addEventListener("lostpointercapture", (event) => { pens.delete(event.pointerId); touches.delete(event.pointerId); endGesture(event, true); }, true);
   }
   function endGesture(event, cancelled = false) {
     if (gesture?.id !== event.pointerId) return;
-    const current = gesture; gesture = null;
+    const current = gesture; gesture = null; peek.hidden = true;
     if (current.owner.hasPointerCapture?.(event.pointerId)) current.owner.releasePointerCapture(event.pointerId);
-    if (!cancelled && current.dx < -56 && Math.abs(current.dy) < Math.abs(current.dx) * 0.6) open();
+    const distance = side === "left" ? current.dx : -current.dx;
+    if (!cancelled && distance > 56 && Math.abs(current.dy) < distance * 0.6) open();
   }
   bindPointers(document);
-  const cancelGesture = () => {
-    const current = gesture; gesture = null; touches.clear();
+  function cancelGesture(keepTouches = false) {
+    clearTimeout(holdTimer); const current = gesture; gesture = null; peek.hidden = true; if (keepTouches !== true) touches.clear();
     if (current?.owner.hasPointerCapture?.(current.id)) current.owner.releasePointerCapture(current.id);
-  };
-  window.addEventListener("blur", cancelGesture);
-  document.addEventListener("visibilitychange", () => { if (document.hidden) cancelGesture(); });
-  return { open, close, isOpen: () => dialog.open };
+  }
+  window.addEventListener("blur", () => { pens.clear(); cancelGesture(); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) { pens.clear(); cancelGesture(); } });
+  return { open, close, configure, isOpen: () => dialog.open };
 }

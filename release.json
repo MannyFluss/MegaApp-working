@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "7fee7a8f1a40c9158bca4127e7940e964a5f78583cb652642cf03e600c43b7d2",
+  "sourceDigest": "b33cab87d4e8a26bc572b38fc3c8a71912044ff063856484457b0f1ca99257b2",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -57,7 +57,7 @@
     },
     {
       "path": "meta.css",
-      "sha256": "72a0916ae13682ff4a5cc4611c9fb37c1f8723f7e8ce79219b2c7f372e14493a"
+      "sha256": "d198c558d47bae48c32759b6350847f65a3038523b3a74bd31e93a67332681af"
     },
     {
       "path": "moments.css",
@@ -81,7 +81,7 @@
     },
     {
       "path": "src/app.js",
-      "sha256": "b550d23fde40767357a63d535f68cddd61101d27f4d36d1d23a6f453c74e1e04"
+      "sha256": "7f765e979b25c3cad81413fc5d107a169f2a46f88609399c591c97f8ca36f827"
     },
     {
       "path": "src/audio-worklet.js",
@@ -169,7 +169,7 @@
     },
     {
       "path": "src/meta.js",
-      "sha256": "8f2de448924858f55fdab43b79d6e826ca0aced5ecfffc88bb78e9a12bba8aff"
+      "sha256": "ebbeafbd9b1e0bcbe78c8f5d30ad11678f149a3d5088eac0a52df3ba618c5bbb"
     },
     {
       "path": "src/mock-drive.js",
@@ -241,7 +241,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "21045fe618a80c4a6f96449a8101c7f96930baebd59644eae53c6f0b87a39a85"
+      "sha256": "b6ef002b699f5321ccd63ea6704e6f6c5a5bc81f43c8259bbe3dc44db75d57ee"
     },
     {
       "path": "vendor/pdfjs/LICENSE",
