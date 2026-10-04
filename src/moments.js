@@ -3,7 +3,7 @@ import { mountMomentReplay, momentReplayHTML } from "./moment-replay.js";
 import { createPortableZip } from "./file-export.js";
 import { storageName } from "./environment.js";
 
-export function createMoments({ getApp, getDesignContext, closeMeta, notify }) {
+export function createMoments({ getApp, getDesignContext, closeMeta, notify, onOpenChange = () => {} }) {
   const buffer = createMomentBuffer(), pauseKey = storageName("megaapp.moments.paused.v1");
   try { buffer.setPaused(localStorage.getItem(pauseKey) === "true"); } catch { /* Session preference still works. */ }
   const storeReady = createMomentStore({ name: storageName("megaapp-moments-v1") });
@@ -52,7 +52,7 @@ export function createMoments({ getApp, getDesignContext, closeMeta, notify }) {
   $("moment-pause").onclick = () => { buffer.setPaused(!buffer.paused); longRecording = false; buffer.setWindow(60); try { localStorage.setItem(pauseKey, String(buffer.paused)); } catch {} status(); };
   $("moment-long").onclick = () => { if (longRecording) { keep(); return; } buffer.setPaused(false); try { localStorage.setItem(pauseKey, "false"); } catch {} buffer.clear("Longer recording began"); buffer.setWindow(600); longRecording = true; record({ kind: "boundary", app: getApp(), action: "Longer recording began", context: context() }); status(); };
   function open() {
-    priorFocus = document.activeElement; closeMeta(); dialog.showModal();
+    priorFocus = document.activeElement; closeMeta(); dialog.showModal(); onOpenChange(true);
     $("moment-close").focus({ preventScroll: true });
   }
   function selection() {
@@ -151,7 +151,7 @@ export function createMoments({ getApp, getDesignContext, closeMeta, notify }) {
   $("moment-voice-remove").onclick = () => { audio = null; updateAudio(); save(); };
   $("moment-close").onclick = () => dialog.close();
   dialog.addEventListener("click", event => { const rect = dialog.getBoundingClientRect(); if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close(); });
-  dialog.addEventListener("close", () => { if (draft) save(); stopVoice(); $("moment-audio").pause(); replay?.dispose(); if (audioURL) URL.revokeObjectURL(audioURL); if (priorFocus?.isConnected && !priorFocus.closest("[hidden], [inert]")) priorFocus.focus({ preventScroll: true }); record({ kind: "boundary", app: getApp(), action: "Moment review closed; review activity was not recorded", context: context() }); });
+  dialog.addEventListener("close", () => { if (draft) save(); stopVoice(); $("moment-audio").pause(); replay?.dispose(); if (audioURL) URL.revokeObjectURL(audioURL); onOpenChange(false); if (priorFocus?.isConnected && !priorFocus.closest("[hidden], [inert]")) priorFocus.focus({ preventScroll: true }); record({ kind: "boundary", app: getApp(), action: "Moment review closed; review activity was not recorded", context: context() }); });
   status();
-  return { record, appChanged(app) { record({ kind: "navigation", app, action: "Opened app", context: context() }); } };
+  return { record, isOpen: () => dialog.open, appChanged(app) { record({ kind: "navigation", app, action: "Opened app", context: context() }); } };
 }

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "e7f7c6cd1a87d5aa5a7d06e90bcb2c127789924726071cef444e69118a176fa8",
+  "sourceDigest": "3c81c2ac37100261aa2344c89086390e6746d3ff7a4a5d9accf9a4e9c4ab6d42",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -81,7 +81,7 @@
     },
     {
       "path": "src/app.js",
-      "sha256": "afb65de316e86ce03e608a1dfae42c8a0a6770a2074b49118f2eca933bdc0077"
+      "sha256": "b550d23fde40767357a63d535f68cddd61101d27f4d36d1d23a6f453c74e1e04"
     },
     {
       "path": "src/audio-worklet.js",
@@ -173,7 +173,7 @@
     },
     {
       "path": "src/moments.js",
-      "sha256": "a933dca30732162eff5aa2e070ac23bb50a899f28b4cae9404fd02079fef25c2"
+      "sha256": "796ffe75107e2621d6de85672d868c97f22a038162f77a3b570721823d491824"
     },
     {
       "path": "src/pdf-workspace.js",
@@ -229,7 +229,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "982dae2394247b610bbe4c0f0204e1bd651fc2a2fbdc8ced6d92ee21e40e4389"
+      "sha256": "7c0b9a88de4f683dade227e5e8dd9544edcf8bd17109ce9d8aba5072a99894db"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

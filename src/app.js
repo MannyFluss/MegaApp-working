@@ -104,9 +104,9 @@ const design = createDesign({ input, notify, onMoment: event => moments?.record(
 const tabs = [...document.querySelectorAll("[data-panel]")];
 const results = new Map();
 const lastAppKey = storageName("megaapp.last-app.v1");
-let activePanel = "marble", meta, resumeAfterMeta;
+let activePanel = "marble", meta, resumeAfterMeta, resumeAfterMoment;
 function updateAppVisibility() {
-  const working = !meta?.isOpen();
+  const working = !meta?.isOpen() && !moments?.isOpen();
   marble.setVisible(working && activePanel === "marble");
   platformer.setVisible(working && activePanel === "jump");
   files.setVisible(activePanel === "files");
@@ -185,7 +185,19 @@ meta = createMeta({
   },
   focusApp,
 });
-moments = createMoments({ getApp: () => activePanel, getDesignContext: () => design.captureContext(), closeMeta: () => meta.close({ restoreFocus: false }), notify });
+moments = createMoments({ getApp: () => activePanel, getDesignContext: () => design.captureContext(), closeMeta: () => meta.close({ restoreFocus: false }), notify,
+  onOpenChange(open) {
+    if (open) resumeAfterMoment = { panel: activePanel, marble: $("marble-play").getAttribute("aria-pressed") === "true", jump: $("platformer-canvas").dataset.phase === "playing" };
+    updateAppVisibility();
+    if (!open) {
+      if (resumeAfterMoment?.panel === activePanel && !document.hidden) {
+        if (resumeAfterMoment.marble && activePanel === "marble") $("marble-play").click();
+        if (resumeAfterMoment.jump && activePanel === "jump" && $("platformer-canvas").dataset.phase === "paused") $("platformer-play").click();
+      }
+      resumeAfterMoment = null;
+    }
+  },
+});
 for (const tab of tabs) {
   tab.onclick = () => selectTab(tab);
   tab.onkeydown = (e) => {
