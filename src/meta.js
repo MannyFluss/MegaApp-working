@@ -1,5 +1,5 @@
 // The environment is a temporary surface; the current app keeps the workspace.
-export function createMeta({ onOpenChange, focusApp }) {
+export function createMeta({ onOpenChange, focusApp, input }) {
   const shell = document.querySelector(".app-shell");
   const topbar = shell.querySelector(".topbar");
   const dock = shell.querySelector(".dock");
@@ -44,6 +44,7 @@ export function createMeta({ onOpenChange, focusApp }) {
     document.body.classList.add("meta-is-open");
     trigger.setAttribute("aria-expanded", "true");
     dialog.showModal();
+    input?.present(dialog);
     onOpenChange(true);
     const selected = dock.querySelector('[aria-selected="true"]');
     for (const tab of dock.querySelectorAll("[data-panel]")) tab.tabIndex = tab === selected ? 0 : -1;

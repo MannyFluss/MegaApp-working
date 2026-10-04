@@ -16,8 +16,11 @@ import { renderCapabilities } from "./capabilities.js";
 import { createProbes } from "./probes.js";
 import { registerAgentTools } from "./webmcp.js";
 import { storageName } from "./environment.js";
+import { createInputSystem } from "./input.js";
+import { createDesign } from "./design.js";
 
 const $ = (id) => document.getElementById(id);
+const input = createInputSystem();
 let toastTimer, store;
 function notify(text) {
   $("toast").textContent = text;
@@ -89,6 +92,13 @@ const platformer = createPlatformer({ notify });
 platformer.setVisible(false);
 const files = createFilesDemo({ notify });
 const reading = createReading({ notify, stateReady: storeReady, onRepositorySaved: () => { storeReady.then((value) => { store = value; renderState(); }); } });
+const design = createDesign({ input, notify, onSettings: async ({ response, settling }) => {
+  store = await storeReady;
+  await store.set("system.input.response", "number", response);
+  await store.set("system.input.settling", "number", settling);
+  renderState();
+  applyPreferences();
+} });
 const tabs = [...document.querySelectorAll("[data-panel]")];
 const results = new Map();
 const lastAppKey = storageName("megaapp.last-app.v1");
@@ -99,6 +109,7 @@ function updateAppVisibility() {
   platformer.setVisible(working && activePanel === "jump");
   files.setVisible(activePanel === "files");
   reading.setVisible(working && activePanel === "reading");
+  design.setVisible(working && activePanel === "design");
 }
 function focusApp() {
   const panel = $(`panel-${activePanel}`);
@@ -127,6 +138,7 @@ function selectTab(tab, { route = true, focus = route } = {}) {
   const wasOpen = meta?.isOpen();
   if (wasOpen) meta.close({ restoreFocus: false });
   if (focus || wasOpen) focusApp();
+  if (route && !input.reduced) input.present($(`panel-${activePanel}`));
 }
 function selectFromHash() {
   const tab = tabs.find((value) => `#${value.dataset.panel}` === location.hash);
@@ -152,6 +164,7 @@ function renderDevice() {
   renderCapabilities({ runProbe: probes.run, results });
 }
 meta = createMeta({
+  input,
   onOpenChange(open) {
     if (open) resumeAfterMeta = {
       panel: activePanel,
@@ -225,10 +238,13 @@ function applyPreferences() {
     document.documentElement.dataset.theme === "dark" ? "light" : "dark";
   $("theme-toggle").setAttribute("aria-label", `Switch to ${nextTheme} theme`);
   $("theme-toggle").title = `Switch to ${nextTheme} theme`;
+  input.configure(values);
+  design.applySettings();
   drawing.applySettings(values);
   drawing.redraw();
   marble.redraw();
   platformer.redraw();
+  reading.redraw();
 }
 colorScheme.addEventListener("change", applyPreferences);
 $("theme-toggle").onclick = async () => {

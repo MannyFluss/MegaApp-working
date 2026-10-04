@@ -1,11 +1,19 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "f4f7c495587ef8c2b0c733afa8b71f26efdcc1e276806e8c8c12ae7997cf2ddb",
+  "sourceDigest": "711b4dbea015c529f95bbdc6a531faf6bb1c30ba18933265533a66ec38c8aec8",
   "files": [
     {
       "path": "docs/canvas-apis.md",
       "sha256": "40728a1896d0ea9c4c6937b68521eda3e6154f0ecd96eed089404d108d876913"
+    },
+    {
+      "path": "docs/design-dictionary.md",
+      "sha256": "d47f6e58641f53e85670edf3cf680953efd2f5d9586c393b28dd81eec15b2fd6"
+    },
+    {
+      "path": "docs/design.md",
+      "sha256": "b5f0c437da4021facfde82fefa110eeca68af5f89acaaf5aca19e2691be44179"
     },
     {
       "path": "docs/pdf-library.md",
@@ -24,6 +32,10 @@
       "sha256": "e5eb35f1861f28b2db1051d9b06c771930ffccd5870bfaab857015af38b0992d"
     },
     {
+      "path": "frontend.css",
+      "sha256": "7ed35b5dd36d2c3ac3da52eee1435876099f0ed7956ad6de9b3a05abcbcfad32"
+    },
+    {
       "path": "icons/apple-touch-icon.png",
       "sha256": "43f2a0328c6f891dc832dc78632fc863240221dc99bde034ab64fa676dba91a6"
     },
@@ -37,7 +49,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "66774c3bbfbd0f85f0bce6f67bc51715365da6b72a863d85d43808112bc21605"
+      "sha256": "8441eb4aaf65dc2f90b768192457dfb7e63737c362d277c5306d98fe8b48af44"
     },
     {
       "path": "manifest.webmanifest",
@@ -65,7 +77,7 @@
     },
     {
       "path": "src/app.js",
-      "sha256": "3d6890a47c6cfed7ef8d591cd267f536735fb06f24ef161c9e836474ff13ed3a"
+      "sha256": "0067321939925fcef84e100bc58a0bbca785d5d293d73587ab78b816faa7210a"
     },
     {
       "path": "src/audio-worklet.js",
@@ -78,6 +90,14 @@
     {
       "path": "src/capabilities.js",
       "sha256": "85904f71e0c3cef7437c7462d2b436a1a06a3d74e8300f7e64e610a57908c227"
+    },
+    {
+      "path": "src/design-content.js",
+      "sha256": "4006e69826d8db94a2274c7d34caea55083fc84efd351e47054f7f81efafd06c"
+    },
+    {
+      "path": "src/design.js",
+      "sha256": "01c20546bbc061f3188f55865372d70b3616892c79924d3e46436d6f56646267"
     },
     {
       "path": "src/drive-adapter.js",
@@ -116,6 +136,10 @@
       "sha256": "6c033eca0ad50b1fd015ccd6fd1531c655e6bae389699b168f2424cc73360150"
     },
     {
+      "path": "src/input.js",
+      "sha256": "7a786b09d0e07a1c316e471a788a8d8bb1c118e2877dc323ef7e78a8cd2bcef5"
+    },
+    {
       "path": "src/intro.js",
       "sha256": "49f43856eb2aee5b36477416da367973b483cdf2d33d457c6909cf1ea6c0c619"
     },
@@ -129,7 +153,7 @@
     },
     {
       "path": "src/meta.js",
-      "sha256": "e2694f3efdb10f037f580ef0847a0a2fbc5a9834859f4c1a48070951bf5de902"
+      "sha256": "8f2de448924858f55fdab43b79d6e826ca0aced5ecfffc88bb78e9a12bba8aff"
     },
     {
       "path": "src/mock-drive.js",
@@ -169,7 +193,7 @@
     },
     {
       "path": "src/reading.js",
-      "sha256": "7272b3144a7293707202f86f020d7d01498128b8d070f4a3169818624265c258"
+      "sha256": "e3d4bb1b5f74a079a575ade9128714a644b75c885e720a6ae5efb53d1a646faf"
     },
     {
       "path": "src/render-worker.js",
@@ -189,7 +213,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "27e5fdfa8af245d94066ec60f42a132fe8289883ddf769e9086d152f4cd8b7aa"
+      "sha256": "05b5c507e9f6b6b8dd1515feacdf52b5d18e9fbb911cddbf8eba10df16338361"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

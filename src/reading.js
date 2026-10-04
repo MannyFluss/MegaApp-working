@@ -597,6 +597,7 @@ export function createReading({ notify, stateReady, onRepositorySaved }) {
   window.addEventListener("offline", () => status("Offline. Your workspace saves here; sync needs a connection."));
   controls();
   return {
+    redraw: invalidate,
     setVisible(value) {
       visible = value;
       if (!value) { finishPointer(); flushSave(); cancelRendering(); closeMenu(); hideToolOptions(); return; }

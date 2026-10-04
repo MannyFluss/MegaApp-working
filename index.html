@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="./files-demo.css" />
     <link rel="stylesheet" href="./reading.css" />
     <link rel="stylesheet" href="./meta.css" />
+    <link rel="stylesheet" href="./frontend.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -190,8 +191,10 @@
               </select>
             </label>
             <div class="toolbar-spacer"></div>
-            <button id="marble-undo" class="quiet-button" disabled>Undo</button>
-            <button id="marble-clear" class="quiet-button">Clear</button>
+            <div class="marble-history-actions">
+              <button id="marble-undo" class="quiet-button" disabled>Undo</button>
+              <button id="marble-clear" class="quiet-button">Clear</button>
+            </div>
           </div>
           <div class="marble-workspace">
             <div id="marble-stage" class="marble-stage">
@@ -769,29 +772,12 @@
           aria-labelledby="tab-design"
           hidden
         >
-          <div class="panel-heading design-heading">
-            <div>
-              <h1>Design reading</h1>
-              <p>Care &amp; consequence: our interactive Jony Ive study.</p>
-            </div>
-            <div class="design-reading-actions">
-              <button id="intro-replay" class="quiet-button">Try intro</button>
-              <a
-                class="quiet-button design-open"
-                href="./reading/care-and-consequence.html"
-                target="_blank"
-                rel="noopener"
-                >Open full page</a
-              >
-            </div>
+          <article id="design-guide" aria-label="Manny's interactive MegaApp design"></article>
+          <div class="design-reading-actions">
+            <button id="intro-replay" class="quiet-button">Try opening</button>
+            <a class="quiet-button design-open" href="./reading/care-and-consequence.html" target="_blank" rel="noopener">Care &amp; consequence study</a>
+            <a class="quiet-button" href="./docs/design.md" target="_blank" rel="noopener">Read source document</a>
           </div>
-          <iframe
-            id="design-reader"
-            class="design-reader"
-            title="Care and consequence, an interactive field guide to Jony Ive"
-            src="./reading/care-and-consequence.html"
-            loading="lazy"
-          ></iframe>
         </section>
       </main>
     </div>

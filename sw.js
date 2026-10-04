@@ -1,4 +1,4 @@
-const VERSION = "megaapp-shell-v16";
+const VERSION = "megaapp-shell-v17";
 const WORKING = self.location.pathname.startsWith("/MegaApp-working/");
 const CACHE_PREFIX = WORKING ? "megaapp-working-shell-" : "megaapp-shell-";
 const CACHE_VERSION = WORKING ? VERSION.replace("megaapp-shell-", CACHE_PREFIX) : VERSION;
@@ -9,6 +9,12 @@ const ASSETS = [
   "./files-demo.css",
   "./reading.css",
   "./meta.css",
+  "./frontend.css",
+  "./src/input.js",
+  "./src/design.js",
+  "./src/design-content.js",
+  "./docs/design.md",
+  "./docs/design-dictionary.md",
   "./src/meta.js",
   "./src/environment.js",
   "./src/pdf-workspace.js",
