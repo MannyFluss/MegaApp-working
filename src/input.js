@@ -1,6 +1,9 @@
 // A small shared response layer. App drawing/game handlers retain their meaning.
 export function createInputSystem() {
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  // Check the current preference when acting, including immediately after a
+  // preference change while a retained query is waiting for its change event.
+  const reducedNow = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
   let response = 0.8, settling = 280;
   const active = new Map(), releases = new Map();
   function configure(values = {}) {
@@ -17,7 +20,7 @@ export function createInputSystem() {
     active.delete(event.pointerId);
     const { element } = contact;
     element.classList.remove("input-contact");
-    if (!element.isConnected || reduced.matches || !response) {
+    if (!element.isConnected || reducedNow() || !response) {
       element.style.removeProperty("transform"); return;
     }
     const from = element.style.transform || "none";
@@ -38,11 +41,11 @@ export function createInputSystem() {
     cancelRelease(element);
     active.set(event.pointerId, { element, x: event.clientX, y: event.clientY });
     element.classList.add("input-contact");
-    if (!reduced.matches && response) element.style.transform = `translateY(${0.8 * response}px)`;
+    if (!reducedNow() && response) element.style.transform = `translateY(${0.8 * response}px)`;
   }, { passive: true });
   document.addEventListener("pointermove", (event) => {
     const contact = active.get(event.pointerId);
-    if (!contact || reduced.matches || !response) return;
+    if (!contact || reducedNow() || !response) return;
     const x = Math.max(-1.2, Math.min(1.2, (event.clientX - contact.x) * 0.04)) * response;
     const y = (0.8 + Math.max(-0.7, Math.min(0.7, (event.clientY - contact.y) * 0.04))) * response;
     contact.element.style.transform = `translate(${x}px,${y}px)`;
@@ -58,10 +61,10 @@ export function createInputSystem() {
   document.addEventListener("visibilitychange", () => { if (document.hidden) clear(); });
   reduced.addEventListener("change", clear);
   function present(element) {
-    if (reduced.matches || !response || !element) return;
+    if (reducedNow() || !response || !element) return;
     element.animate([{ opacity: 0.7, transform: `translateY(${3 * response}px)` }, { opacity: 1, transform: "translateY(0)" }], { duration: settling, easing: "cubic-bezier(.2,.8,.3,1)" });
   }
-  return { configure, present, get response() { return response; }, get settling() { return settling; }, get reduced() { return reduced.matches; } };
+  return { configure, present, get response() { return response; }, get settling() { return settling; }, get reduced() { return reducedNow(); } };
 }
 
 export function createPhysicalSurface(element, board, input) {
