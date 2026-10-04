@@ -261,3 +261,32 @@ select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 @media (max-height: 540px) and (min-width: 600px) { .intro-copy h1 { font-size: clamp(3rem, 7vw, 5.2rem); } }
 @media (max-height: 620px) and (max-width: 599px) { .intro-copy h1 { font-size: clamp(2.3rem, 10.5vw, 3.4rem); } }
 @media (prefers-reduced-motion: reduce) { .input-contact { transform: none !important; } }
+
+/* A boundary is an enclosure, not a patchwork of colored words. Its striped
+   intersection is legible without relying on hue. Only the material responds. */
+.design-scope-text { line-height: 2; padding: 16px; cursor: text; user-select: text; -webkit-user-select: text; }
+.design-scope-text span { padding: 4px 0; border-radius: 0; outline: none; }
+.design-scope-text .scope-occupied { background: var(--stage); color: var(--ink); border-block: 1px solid var(--ink); }
+.design-scope-text .scope-start { border-left: 2px solid var(--ink); border-radius: 5px 0 0 5px; padding-left: 4px; }
+.design-scope-text .scope-end { border-right: 2px solid var(--ink); border-radius: 0 5px 5px 0; padding-right: 4px; }
+.design-scope-text .scope-selected { box-shadow: inset 0 -3px var(--accent); background-color: var(--accent-soft); color: var(--ink); }
+.design-scope-text .scope-collision { background-image: repeating-linear-gradient(135deg, transparent, transparent 4px, color-mix(in srgb, var(--ink) 18%, transparent) 4px, color-mix(in srgb, var(--ink) 18%, transparent) 6px); color: var(--ink); outline: none; }
+.design-scope-example[data-collision="true"] #design-scope-status { color: var(--ink); }
+.design-scope-hint { font-size: .72rem; color: var(--muted); margin-top: 7px; line-height: 1.5; }
+.design-active-edit { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: end; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.design-active-edit label { min-width: 0; font-size: .76rem; line-height: 1.5; color: var(--ink); }
+.design-active-edit textarea, .design-material textarea { display: block; width: 100%; margin-top: 7px; min-height: 60px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; resize: vertical; background: var(--surface); color: var(--ink); font: inherit; }
+.design-boundary-controls, .design-material { font-size: .75rem; }
+.design-scope-actions { align-items: start; }
+.design-boundary-controls summary, .design-material summary { min-height: 44px; cursor: pointer; display: list-item; padding: 12px 4px; color: var(--muted); }
+.design-boundary-controls[open], .design-material[open] { flex: 1 1 100%; }
+.design-boundary-controls > div { display: flex; gap: 16px; flex-wrap: wrap; }
+.design-boundary-controls label { display: flex; align-items: center; gap: 8px; }
+.design-boundary-controls input { width: 70px; min-height: 44px; }
+.design-material label { display: block; }
+.design-material button { margin-top: 8px; }
+.design-help-term { background: transparent; box-shadow: none; padding: 0; min-height: 44px; color: var(--ink); text-decoration: underline dotted var(--muted); text-underline-offset: 5px; font: inherit; }
+.design-vocabulary { color: inherit; text-decoration: underline dotted; text-decoration-color: var(--muted); text-underline-offset: 4px; cursor: help; }
+.design-vocabulary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 2px; }
+.design-selected-help { margin-top: 8px; font-size: .75rem; }
+@media (max-width: 620px) { .design-active-edit { grid-template-columns: 1fr auto; } .design-active-edit label { grid-column: 1 / -1; } }

@@ -26,8 +26,11 @@ body.intro-open .moment-keep, body.meta-is-open .moment-keep { visibility: hidde
 .moment-replay-stage { position: relative; background: var(--stage); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; padding: 135px 16px 16px; }
 .moment-replay-tile { position: absolute; top: 25px; left: calc(50% - 65px); width: 130px; height: 60px; border-radius: 16px; border: 1px solid var(--line); box-shadow: var(--floating-shadow); background: var(--surface); display: grid; place-items: center; font-size: .85rem; }
 .moment-replay-words { font: 1.15rem/1.7 var(--display-font); background: var(--surface); padding: 12px; border-radius: 12px; }
-.moment-word-active { outline: 1px solid var(--accent); background: var(--accent-soft); }
-.moment-word-collision { outline: 1px dashed var(--accent); background: var(--accent-soft); }
+.moment-word-active { border-block: 1px solid var(--ink); background: var(--stage); }
+.moment-word-start { border-left: 2px solid var(--ink); }
+.moment-word-end { border-right: 2px solid var(--ink); }
+.moment-word-selected { box-shadow: inset 0 -3px var(--accent); }
+.moment-word-collision { background-image: repeating-linear-gradient(135deg, transparent, transparent 4px, color-mix(in srgb, var(--ink) 18%, transparent) 4px, color-mix(in srgb, var(--ink) 18%, transparent) 6px); }
 .moment-replay-message, .moment-replay-limit { color: var(--muted); font-size: .78rem; margin: 10px 0 0; }
 .moment-replay-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
 .moment-replay-controls button { min-height: 45px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--surface); box-shadow: var(--floating-shadow); font-size: .8rem; }

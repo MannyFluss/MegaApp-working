@@ -12,11 +12,11 @@ Motion follows interaction or ongoing work. The touched object responds directly
 
 ## Work has a visible boundary.
 
-Show activity where it acts, and its boundary before it changes anything. Selections may overlap; concurrent edits to the same region may not. I can finish, cancel, or reconsider.
+I define the boundary. Show activity where it acts, and its scope before it changes anything. Selections may overlap; concurrent edits to the same region may not. I can finish, cancel, or reconsider.
 
 ## Capability stays close to the work.
 
-Essential actions stay beside what they affect. Further controls reveal predictably. Common commands offer another route; gestures have discoverable alternatives.
+Essential actions stay beside what they affect. Terms and controls explain themselves where I encounter them, by touch, hold, or selection. Further controls reveal predictably. Common commands offer another route; gestures have discoverable alternatives.
 
 ## Context makes it personal.
 
@@ -28,8 +28,8 @@ Restore useful state when I return. Save locally, sync deliberately, and make re
 
 ## A default I can override.
 
-Apps can change appearance, layout, and task interactions. Shared promises remain: understandable access, accessible controls, preserved work, and agent-operable actions. Policy governs authority; protocol governs interaction.
+Software is material I can reshape through use. Apps can change appearance, layout, and task interactions. Shared promises remain: understandable access, accessible controls, preserved work, and agent-operable actions. Policy governs authority; protocol governs interaction.
 
-Working examples of my design. Try them, then reshape them. The text-edit example is local.
+One living surface for my design. Change the material, define a boundary, feel a response. Tap or hold an underlined term to understand it. Working material and unfinished edits are saved on this device; the governing text is shared with agents.
 
 [Working examples](https://mannyfluss.github.io/MegaApp-pages/#design) · [Dictionary terms](./design-dictionary.md)

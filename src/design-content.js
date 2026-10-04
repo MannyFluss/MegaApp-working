@@ -5,14 +5,16 @@ export const designContent = {
   principles: [
     { id: "touch", title: "Input belongs to me.", text: "Apps adapt to a shared input system I can reshape. Response follows my hand: direction, pace, and character. The action stays consistent; its smallest details express how I performed it." },
     { id: "still", title: "Stillness is the resting state.", text: "Motion follows interaction or ongoing work. The touched object responds directly; surroundings respond subtly. Response comes first. Apps choose their resting surfaces." },
-    { id: "scope", title: "Work has a visible boundary.", text: "Show activity where it acts, and its boundary before it changes anything. Selections may overlap; concurrent edits to the same region may not. I can finish, cancel, or reconsider." },
-    { id: "capability", title: "Capability stays close to the work.", text: "Essential actions stay beside what they affect. Further controls reveal predictably. Common commands offer another route; gestures have discoverable alternatives." },
+    { id: "scope", title: "Work has a visible boundary.", text: "I define the boundary. Show activity where it acts, and its scope before it changes anything. Selections may overlap; concurrent edits to the same region may not. I can finish, cancel, or reconsider." },
+    { id: "capability", title: "Capability stays close to the work.", text: "Essential actions stay beside what they affect. Terms and controls explain themselves where I encounter them, by touch, hold, or selection. Further controls reveal predictably. Common commands offer another route; gestures have discoverable alternatives." },
     { id: "context", title: "Context makes it personal.", text: "External context comes from the world; internal context helps agents decide specifically for me. I can keep interactions, affected content and my explanation as a moment for an agent. I supply, question and discover context over time. Uncertainty stays visible." },
     { id: "continuity", title: "My work keeps its place.", text: "Restore useful state when I return. Save locally, sync deliberately, and make recovery possible. Keep competing versions safe. Feedback is immediate and specific." },
-    { id: "override", title: "A default I can override.", text: "Apps can change appearance, layout, and task interactions. Shared promises remain: understandable access, accessible controls, preserved work, and agent-operable actions. Policy governs authority; protocol governs interaction." },
+    { id: "override", title: "A default I can override.", text: "Software is material I can reshape through use. Apps can change appearance, layout, and task interactions. Shared promises remain: understandable access, accessible controls, preserved work, and agent-operable actions. Policy governs authority; protocol governs interaction." },
   ],
   terms: {
     "Design": "How MegaApp is organized, experienced, and understood.",
+    "Response": "The feedback an interaction gives my hand and attention. In this control, Response adjusts the small contact movement and momentum after release. It does not change the direct one-to-one drag. Try 0%, then 150%, and release quickly to compare. Reduced motion keeps this feedback still.",
+    "Settling": "How long movement takes to come to rest after release. This control changes that duration from 120 to 500 milliseconds; it does not delay the action or change what the action means.",
     "Input system": "The shared foundation that carries the qualities of my input into app interactions, with common expectations and deliberate overrides.",
     "Policy": "My rules about what may happen and under what conditions.",
     "Protocol": "The agreed way participants request, perform, and report interactions.",
@@ -23,5 +25,5 @@ export const designContent = {
     "Internal context": "Context about me that helps agents make better decisions for me, including patterns I may not yet recognize.",
     "Moment": "A kept interval of observed interactions, declared app context and my own explanation. An agent's interpretation is separate from the record.",
   },
-  note: "Working examples of my design. Try them, then reshape them. The text-edit example is local.",
+  note: "One living surface for my design. Change the material, define a boundary, feel a response. Tap or hold an underlined term to understand it. Working material and unfinished edits are saved on this device; the governing text is shared with agents.",
 };

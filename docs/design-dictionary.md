@@ -6,6 +6,14 @@ These are the terms used by Manny's design page. They are the starting point for
 
 How MegaApp is organized, experienced, and understood.
 
+## Response
+
+The feedback an interaction gives my hand and attention. In this control, Response adjusts the small contact movement and momentum after release. It does not change the direct one-to-one drag. Try 0%, then 150%, and release quickly to compare. Reduced motion keeps this feedback still.
+
+## Settling
+
+How long movement takes to come to rest after release. This control changes that duration from 120 to 500 milliseconds; it does not delay the action or change what the action means.
+
 ## Input system
 
 The shared foundation that carries the qualities of my input into app interactions, with common expectations and deliberate overrides.
