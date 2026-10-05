@@ -4,7 +4,7 @@ export const designContent = {
   introduction: "MegaApp is my single most powerful tool for creative and productive work. It is explicitly for me: my uses, wants, enjoyment, attention, and control. Tactile first. Editorial second. Precise third.",
   layout: { order: ["touch", "scope", "still", "capability", "context", "continuity", "override"], wide: ["override"], columns: 2 },
   principles: [
-    { id: "touch", title: "Input belongs to me.", text: "Response follows my hand: direction, pace, and character. Gestures have clear meaning and subtle personal expression. The input system is mine to reshape. Passing control to Apple has an understandable transition and return." },
+    { id: "touch", title: "Input belongs to me.", text: "Response follows my hand: direction, pace, and character. Gestures have clear meaning and subtle personal expression. The input system is mine to reshape. Native reading and editing are my starting point. Passing control to Apple has an understandable transition and return." },
     { id: "still", title: "Immersion draws me deeper.", text: "Enjoyment draws me into what I do and feel. Quiet and focused is the default; stillness is the resting state. Motion follows interaction or ongoing work. Direct Response comes first; surroundings respond subtly." },
     { id: "scope", title: "Work has a visible boundary.", text: "I define the boundary. Show work where it acts and its scope before changes. Selections may overlap; concurrent edits to the same region may not. I can finish, cancel, or reconsider." },
     { id: "capability", title: "Complexity resolves into clarity.", text: "I govern my data. Shared names and structure make it usable across apps and agents, expressed clearly for me. Color has stable meaning across apps. Actions and explanations stay close to the work. Exploring the system is easy and immersive." },
@@ -32,5 +32,5 @@ export const designContent = {
     "Internal context": "Context about me that helps agents make better decisions for me, including patterns I may not yet recognize.",
     "Moment": "A kept interval of observed interactions, declared app context and my own explanation. An agent's interpretation is separate from the record.",
   },
-  note: "One living surface for my design. Feel a response, define a boundary, reshape the page. Hold a marked term for its meaning. Select text deliberately to use browser selection and copy. Give feedback keeps a moment for my explanation; I choose when to export it. Reading preferences live in Meta. Local editions and working material stay on this device. The detailed layer model remains open.",
+  note: "One living surface for my design. Feel a response, define a boundary, reshape the page. Highlight text normally; a recognized term offers its meaning nearby. Explore my context opens a dictionary Toy with proposed connections and open questions. Pencil adds free markup; its controls live here on demand. Give feedback keeps a moment for my explanation; I choose when to export it. Reading preferences live in Meta. Local editions and working material stay on this device. The detailed layer model remains open.",
 };

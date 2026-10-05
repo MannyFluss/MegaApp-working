@@ -1,3 +1,5 @@
+import { createDesignMarkup } from "./design-markup.js";
+import { createContextToy } from "./context-toy.js";
 import { designContent } from "./design-content.js";
 import { createPhysicalSurface } from "./input.js";
 import { createBoundaryExample } from "./design-boundaries.js";
@@ -6,16 +8,13 @@ import { storageName } from "./environment.js";
 import { applyReadingStyle } from "./reading-style.js";
 
 export function createDesign({ input, onSettings, notify, onMoment = () => {}, onFeedback = () => {} }) {
-  let editor, emphasis = false, browserSelection = false;
+  let editor, emphasis = false;
   const root = document.getElementById("design-guide");
   root.innerHTML = `<header class="design-masthead"><div><h1></h1><p class="design-introduction"></p></div><div class="design-signature">MegaApp<br><span>Manny’s design</span></div></header><div class="design-principles"></div><footer class="design-footnote"><details class="design-about"><summary>About this page</summary><p></p></details><details class="design-dictionary"><summary>Dictionary</summary><div class="design-term-links" aria-label="Dictionary terms"></div></details></footer>`;
   root.querySelector("h1").textContent = designContent.title;
   root.querySelector(".design-introduction").textContent = designContent.introduction;
   root.querySelector(".design-about p").textContent = designContent.note;
   root.querySelector(".design-footnote").prepend(root.parentElement.querySelector(".design-reading-actions"));
-  const selectionToggle = document.createElement('button'); selectionToggle.id = 'design-select-text'; selectionToggle.type = 'button'; selectionToggle.className = 'quiet-button design-select-text'; selectionToggle.textContent = 'Select text'; selectionToggle.setAttribute('aria-pressed', 'false');
-  const selectionStatus = document.createElement('p'); selectionStatus.id = 'design-selection-status'; selectionStatus.className = 'design-selection-status'; selectionStatus.setAttribute('role', 'status'); selectionStatus.hidden = true;
-  root.querySelector('.design-footnote').prepend(selectionToggle); root.querySelector('.design-footnote').after(selectionStatus);
   const sections = new Map();
   for (const principle of designContent.principles) {
     const section = document.createElement("section");
@@ -210,7 +209,6 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
     let timer, point, held = false;
     const cancel = () => { clearTimeout(timer); timer = null; }; termCancellations.add(cancel); termCleanup.set(element, () => { cancel(); termCancellations.delete(cancel); });
     element.addEventListener("pointerdown", event => {
-      if (browserSelection && element.closest('.design-principle > p, .design-principle > h2')) return;
       if (event.button !== 0 || !event.isPrimary) return;
       cancel();
       held = false; point = { x: event.clientX, y: event.clientY };
@@ -218,8 +216,8 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
     });
     element.addEventListener("pointermove", event => { if (point && Math.hypot(event.clientX - point.x, event.clientY - point.y) > 10) cancel(); });
     for (const event of ["pointerup", "pointercancel", "lostpointercapture", "blur"]) element.addEventListener(event, cancel);
-    element.addEventListener("contextmenu", event => { if (!(browserSelection && element.closest('.design-principle > p, .design-principle > h2'))) event.preventDefault(); });
-    element.addEventListener("click", event => { if (browserSelection && element.closest('.design-principle > p, .design-principle > h2')) return; event.preventDefault(); cancel(); if (!held || event.detail === 0) explain(term, element); held = false; });
+    element.addEventListener("contextmenu", event => event.preventDefault());
+    element.addEventListener("click", event => { event.preventDefault(); cancel(); if (!held || event.detail === 0) explain(term, element); held = false; });
   }
   function vocabulary(paragraph, value, terms, editing = false) {
     for (const link of paragraph.querySelectorAll("[data-term]")) termCleanup.get(link)?.();
@@ -229,21 +227,17 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
     const pattern = new RegExp(`\\b(${names.map(escape).join("|")})\\b`, "gi"); let position = 0, match;
     while ((match = pattern.exec(value))) {
       paragraph.append(document.createTextNode(value.slice(position, match.index)));
-      const term = names.find(t => t.toLowerCase() === match[0].toLowerCase()), link = document.createElement(browserSelection ? "span" : "button");
-      if (!browserSelection) link.type = 'button'; link.className = "design-vocabulary"; link.textContent = match[0]; link.dataset.term = term;
-      bindTerm(link, term); paragraph.append(link); position = pattern.lastIndex;
+      const term = names.find(t => t.toLowerCase() === match[0].toLowerCase()), link = document.createElement("span");
+      link.className = "design-vocabulary"; link.textContent = match[0]; link.dataset.term = term;
+      paragraph.append(link); position = pattern.lastIndex;
     }
     paragraph.append(document.createTextNode(value.slice(position)));
   }
   for (const button of root.querySelectorAll("[data-term]")) bindTerm(button, button.dataset.term);
-  function renderReading() { root.dataset.selection = browserSelection ? 'browser' : 'immersed'; applyReadingStyle(root, emphasis); }
-  selectionToggle.onclick = () => {
-    browserSelection = !browserSelection; termCancellations.forEach(cancel => cancel()); getSelection()?.removeAllRanges();
-    selectionToggle.textContent = browserSelection ? 'Done selecting' : 'Select text'; selectionToggle.setAttribute('aria-pressed', String(browserSelection));
-    selectionStatus.hidden = !browserSelection; selectionStatus.textContent = 'Browser text selection is on. Use its selection and Copy controls; Done selecting returns to dictionary holds.';
-    const content = editor.content; for (const p of content.principles) { vocabulary(sections.get(p.id).querySelector('h2'), p.title, content.terms, editor.editing); vocabulary(sections.get(p.id).querySelector(':scope > p'), p.text, content.terms, editor.editing); }
-    renderReading(); record('Choose text interaction', browserSelection ? 'Browser selection enabled deliberately' : 'Dictionary interaction restored');
-  };
+  function renderReading() { root.dataset.selection = 'browser'; applyReadingStyle(root, emphasis); }
+  const contextToy = createContextToy({ onAction: (action, outcome) => record(action, outcome) });
+  root.querySelector('.design-footnote').before(contextToy.element);
+  const markup = createDesignMarkup({ root, onAction: (action, outcome) => record(action, outcome) });
   let renderedTerms, selectedExplanation;
   editor = createDesignEditor({ root, sections, defaults: designContent,
     onModeChange() { termCancellations.forEach(cancel => cancel()); if (dialog.open) dialog.close(); selectedExplanation?.remove(); },
@@ -257,7 +251,7 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
         for (const [term] of Object.entries(content.terms)) { const button = document.createElement("button"); button.className = "design-term-link"; button.type = "button"; button.textContent = term; bindTerm(button, term); links.append(button); }
         renderedTerms = JSON.stringify(content.terms);
       }
-      renderReading();
+      contextToy.update(content); renderReading(); markup.refresh();
     },
     onMutation: (action, outcome, interaction) => record(action, outcome, 'action', interaction),
   });
@@ -273,18 +267,21 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
   });
   function captureContext() {
     const board = root.querySelector("#design-touch-board"), tile = root.querySelector("#design-touch-object"), position = new DOMMatrix(getComputedStyle(tile).transform);
-    return { app: "design", coverage: "Design document edition, example frames, text boundaries, outcomes and shared tuning", title: editor ? editor.content.title : designContent.title, designDocument: editor?.content,
+    return { app: "design", coverage: "Design document edition, example frames, text boundaries, context Toy, page markup, outcomes and shared tuning", title: editor ? editor.content.title : designContent.title, designDocument: editor?.content,
       surface: { x: position.m41 / Math.max(1, board.clientWidth), y: position.m42 / Math.max(1, board.clientHeight), dragging: tile.dataset.dragging === "true" },
       words: example.words, edits: example.edits.map(({ start, end, label }) => ({ start, end, label })),
       selection: example.selection, collision: example.collision,
       message: scope.querySelector("#design-scope-status").textContent, response: input.response, settling: input.settling,
-      reading: { wordEmphasis: emphasis, selection: browserSelection ? 'browser' : 'immersed' } };
+      presentation: { theme: document.documentElement.dataset.theme || 'light', viewport: { width: innerWidth, height: innerHeight, pageTop: root.getBoundingClientRect().top } },
+      contextToy: contextToy.captureContext(),
+      markup: markup.captureContext(),
+      reading: { wordEmphasis: emphasis, selection: 'browser' } };
   }
   function record(action, outcome, kind = "action", interaction) { onMoment({ kind, app: "design", action, outcome, context: { ...captureContext(), ...(interaction ? { interaction } : {}) } }); }
   return {
     captureContext,
     applyReadingPreference(enabled) { if (emphasis === enabled) return; emphasis = enabled; renderReading(); applyReadingStyle(dialog, emphasis); },
     applySettings() { if (document.activeElement === response || document.activeElement === settling) return; response.value = String(input.response); settling.value = String(input.settling); controls(); },
-    setVisible(visible) { if (!visible) { surface.reset(); cancelDrag(); editor?.hide(); termCancellations.forEach(cancel => cancel()); selectedExplanation?.remove(); if (dialog.open) dialog.close(); } },
+    setVisible(visible) { if (!visible) { surface.reset(); cancelDrag(); markup.hide(); editor?.hide(); termCancellations.forEach(cancel => cancel()); selectedExplanation?.remove(); if (dialog.open) dialog.close(); } },
   };
 }

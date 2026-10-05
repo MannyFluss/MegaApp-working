@@ -4,7 +4,7 @@ MegaApp is my single most powerful tool for creative and productive work. It is 
 
 ## Input belongs to me.
 
-Response follows my hand: direction, pace, and character. Gestures have clear meaning and subtle personal expression. The input system is mine to reshape. Passing control to Apple has an understandable transition and return.
+Response follows my hand: direction, pace, and character. Gestures have clear meaning and subtle personal expression. The input system is mine to reshape. Native reading and editing are my starting point. Passing control to Apple has an understandable transition and return.
 
 ## Work has a visible boundary.
 
@@ -30,7 +30,7 @@ Restore useful state when I return. Save locally, sync deliberately, and make re
 
 Software is material I can reshape. A Tool follows dependable defaults; a Toy has room to play. Reading preferences allow app overrides. Preserve work, understandable access, and agent-operable actions. Policy governs authority; protocol governs interaction.
 
-One living surface for my design. Feel a response, define a boundary, reshape the page. Hold a marked term for its meaning. Select text deliberately to use browser selection and copy. Give feedback keeps a moment for my explanation; I choose when to export it. Reading preferences live in Meta. Local editions and working material stay on this device. The detailed layer model remains open.
+One living surface for my design. Feel a response, define a boundary, reshape the page. Highlight text normally; a recognized term offers its meaning nearby. Explore my context opens a dictionary Toy with proposed connections and open questions. Pencil adds free markup; its controls live here on demand. Give feedback keeps a moment for my explanation; I choose when to export it. Reading preferences live in Meta. Local editions and working material stay on this device. The detailed layer model remains open.
 
 <!-- MegaApp layout: {"order":["touch","scope","still","capability","context","continuity","override"],"wide":["override"],"columns":2} -->
 

@@ -99,6 +99,13 @@ function namedActivity(event, fallback = false) {
     if (action === "Import design edition") return label("design-edition", "imported", "Design edition imported");
     if (event.target === "design-touch-object" && action === "Pointer moved") return label("surface", "drag-observed", "Surface drag");
     if (event.target === "design-touch-object" && action === "Control key") return label("surface", "key-observed", "Surface key input");
+    if (action === "Draw page markup") return label("page-markup", "drawn", "Page markup drawn");
+    if (action === "Cancel page markup") return label("page-markup", "cancelled", "Page mark cancelled");
+    if (action === "Clear page markup") return label("page-markup", "cleared", "Page marks cleared");
+    if (action === "Undo page markup") return label("page-markup", "undone", "Page mark undone");
+    if (action === "Restore page markup") return label("page-markup", "restored", "Page marks restored");
+    if (action === "Export context map") return label("context-map", "exported", "Context map exported");
+    if (fallback && action === "Explore context concept") return label("context-map", "explored", "Context concept explored");
     if (action === "Tune shared response") return label("input-response", "previewed", "Input response previewed");
     if (fallback && action.startsWith("Understand ")) return label("dictionary", "opened", "Dictionary meaning opened");
     if (fallback && action === "Choose text interaction") return outcome.includes("Browser selection enabled") ? label("text-selection", "enabled", "Browser text selection enabled") : label("dictionary", "restored", "Dictionary interaction restored");
