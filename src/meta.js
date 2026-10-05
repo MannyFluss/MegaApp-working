@@ -1,5 +1,5 @@
 // The environment is a temporary surface; the current app keeps the workspace.
-export function createMeta({ onOpenChange, focusApp, input, onReach = async () => true }) {
+export function createMeta({ onOpenChange, focusApp, input, onReach = async () => true, onReading = async () => true }) {
   const shell = document.querySelector(".app-shell");
   const topbar = shell.querySelector(".topbar");
   const dock = shell.querySelector(".dock");
@@ -40,9 +40,15 @@ export function createMeta({ onOpenChange, focusApp, input, onReach = async () =
   const reach = document.createElement("details"); reach.className = "meta-reach";
   reach.innerHTML = '<summary>Reach and access</summary><label>Keep controls on the <select id="meta-side"><option value="right">Right</option><option value="left">Left</option></select></label><p>Meta and Keep moment travel together. Pull inward from the matching edge; mouse and Pencil keep their app input.</p><p id="meta-reach-status" role="status">A shared preference you can also edit in State.</p>';
   dialog.querySelector(".meta-system").after(reach);
+  const reading = document.createElement('details'); reading.className = 'meta-reading';
+  reading.innerHTML = '<summary>Reading preferences</summary><label><input id="meta-word-emphasis" type="checkbox"> Emphasize word beginnings</label><p>A reversible bionic reading style. Design uses this preference; PDF pages keep their original typography.</p><p id="meta-reading-status" role="status">Your words and annotations stay intact.</p>';
+  reach.after(reading);
+  const emphasisControl = reading.querySelector('input'), readingStatus = reading.querySelector('[role=status]');
+  let readingChain = Promise.resolve(), readingSaving = false, readingRevision = 0;
   const sideControl = reach.querySelector("select"), reachStatus = reach.querySelector("#meta-reach-status");
   let priorFocus, entryFocus, gesture, side = "right", holdTimer, holdPoint, saveChain = Promise.resolve(), saving = false, saveRevision = 0;
   function configure(values = {}, force = false) {
+    if (!readingSaving) emphasisControl.checked = values['system.reading.emphasis']?.value === true;
     if (saving && !force) return;
     const next = values["system.meta.side"]?.value === "left" ? "left" : "right";
     if (next !== side) cancelGesture(); side = next; sideControl.value = side;
@@ -50,6 +56,14 @@ export function createMeta({ onOpenChange, focusApp, input, onReach = async () =
     dialog.querySelector(".meta-shortcut").textContent = `Pull inward from the ${side} edge, or press ⌘ / Ctrl + Shift + M.`;
   }
   configure();
+  emphasisControl.onchange = () => {
+    const enabled = emphasisControl.checked, revision = ++readingRevision; readingSaving = true; readingStatus.textContent = 'Saving reading preference…';
+    readingChain = readingChain.catch(() => {}).then(async () => {
+      try { const persistent = await onReading(enabled); if (revision === readingRevision) readingStatus.textContent = persistent === false ? 'Reading preference changed for this session.' : 'Reading preference saved on this device.'; }
+      catch { if (revision === readingRevision) { emphasisControl.checked = !enabled; readingStatus.textContent = 'Could not save. Your previous reading preference remains; try again.'; } }
+      finally { if (revision === readingRevision) readingSaving = false; }
+    });
+  };
   sideControl.onchange = () => {
     const choice = sideControl.value, revision = ++saveRevision; configure({ "system.meta.side": { value: choice } }, true); saving = true;
     reachStatus.textContent = "Saving reach…";

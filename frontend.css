@@ -286,7 +286,7 @@ select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 .design-material label { display: block; }
 .design-material button { margin-top: 8px; }
 .design-help-term { background: transparent; box-shadow: none; padding: 0; min-height: 44px; color: var(--ink); text-decoration: underline dotted var(--muted); text-underline-offset: 5px; font: inherit; }
-.design-vocabulary { color: inherit; text-decoration: underline dotted; text-decoration-color: var(--muted); text-underline-offset: 4px; cursor: help; }
+.design-vocabulary { display: inline; border: 0; border-radius: 0; padding: 0; min-width: 0; min-height: 0; background: transparent; box-shadow: none; color: inherit; font: inherit; text-align: inherit; text-decoration: underline dotted; text-decoration-color: var(--muted); text-underline-offset: 4px; cursor: help; }
 .design-vocabulary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 2px; }
 .design-selected-help { margin-top: 8px; font-size: .75rem; }
 @media (max-width: 620px) { .design-active-edit { grid-template-columns: 1fr auto; } .design-active-edit label { grid-column: 1 / -1; } }
@@ -331,3 +331,19 @@ select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 .design-order-ghost { max-height: 120px; overflow: hidden; overflow-wrap: anywhere; }
 .design-page-introduction, .design-page-wording { max-width: 72ch; }
 .design-edition-label { font-size: .72rem; color: var(--muted); }
+
+/* One deliberate owner per gesture; native text editing remains available. */
+.design-vocabulary, .design-help-term, .design-term-link, .design-move-handle,
+.meta-open, #design-guide h1, .design-principle > h2,
+#design-guide [data-reading-text] { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+#design-guide[data-selection="browser"] [data-reading-text],
+#design-guide[data-selection="browser"] h1,
+#design-guide[data-selection="browser"] .design-principle > h2,
+#design-guide[data-selection="browser"] .design-vocabulary,
+#design-guide[data-selection="browser"] .reading-word,
+#design-guide[data-selection="browser"] .reading-word b { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; cursor: text; }
+.reading-word b { font-weight: 650; }
+.design-feedback { font-size: .75rem; margin-top: 12px; }
+.design-select-text { font-size: .72rem; padding: 6px 10px; }
+.design-selection-status { font-size: .75rem; line-height: 1.5; color: var(--ink); margin-top: 10px; max-width: 72ch; }
+.design-vocabulary:hover { background: transparent; color: var(--ink); }

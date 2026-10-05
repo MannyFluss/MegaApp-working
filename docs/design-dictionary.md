@@ -6,6 +6,26 @@ These are the terms used by Manny's design page. They are the starting point for
 
 How MegaApp is organized, experienced, and understood.
 
+## Immersion
+
+Enjoyable absorption in an environment that helps me pursue what I want with deeper attention, feeling, and control.
+
+## Tool
+
+An activity for dependable work under my default interaction promises.
+
+## Toy
+
+An activity for exploration or play with broader freedom to override interaction defaults.
+
+## Reading preferences
+
+My shared choices about reading presentation, with deliberate app overrides. Word emphasis is reversible and keeps the words intact.
+
+## Mental model
+
+My current, revisable understanding of how my tools, interactions, and delegations produce results.
+
 ## Response
 
 The feedback an interaction gives my hand and attention. In this control, Response adjusts the small contact movement and momentum after release. It does not change the direct one-to-one drag. Try 0%, then 150%, and release quickly to compare. Reduced motion keeps this feedback still.

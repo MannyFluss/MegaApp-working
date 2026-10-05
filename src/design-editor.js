@@ -3,7 +3,7 @@ import { storageName } from './environment.js';
 
 export function createDesignEditor({ root, sections, defaults, onRender, onMutation, onModeChange }) {
   const key = storageName('megaapp.design.document.v1');
-  let saved, raw, loadError, unreadableCopy, editing = false, drag, edition, importGeneration = 0;
+  let saved, raw, loadError, unreadableCopy, editing = false, drag, edition, importGeneration = 0, dragFrame;
   try { raw = localStorage.getItem(key); if (raw) saved = JSON.parse(raw); edition = createDesignEdition(defaults, saved); }
   catch (error) { loadError = error.message; edition = createDesignEdition(defaults); }
   try { unreadableCopy = loadError && raw ? raw : localStorage.getItem(`${key}.unreadable`); } catch { /* Export of the current in-memory edition still works. */ }
@@ -39,33 +39,55 @@ export function createDesignEditor({ root, sections, defaults, onRender, onMutat
       if (event.button !== 0 || !event.isPrimary || drag) return;
       event.preventDefault(); edition.endGroup();
       const ghost = document.createElement('div'); ghost.className = 'design-order-ghost'; ghost.textContent = edition.content.principles.find(p => p.id === id).title || 'Move this principle'; document.body.append(ghost);
-      drag = { id, pointer: event.pointerId, handle, ghost, before: undefined }; handle.setPointerCapture(event.pointerId); section.dataset.moving = 'true'; updateDrag(event);
+      drag = { id, pointer: event.pointerId, handle, ghost, before: undefined, originX: event.clientX, originY: event.clientY, x: event.clientX, y: event.clientY, moved: false }; handle.setPointerCapture(event.pointerId); section.dataset.moving = 'true'; updateDrag(event);
     });
     handle.addEventListener('pointermove', event => { if (drag?.pointer === event.pointerId) updateDrag(event); });
     handle.addEventListener('pointerup', event => {
       if (drag?.pointer !== event.pointerId) return;
-      const before = drag.before; endDrag(); if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
-      if (before !== undefined) move(id, before); handle.focus({ preventScroll: true });
+      updateDrag(event);
+      const { before, moved } = drag; endDrag();
+      if (moved) {
+        const changed = before !== undefined && move(id, before);
+        const outcome = before === undefined ? 'Released outside the page; order kept' : changed ? 'Principle placed at the shown insertion point' : 'Principle kept its place';
+        status.textContent = outcome + '.'; onMutation('Finish principle drag', outcome, { operation: 'principle-drag', principle: id, before: before ?? null, validDrop: before !== undefined, changed: Boolean(changed) });
+      }
+      handle.focus({ preventScroll: true });
     });
-    for (const event of ['pointercancel', 'lostpointercapture']) handle.addEventListener(event, endDrag);
+    for (const event of ['pointercancel', 'lostpointercapture']) handle.addEventListener(event, () => endDrag(event));
   }
-  function endDrag() {
-    if (!drag) return; drag.ghost.remove(); delete sections.get(drag.id).dataset.moving;
+  function endDrag(reason) {
+    if (!drag) return; const ended = drag; drag.ghost.remove(); delete sections.get(drag.id).dataset.moving; cancelAnimationFrame(dragFrame); dragFrame = null;
     for (const section of sections.values()) delete section.dataset.drop;
     drag = null;
+    if (ended.handle.hasPointerCapture(ended.pointer)) ended.handle.releasePointerCapture(ended.pointer);
+    if (reason && ended.moved) { status.textContent = 'Move canceled. Your order is kept.'; onMutation('Cancel principle drag', 'Order kept', { operation: 'principle-drag', principle: ended.id, reason }); }
   }
   function updateDrag(event) {
+    drag.x = event.clientX; drag.y = event.clientY; drag.moved ||= Math.hypot(drag.x - drag.originX, drag.y - drag.originY) > 8;
     drag.ghost.style.transform = `translate(${Math.max(12, Math.min(innerWidth - drag.ghost.offsetWidth - 12, event.clientX + 16))}px, ${Math.max(8, Math.min(innerHeight - drag.ghost.offsetHeight - 8, event.clientY - 22))}px)`;
     for (const section of sections.values()) delete section.dataset.drop;
-    const hovered = document.elementFromPoint(event.clientX, event.clientY)?.closest('.design-principle');
-    if (!hovered || hovered === sections.get(drag.id) || !container.contains(hovered)) { drag.before = undefined; return; }
-    const target = [...sections].find(([, section]) => section === hovered)[0], box = hovered.getBoundingClientRect(), after = event.clientY > box.y + box.height / 2;
-    const order = edition.content.layout.order.filter(id => id !== drag.id), index = order.indexOf(target);
-    drag.before = after ? order[index + 1] || null : target; hovered.dataset.drop = after ? 'after' : 'before';
-    // Only this explicit handle scrolls the page during a drag.
-    if (event.clientY < 48) window.scrollBy(0, -12); else if (event.clientY > innerHeight - 48) window.scrollBy(0, 12);
+    drag.before = undefined;
+    const bounds = container.getBoundingClientRect(), order = edition.content.layout.order.filter(id => id !== drag.id);
+    if (drag.moved && event.clientX >= bounds.left - 48 && event.clientX <= bounds.right + 48 && event.clientY >= bounds.top - 48 && event.clientY <= bounds.bottom + 48) {
+      let nearest;
+      for (const [index, id] of order.entries()) {
+        const section = sections.get(id), box = section.getBoundingClientRect(), dx = Math.max(box.left - event.clientX, 0, event.clientX - box.right);
+        for (const after of [false, true]) {
+          const dy = event.clientY - (after ? box.bottom : box.top), score = dx * dx + dy * dy;
+          if (!nearest || score < nearest.score) nearest = { score, section, after, before: after ? order[index + 1] || null : id };
+        }
+      }
+      drag.before = nearest.before; nearest.section.dataset.drop = nearest.after ? 'after' : 'before';
+    }
+    if (drag.moved && !dragFrame && (event.clientY < 64 || event.clientY > innerHeight - 64)) dragFrame = requestAnimationFrame(scrollDrag);
   }
-  function move(id, before) { if (!edition.move(id, before)) return; persist(); render(); onMutation('Rearrange design principles', 'Local layout updated'); }
+  function scrollDrag() {
+    dragFrame = null; if (!drag) return;
+    const step = drag.y < 64 ? -12 : drag.y > innerHeight - 64 ? 12 : 0;
+    if (!step) return; const previous = scrollY; window.scrollBy(0, step); updateDrag({ clientX: drag.x, clientY: drag.y });
+    if (previous === scrollY) { cancelAnimationFrame(dragFrame); dragFrame = null; }
+  }
+  function move(id, before) { if (!edition.move(id, before)) return false; persist(); render(); onMutation('Rearrange design principles', 'Local layout updated'); return true; }
   function persist() {
     try {
       if (loadError && raw) { localStorage.setItem(`${key}.unreadable`, raw); loadError = null; }
@@ -118,9 +140,9 @@ export function createDesignEditor({ root, sections, defaults, onRender, onMutat
   function scheduleSize() { if (resizeFrame) return; resizeFrame = requestAnimationFrame(() => { resizeFrame = null; for (const { input } of fields) size(input); }); }
   const resize = new ResizeObserver(entries => { const width = entries[0].contentRect.width; if (width === observedWidth) return; observedWidth = width; scheduleSize(); }); resize.observe(root);
   root.querySelector('.design-about').addEventListener('toggle', scheduleSize);
-  window.addEventListener('keydown', event => { if (event.key === 'Escape' && drag) { event.preventDefault(); const { handle, pointer } = drag; endDrag(); if (handle.hasPointerCapture(pointer)) handle.releasePointerCapture(pointer); } });
-  window.addEventListener('blur', endDrag); document.addEventListener('visibilitychange', () => { if (document.hidden) endDrag(); });
-  status.textContent = loadError ? `Your saved edition could not be read: ${loadError}. The saved data will be kept as a backup when you edit.` : edition.sourceChanged ? 'The published starting point changed. Your local edition is retained.' : saved ? 'Your local edition is restored on this device.' : 'Changes save on this device. Export to share them with an agent.';
+  window.addEventListener('keydown', event => { if (event.key === 'Escape' && drag) { event.preventDefault(); endDrag('Escape'); } });
+  window.addEventListener('blur', () => endDrag('Window blurred')); document.addEventListener('visibilitychange', () => { if (document.hidden) endDrag('App hidden'); });
+  status.textContent = loadError ? `Your saved edition could not be read: ${loadError}. The saved data will be kept as a backup when you edit.` : edition.sourceUpdated ? 'Untouched wording updated. Your edits and arrangement are kept; Earlier versions can restore the preceding page.' : edition.sourceChanged ? 'The published starting point changed. Your local edition is retained.' : saved ? 'Your local edition is restored on this device.' : 'Changes save on this device. Export to share them with an agent.';
   render();
-  return { get content() { return edition.content; }, hide() { endDrag(); edition.endGroup(); }, get editing() { return editing; } };
+  return { get content() { return edition.content; }, hide() { endDrag('App interrupted'); edition.endGroup(); }, get editing() { return editing; } };
 }

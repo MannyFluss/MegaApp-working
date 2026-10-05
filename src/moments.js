@@ -91,11 +91,11 @@ export function createMoments({ getApp, getDesignContext, closeMeta, notify, onO
     $("moment-content").checked = moment.review?.includeContext ?? true;
     updateAudio(); renderReview(); save();
   }
-  async function keep() {
+  async function keep({ feedback = false } = {}) {
     if (capturing) return;
     if (buffer.paused) { notify("Recording is paused. Resume it in Meta before keeping a moment."); return; }
     capturing = true;
-    try { const moment = buffer.snapshot(context()); longRecording = false; buffer.setWindow(60); status(); review(moment); open(); await saveChain; }
+    try { const moment = buffer.snapshot(context()); longRecording = false; buffer.setWindow(60); status(); review(moment); open(); if (feedback) { $('moment-title').textContent = 'My feedback.'; $('moment-description').textContent = 'This moment is kept. Tell me what felt wrong or right; you can export it when ready.'; $('moment-note').focus({ preventScroll: true }); } await saveChain; }
     finally { capturing = false; }
   }
   keepButton.onclick = keep;
@@ -153,5 +153,5 @@ export function createMoments({ getApp, getDesignContext, closeMeta, notify, onO
   dialog.addEventListener("click", event => { const rect = dialog.getBoundingClientRect(); if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close(); });
   dialog.addEventListener("close", () => { if (draft) save(); stopVoice(); $("moment-audio").pause(); replay?.dispose(); if (audioURL) URL.revokeObjectURL(audioURL); onOpenChange(false); if (priorFocus?.isConnected && !priorFocus.closest("[hidden], [inert]")) priorFocus.focus({ preventScroll: true }); record({ kind: "boundary", app: getApp(), action: "Moment review closed; review activity was not recorded", context: context() }); });
   status();
-  return { record, isOpen: () => dialog.open, appChanged(app) { record({ kind: "navigation", app, action: "Opened app", context: context() }); } };
+  return { record, keep, isOpen: () => dialog.open, appChanged(app) { record({ kind: "navigation", app, action: "Opened app", context: context() }); } };
 }

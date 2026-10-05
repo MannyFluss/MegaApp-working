@@ -94,7 +94,7 @@ const platformer = createPlatformer({ notify });
 platformer.setVisible(false);
 const files = createFilesDemo({ notify });
 const reading = createReading({ notify, stateReady: storeReady, onRepositorySaved: () => { storeReady.then((value) => { store = value; renderState(); }); } });
-const design = createDesign({ input, notify, onMoment: event => moments?.record(event), onSettings: async ({ response, settling }) => {
+const design = createDesign({ input, notify, onFeedback: () => moments?.keep({ feedback: true }), onMoment: event => moments?.record(event), onSettings: async ({ response, settling }) => {
   store = await storeReady;
   await store.set("system.input.response", "number", response);
   await store.set("system.input.settling", "number", settling);
@@ -168,6 +168,11 @@ function renderDevice() {
 }
 meta = createMeta({
   input,
+  onReading: async enabled => {
+    store = await storeReady; await store.set('system.reading.emphasis', 'boolean', enabled); renderState(); applyPreferences();
+    moments?.record({ kind: 'action', app: activePanel, action: 'Set reading preference', outcome: `Word emphasis ${enabled ? 'on' : 'off'}`, context: activePanel === 'design' ? design.captureContext() : { app: activePanel, coverage: 'Declared reading preference only', reading: { wordEmphasis: enabled } } });
+    return store.mode !== 'session';
+  },
   onReach: async side => {
     store = await storeReady; await store.set("system.meta.side", "string", side); renderState(); applyPreferences();
     moments?.record({ kind: "action", app: activePanel, action: "Set Meta reach", outcome: `Saved ${side} reach`, context: activePanel === "design" ? { ...design.captureContext(), meta: { side } } : { app: activePanel, coverage: "Meta reach preference only", meta: { side } } });
@@ -260,6 +265,7 @@ function applyPreferences() {
   $("theme-toggle").setAttribute("aria-label", `Switch to ${nextTheme} theme`);
   $("theme-toggle").title = `Switch to ${nextTheme} theme`;
   input.configure(values);
+  design.applyReadingPreference(values['system.reading.emphasis']?.value === true);
   meta?.configure(values);
   design.applySettings();
   drawing.applySettings(values);

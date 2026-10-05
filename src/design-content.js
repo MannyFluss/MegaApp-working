@@ -1,19 +1,24 @@
 // The in-app page and docs/design.md use these exact words.
 export const designContent = {
   title: "My personal operating system.",
-  introduction: "MegaApp is my single most powerful tool for creative and productive work. Tactile first. Editorial second. Precise third. Quiet and focused by default.",
+  introduction: "MegaApp is my single most powerful tool for creative and productive work. It is explicitly for me: my uses, wants, enjoyment, attention, and control. Tactile first. Editorial second. Precise third.",
   layout: { order: ["touch", "scope", "still", "capability", "context", "continuity", "override"], wide: ["override"], columns: 2 },
   principles: [
-    { id: "touch", title: "Input belongs to me.", text: "Apps adapt to a shared input system I can reshape. Response follows my hand: direction, pace, and character. The action stays consistent; its smallest details express how I performed it." },
-    { id: "still", title: "Stillness is the resting state.", text: "Motion follows interaction or ongoing work. The touched object responds directly; surroundings respond subtly. Response comes first. Apps choose their resting surfaces." },
-    { id: "scope", title: "Work has a visible boundary.", text: "I define the boundary. Show activity where it acts, and its scope before it changes anything. Selections may overlap; concurrent edits to the same region may not. I can finish, cancel, or reconsider." },
-    { id: "capability", title: "Capability stays close to the work.", text: "Essential actions stay beside what they affect. Terms and controls explain themselves where I encounter them, by touch, hold, or selection. Further controls reveal predictably. Common commands offer another route; gestures have discoverable alternatives." },
-    { id: "context", title: "Context makes it personal.", text: "External context comes from the world; internal context helps agents decide specifically for me. I can keep interactions, affected content and my explanation as a moment for an agent. I supply, question and discover context over time. Uncertainty stays visible." },
+    { id: "touch", title: "Input belongs to me.", text: "Response follows my hand: direction, pace, and character. Gestures have clear meaning and subtle personal expression. The input system is mine to reshape. Passing control to Apple has an understandable transition and return." },
+    { id: "still", title: "Immersion draws me deeper.", text: "Enjoyment draws me into what I do and feel. Quiet and focused is the default; stillness is the resting state. Motion follows interaction or ongoing work. Direct Response comes first; surroundings respond subtly." },
+    { id: "scope", title: "Work has a visible boundary.", text: "I define the boundary. Show work where it acts and its scope before changes. Selections may overlap; concurrent edits to the same region may not. I can finish, cancel, or reconsider." },
+    { id: "capability", title: "Complexity resolves into clarity.", text: "My work has structure agents can understand, expressed clearly for me. Color has stable meaning across apps. Actions and explanations stay close to the work. Exploring the system is easy and immersive." },
+    { id: "context", title: "I can improve it through use.", text: "I keep a moment and give feedback on what feels wrong or right. I direct delegation and revise my mental model through results. External context and internal context inform the work. Evidence, my explanation, and interpretations stay distinguishable." },
     { id: "continuity", title: "My work keeps its place.", text: "Restore useful state when I return. Save locally, sync deliberately, and make recovery possible. Keep competing versions safe. Feedback is immediate and specific." },
-    { id: "override", title: "A default I can override.", text: "Software is material I can reshape through use. Apps can change appearance, layout, and task interactions. Shared promises remain: understandable access, accessible controls, preserved work, and agent-operable actions. Policy governs authority; protocol governs interaction." },
+    { id: "override", title: "A default I can override.", text: "Software is material I can reshape. A Tool follows dependable defaults; a Toy has room to play. Reading preferences allow app overrides. Preserve work, understandable access, and agent-operable actions. Policy governs authority; protocol governs interaction." },
   ],
   terms: {
     "Design": "How MegaApp is organized, experienced, and understood.",
+    "Immersion": "Enjoyable absorption in an environment that helps me pursue what I want with deeper attention, feeling, and control.",
+    "Tool": "An activity for dependable work under my default interaction promises.",
+    "Toy": "An activity for exploration or play with broader freedom to override interaction defaults.",
+    "Reading preferences": "My shared choices about reading presentation, with deliberate app overrides. Word emphasis is reversible and keeps the words intact.",
+    "Mental model": "My current, revisable understanding of how my tools, interactions, and delegations produce results.",
     "Response": "The feedback an interaction gives my hand and attention. In this control, Response adjusts the small contact movement and momentum after release. It does not change the direct one-to-one drag. Try 0%, then 150%, and release quickly to compare. Reduced motion keeps this feedback still.",
     "Settling": "How long movement takes to come to rest after release. This control changes that duration from 120 to 500 milliseconds; it does not delay the action or change what the action means.",
     "Input system": "The shared foundation that carries the qualities of my input into app interactions, with common expectations and deliberate overrides.",
@@ -26,5 +31,5 @@ export const designContent = {
     "Internal context": "Context about me that helps agents make better decisions for me, including patterns I may not yet recognize.",
     "Moment": "A kept interval of observed interactions, declared app context and my own explanation. An agent's interpretation is separate from the record.",
   },
-  note: "One living surface for my design. Change the material, define a boundary, feel a response. Tap or hold an underlined term to understand it. Reshape this page to edit its wording and arrangement. Your edition and working material save on this device; export your edition for agents to read or apply to the shared guide.",
+  note: "One living surface for my design. Feel a response, define a boundary, reshape the page. Hold a marked term for its meaning. Select text deliberately to use browser selection and copy. Give feedback keeps a moment for my explanation; I choose when to export it. Reading preferences live in Meta. Local editions and working material stay on this device. The detailed layer model remains open.",
 };

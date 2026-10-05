@@ -82,3 +82,8 @@ body.meta-is-open { overflow: hidden; }
 :root[data-meta-side="left"] .meta-pull-preview { left: max(14px, env(safe-area-inset-left)); right: auto; }
 :root[data-meta-side="left"] .moment-keep { left: 92px; right: auto; }
 @media(min-width: 900px) { :root[data-meta-side="left"] .design-footnote { padding-left: 220px; padding-right: 0; } }
+.meta-reading { border-top: 1px solid var(--line); padding-top: 8px; font-size: .78rem; }
+.meta-reading summary { min-height: 44px; padding-block: 12px; cursor: pointer; }
+.meta-reading label { display: flex; align-items: center; gap: 10px; min-height: 44px; color: var(--ink); }
+.meta-reading input { width: 20px; height: 20px; }
+.meta-reading p { color: var(--muted); line-height: 1.5; margin-block: 8px; }

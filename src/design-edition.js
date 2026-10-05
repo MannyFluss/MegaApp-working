@@ -37,10 +37,28 @@ export function createDesignEdition(defaults, saved) {
   const sourceChanged = Boolean(saved?.base && JSON.stringify(normalizeDesign(saved.base)) !== JSON.stringify(base));
   if (Array.isArray(saved?.history)) history = saved.history.slice(-12).map(item => ({ label: string(item.label, 'Version name', 300), at: string(item.at, 'Version date', 100), document: normalizeDesign(item.document) }));
   if (Array.isArray(saved?.future)) future = saved.future.slice(-12).map(item => ({ label: string(item.label, 'Version name', 300), at: string(item.at, 'Version date', 100), document: normalizeDesign(item.document) }));
+  let sourceUpdated = false;
+  if (sourceChanged) {
+    const previous = normalizeDesign(saved.base), next = copy(document), equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+    for (const field of ['title', 'introduction', 'note']) if (equal(document[field], previous[field])) next[field] = base[field];
+    for (const p of next.principles) {
+      const old = previous.principles.find(item => item.id === p.id), current = base.principles.find(item => item.id === p.id);
+      for (const field of ['title', 'text']) if (p[field] === old[field]) p[field] = current[field];
+    }
+    for (const field of ['order', 'wide', 'columns']) if (equal(document.layout[field], previous.layout[field])) next.layout[field] = copy(base.layout[field]);
+    for (const term of new Set([...Object.keys(previous.terms), ...Object.keys(base.terms)])) {
+      if (document.terms[term] === previous.terms[term]) {
+        if (Object.hasOwn(base.terms, term)) next.terms[term] = base.terms[term]; else delete next.terms[term];
+      }
+    }
+    // A valid local edition stays usable if new defaults exceed its limits.
+    let valid; try { valid = normalizeDesign(next); } catch { valid = document; }
+    if (!equal(valid, document)) { history.push({ label: 'Before updated published wording', at: new Date().toISOString(), document: copy(document) }); history = history.slice(-12); document = valid; future = []; sourceUpdated = true; }
+  }
   function checkpoint(label) { history.push({ label, at: new Date().toISOString(), document: copy(document) }); history = history.slice(-12); future = []; }
   function change(label, key, update) { if (group !== key || key === null) checkpoint(label); group = key; update(); }
   return {
-    get content() { return copy(document); }, get changed() { return JSON.stringify(document) !== JSON.stringify(base); }, get sourceChanged() { return sourceChanged; },
+    get content() { return copy(document); }, get changed() { return JSON.stringify(document) !== JSON.stringify(base); }, get sourceChanged() { return sourceChanged; }, get sourceUpdated() { return sourceUpdated; },
     get versions() { return copy(history); }, get canUndo() { return Boolean(history.length); }, get canRedo() { return Boolean(future.length); },
     endGroup() { group = null; },
     set(field, value, id) {
