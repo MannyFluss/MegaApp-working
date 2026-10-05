@@ -69,6 +69,7 @@ export function createInputSystem() {
 
 export function createPhysicalSurface(element, board, input, onChange = () => {}) {
   let drag, animation, x = 0, y = 0;
+  function local(event) { const rect = board.getBoundingClientRect(); return { x:(event.clientX-rect.left)*board.offsetWidth/Math.max(1,rect.width), y:(event.clientY-rect.top)*board.offsetHeight/Math.max(1,rect.height) }; }
   const clamp = (value, max) => Math.max(-max, Math.min(max, value));
   function bounds() { return { x: Math.max(0, (board.clientWidth - element.offsetWidth) / 2 - 12), y: Math.max(0, (board.clientHeight - element.offsetHeight) / 2 - 10) }; }
   function place() {
@@ -111,16 +112,17 @@ export function createPhysicalSurface(element, board, input, onChange = () => {}
   element.addEventListener("pointerdown", (event) => {
     if (event.button !== 0 || !event.isPrimary || drag) return;
     event.preventDefault(); stop();
-    drag = { id: event.pointerId, startX: event.clientX - x, startY: event.clientY - y, lastX: event.clientX, lastY: event.clientY, time: event.timeStamp, vx: 0, vy: 0 };
+    const point = local(event);
+    drag = { id: event.pointerId, startX: point.x - x, startY: point.y - y, lastX: point.x, lastY: point.y, time: event.timeStamp, vx: 0, vy: 0 };
     element.setPointerCapture(event.pointerId);
     element.dataset.dragging = "true";
   });
   element.addEventListener("pointermove", (event) => {
     if (drag?.id !== event.pointerId) return;
-    const limits = bounds(), dt = Math.max(1, event.timeStamp - drag.time);
-    drag.vx = (event.clientX - drag.lastX) / dt; drag.vy = (event.clientY - drag.lastY) / dt;
-    x = clamp(event.clientX - drag.startX, limits.x); y = clamp(event.clientY - drag.startY, limits.y);
-    Object.assign(drag, { lastX: event.clientX, lastY: event.clientY, time: event.timeStamp }); place();
+    const limits = bounds(), dt = Math.max(1, event.timeStamp - drag.time), point = local(event);
+    drag.vx = (point.x - drag.lastX) / dt; drag.vy = (point.y - drag.lastY) / dt;
+    x = clamp(point.x - drag.startX, limits.x); y = clamp(point.y - drag.startY, limits.y);
+    Object.assign(drag, { lastX: point.x, lastY: point.y, time: event.timeStamp }); place();
   });
   function end(event) {
     if (drag?.id !== event.pointerId) return;

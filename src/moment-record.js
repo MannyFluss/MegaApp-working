@@ -120,6 +120,12 @@ function namedActivity(event, fallback = false) {
     if (action === "Restore context arrangement") return label("context-map", "restored", "Context arrangement restored");
     if (action === "Cancel context map gesture") return label("context-map", "cancelled", "Map gesture cancelled");
     if (action === "Export context map") return label("context-map", "exported", "Context map exported");
+    if (["Navigate design canvas", "Zoom design canvas", "Focus canvas window", "Show whole design canvas"].includes(action)) return label("design-canvas", "navigated", "Design canvas explored");
+    if (["Move canvas window", "Resize canvas window", "Arrange design canvas"].includes(action)) return label("canvas-arrangement", "changed", "Design windows arranged");
+    if (action === "Undo canvas arrangement") return label("canvas-arrangement", "restored", "Window arrangement restored");
+    if (action === "Cancel canvas gesture") return label("design-canvas", "cancelled", "Canvas gesture cancelled");
+    if (action === "Export design canvas") return label("canvas-arrangement", "exported", "Canvas arrangement exported");
+    if (action === "Import design canvas") return label("canvas-arrangement", "imported", "Canvas arrangement imported");
     if (fallback && action === "Explore context concept") return label("context-map", "explored", "Context concept explored");
     if (action === "Tune shared response") return label("input-response", "previewed", "Input response previewed");
     if (fallback && action.startsWith("Understand ")) return label("dictionary", "opened", "Dictionary meaning opened");

@@ -13,7 +13,7 @@ export function createContextToy({ onAction }) {
     </div><div class="context-map-footer"><p class="context-key">Filled points: meanings. Open rings: questions. Links are proposals.</p><details class="context-options"><summary>Map options</summary><label for="context-search">Find a word</label><input id="context-search" type="search" placeholder="Find a word…"><p id="context-empty" hidden>No matching concepts.</p><p id="context-total"></p><div class="context-access"><button id="context-fit" type="button" class="quiet-button">Whole map</button><button id="context-zoom-in" type="button" class="quiet-button">Zoom in</button><button id="context-zoom-out" type="button" class="quiet-button">Zoom out</button><button id="context-undo" type="button" class="quiet-button">Undo arrangement</button><button id="context-export" type="button" class="quiet-button">Export map JSON</button></div><p>Arrow keys move across the map; + / − zoom; Home shows everything. Focus a word and use Shift + arrows to arrange it. Word placement is visual arrangement. Export preserves definitions, proposed connections and this view.</p></details></div><p id="context-save" role="status"></p></div>`;
   const map = element.querySelector('.context-map'), lines = element.querySelector('.context-lines g'), nodes = element.querySelector('.context-nodes'), detail = element.querySelector('.context-detail');
   const key = storageName('megaapp.design.context-toy.v1');
-  let graph, points = [], focused = termId('Design'), authored = {}, history = [], camera = { zoom: 1, x: 0, y: 0 }, width = 1000, height = 560, gesture = null, interaction = null, wheelTimer, wheelStart, restoredView = null;
+  let graph, points = [], focused = termId('Design'), authored = {}, history = [], camera = { zoom: 1, x: 0, y: 0 }, width = 1000, height = 560, gesture = null, interaction = null, wheelTimer, wheelStart, restoredView = null, restorationReady = false;
   const pointers = new Map(), buttons = new Map(), edges = [];
   try {
     const saved = JSON.parse(localStorage.getItem(key));
@@ -30,7 +30,9 @@ export function createContextToy({ onAction }) {
     element.querySelector('#context-undo').disabled = !history.length;
   }
   function currentPoint(id) { return points.find(p => p.id === id); }
-  function local(event) { const rect = map.getBoundingClientRect(); return { x: event.clientX - rect.left, y: event.clientY - rect.top }; }
+  // A Design window may be under an outer canvas scale. The Toy's camera and
+  // layout remain in its own CSS pixels, independent of that parent camera.
+  function local(event) { const rect = map.getBoundingClientRect(); return { x: (event.clientX - rect.left)*map.offsetWidth/Math.max(1,rect.width), y: (event.clientY - rect.top)*map.offsetHeight/Math.max(1,rect.height) }; }
   function world(point) { return { x: (point.x-camera.x)/camera.zoom, y: (point.y-camera.y)/camera.zoom }; }
   function fit(record = true) { cancel(); camera = fitContextMap(points,width,height); detail.hidden = true; paint(); persist(); if (record) { interaction = { kind: 'overview', phase: 'completed' }; onAction('Show whole context map', 'All dictionary concepts and open questions brought into view'); } }
   function select(id, keyboard = false) {
@@ -63,9 +65,13 @@ export function createContextToy({ onAction }) {
     cancel(); width=nextWidth; height=nextHeight; points=layoutContextMap(graph,width,height);
     for(const p of points) if(authored[p.id]) { p.x=authored[p.id].x*width; p.y=authored[p.id].y*height; }
     for(const p of points) { const b=buttons.get(p.id); if(b) { b.style.width=`${p.width}px`; b.style.fontSize=`${p.font}px`; } }
-    if (restoredView && restoredView.viewport?.width === width && restoredView.viewport?.height === height) camera = restoredView.camera;
+    if (restorationReady && restoredView && restoredView.viewport?.width === width && restoredView.viewport?.height === height) camera = restoredView.camera;
     else camera=fitContextMap(points,width,height);
-    restoredView=null; paint();
+    // The containing Design window is built after this Toy. Keep the saved view
+    // until that initial width has settled, rather than consuming it at the
+    // temporary document width and losing the user's camera on reload.
+    if (restorationReady) restoredView=null;
+    paint();
   }
   function build() {
     const active=document.activeElement?.dataset.id;
@@ -99,8 +105,9 @@ export function createContextToy({ onAction }) {
   }
   function cancel() { if(gesture) complete(true); releaseCaptures(); }
   const excluded=target=>target.closest?.('.context-detail, .context-home');
+  const drawing = () => element.closest('#design-guide')?.dataset.markupDrawing === 'true';
   map.addEventListener('pointerdown',event=>{
-    if(excluded(event.target) || pointers.size>=2 || event.button!==0 || (event.pointerType!=='touch' && !event.isPrimary)) return;
+    if(drawing() || excluded(event.target) || pointers.size>=2 || event.button!==0 || (event.pointerType!=='touch' && !event.isPrimary)) return;
     event.preventDefault(); map.focus({preventScroll:true}); const point=local(event); pointers.set(event.pointerId,{...point,type:event.pointerType}); try{map.setPointerCapture(event.pointerId);}catch{}
     if(pointers.size===1) begin(event.target.closest('.context-concept')?'node':'pan',event.target.closest('.context-concept')?.dataset.id,point,event);
     else if(pointers.size===2) { if(gesture?.kind==='node' && gesture.node) Object.assign(currentPoint(gesture.id),gesture.node); const [a,b]=[...pointers.values()],mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2}; begin('pinch',null,mid,event); gesture.distance=Math.max(1,Math.hypot(b.x-a.x,b.y-a.y)); gesture.world=world(mid); gesture.types=[...pointers.values()].map(p=>p.type); }
@@ -113,9 +120,10 @@ export function createContextToy({ onAction }) {
   });
   map.addEventListener('pointerup',event=>{ if(!pointers.has(event.pointerId))return; pointers.delete(event.pointerId); complete(); try{if(map.hasPointerCapture(event.pointerId))map.releasePointerCapture(event.pointerId);}catch{} if(pointers.size===1)begin('pan',null,[...pointers.values()][0],event); });
   map.addEventListener('pointercancel',cancel); map.addEventListener('lostpointercapture',event=>{if(pointers.has(event.pointerId))cancel();});
-  map.addEventListener('wheel',event=>{if(excluded(event.target))return;event.preventDefault(); if(!wheelStart)wheelStart=copy(camera); camera=zoomMapAt(camera,local(event),camera.zoom*Math.exp(-Math.max(-200,Math.min(200,event.deltaY))*.003)); detail.hidden=true;paint();clearTimeout(wheelTimer);wheelTimer=setTimeout(()=>{interaction={kind:'zoom',phase:'completed',input:['wheel'],from:wheelStart,to:copy(camera)};wheelStart=null;persist();onAction('Navigate context map','Zoomed map view saved');},180);},{passive:false});
+  map.addEventListener('wheel',event=>{if(drawing()){event.preventDefault();return;}if(excluded(event.target))return;event.preventDefault(); if(!wheelStart)wheelStart=copy(camera); camera=zoomMapAt(camera,local(event),camera.zoom*Math.exp(-Math.max(-200,Math.min(200,event.deltaY))*.003)); detail.hidden=true;paint();clearTimeout(wheelTimer);wheelTimer=setTimeout(()=>{interaction={kind:'zoom',phase:'completed',input:['wheel'],from:wheelStart,to:copy(camera)};wheelStart=null;persist();onAction('Navigate context map','Zoomed map view saved');},180);},{passive:false});
   function zoom(factor) {cancel();const from=copy(camera);camera=zoomMapAt(camera,{x:width/2,y:height/2},camera.zoom*factor);paint();persist();interaction={kind:'zoom',phase:'completed',input:['keyboard-or-control'],from,to:copy(camera)};onAction('Navigate context map','Zoomed map view saved');}
   map.addEventListener('keydown',event=>{
+    if(drawing()) return;
     if(excluded(event.target))return;
     if(event.key==='Escape'){event.preventDefault();if(gesture)cancel();else{detail.hidden=true;paint();}return;}
     if(event.key==='Home'){event.preventDefault();fit();return;}
@@ -132,6 +140,7 @@ export function createContextToy({ onAction }) {
   element.querySelector('#context-export').onclick=()=>{const data={...graph,presentation:{format:'megaapp.context-map-view',version:1,...viewContext()}},url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='megaapp-design-context-map.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);onAction('Export context map','Dictionary and visual map exported');};
   element.addEventListener('toggle',event=>{if(event.target!==element || !graph)return;if(element.open){measure();onAction('Open context Toy','Whole dictionary map opened');}else {cancel();clearTimeout(wheelTimer);if(wheelStart){camera=wheelStart;wheelStart=null;paint();}}persist();});
   const observer=new ResizeObserver(()=>measure());observer.observe(map);window.addEventListener('blur',cancel);document.addEventListener('visibilitychange',()=>{if(document.hidden)cancel();});
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{restorationReady=true;measure(true);persist();}));
   function viewContext(){return{camera:copy(camera),viewport:{width,height},positions:points.map(p=>({id:p.id,x:p.x/width,y:p.y/height})),placement:'visual-arrangement'};}
   return {element, interrupt: cancel,
     update(content){const next=buildContextGraph(content),different=JSON.stringify(next)!==JSON.stringify(graph);if(!different)return;cancel();graph=next;authored=Object.fromEntries(Object.entries(authored).filter(([id])=>graph.nodes.some(n=>n.id===id)));if(!graph.nodes.some(n=>n.id===focused))focused=graph.nodes[0].id;build();measure(true);persist();},

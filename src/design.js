@@ -1,4 +1,5 @@
 import { createDesignMarkup } from "./design-markup.js";
+import { createDesignCanvas } from "./design-canvas.js";
 import { createContextToy } from "./context-toy.js";
 import { designContent } from "./design-content.js";
 import { createPhysicalSurface } from "./input.js";
@@ -8,7 +9,7 @@ import { storageName } from "./environment.js";
 import { applyReadingStyle } from "./reading-style.js";
 
 export function createDesign({ input, onSettings, notify, onMoment = () => {}, onFeedback = () => {} }) {
-  let editor, emphasis = false;
+  let editor, canvas, emphasis = false;
   const root = document.getElementById("design-guide");
   root.innerHTML = `<header class="design-masthead"><div><h1></h1><p class="design-introduction"></p></div><div class="design-signature">MegaApp<br><span>Manny’s design</span></div></header><div class="design-principles"></div><footer class="design-footnote"><details class="design-about"><summary>About this page</summary><p></p></details><details class="design-dictionary"><summary>Dictionary</summary><div class="design-term-links" aria-label="Dictionary terms"></div></details></footer>`;
   root.querySelector("h1").textContent = designContent.title;
@@ -305,9 +306,13 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
         for (const [term] of Object.entries(content.terms)) { const button = document.createElement("button"); button.className = "design-term-link"; button.type = "button"; button.textContent = term; bindTerm(button, term); links.append(button); }
         renderedTerms = JSON.stringify(content.terms);
       }
-      contextToy.update(content); renderReading(); markup.refresh();
+      contextToy.update(content); renderReading(); markup.refresh(); canvas?.refresh();
     },
     onMutation: (action, outcome, interaction) => record(action, outcome, 'action', interaction),
+  });
+  canvas = createDesignCanvas({ root, sections,
+    onInterrupt() { contextToy.interrupt(); cancelDrag(); cancelProseTerm(); termCancellations.forEach(cancel => cancel()); },
+    onAction: (action, outcome, interaction) => record(action, outcome, 'action', interaction),
   });
   document.addEventListener("selectionchange", () => {
     const selected = getSelection(), term = Object.keys(editor?.content.terms || designContent.terms).find(t => t.toLowerCase() === selected?.toString().trim().toLowerCase());
@@ -321,13 +326,14 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
   });
   function captureContext() {
     const board = root.querySelector("#design-touch-board"), tile = root.querySelector("#design-touch-object"), position = new DOMMatrix(getComputedStyle(tile).transform);
-    return { app: "design", coverage: "Design document edition, example frames, text boundaries, context Toy, page markup, outcomes and shared tuning", title: editor ? editor.content.title : designContent.title, designDocument: editor?.content,
+    return { app: "design", coverage: "Design document edition, canvas camera/windows and bounded gestures, example frames, text boundaries, context Toy, page markup, outcomes and shared tuning", title: editor ? editor.content.title : designContent.title, designDocument: editor?.content,
       surface: { x: position.m41 / Math.max(1, board.clientWidth), y: position.m42 / Math.max(1, board.clientHeight), dragging: tile.dataset.dragging === "true" },
       words: example.words, edits: example.edits.map(({ start, end, label }) => ({ start, end, label })),
       selection: example.selection, collision: example.collision,
       message: scope.querySelector("#design-scope-status").textContent, response: input.response, settling: input.settling,
       presentation: { theme: document.documentElement.dataset.theme || 'light', viewport: { width: innerWidth, height: innerHeight, pageTop: root.getBoundingClientRect().top } },
       contextToy: contextToy.captureContext(),
+      canvas: canvas?.captureContext(),
       markup: markup.captureContext(),
       reading: { wordEmphasis: emphasis, selection: 'browser' } };
   }
@@ -336,6 +342,6 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
     captureContext,
     applyReadingPreference(enabled) { if (emphasis === enabled) return; emphasis = enabled; renderReading(); applyReadingStyle(dialog, emphasis); },
     applySettings() { if (document.activeElement === response || document.activeElement === settling) return; response.value = String(input.response); settling.value = String(input.settling); controls(); },
-    setVisible(visible) { if (!visible) { surface.reset(); cancelDrag(); markup.hide(); contextToy.hide(); editor?.hide(); termCancellations.forEach(cancel => cancel()); selectedExplanation?.remove(); if (dialog.open) dialog.close(); } },
+    setVisible(visible) { if (!visible) { surface.reset(); cancelDrag(); markup.hide(); contextToy.hide(); editor?.hide(); canvas?.hide(); termCancellations.forEach(cancel => cancel()); selectedExplanation?.remove(); if (dialog.open) dialog.close(); } },
   };
 }

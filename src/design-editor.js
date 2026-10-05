@@ -11,7 +11,7 @@ export function createDesignEditor({ root, sections, defaults, onRender, onMutat
   const signature = root.querySelector('.design-signature'), right = document.createElement('div'); right.className = 'design-masthead-right'; signature.replaceWith(right); right.append(signature, toggle);
   const editionLabel = document.createElement('span'); editionLabel.className = 'design-edition-label'; editionLabel.textContent = 'My local edition'; right.append(editionLabel);
   const tools = document.createElement('div'); tools.className = 'design-edit-tools'; tools.hidden = true;
-  tools.innerHTML = `<div class="design-edit-actions"><button id="design-page-undo" type="button" class="quiet-button">Undo</button><button id="design-page-redo" type="button" class="quiet-button">Redo</button><label>Page shape <select id="design-page-columns"><option value="2">Two columns</option><option value="1">One column</option></select></label><button id="design-page-export" type="button" class="quiet-button">Export for agents</button><button id="design-page-markdown" type="button" class="quiet-button">Export readable guide</button><button id="design-page-import" type="button" class="quiet-button">Import edition</button><input id="design-page-file" type="file" accept=".json,application/json" hidden></div><details class="design-page-versions"><summary>Earlier versions</summary><div id="design-page-history"></div><button id="design-page-reset" type="button" class="quiet-button">Restore published starting point</button></details><p id="design-page-status" role="status"></p><p class="design-edit-explanation">Write directly in the page. Move a principle with its handle or arrows. Your edition saves here; export it to share its wording and arrangement with agents.</p>`;
+  tools.innerHTML = `<div class="design-edit-actions"><button id="design-page-undo" type="button" class="quiet-button">Undo</button><button id="design-page-redo" type="button" class="quiet-button">Redo</button><label>Document columns <select id="design-page-columns"><option value="2">Two columns</option><option value="1">One column</option></select></label><button id="design-page-arrange" type="button" class="quiet-button">Arrange windows from this order</button><button id="design-page-export" type="button" class="quiet-button">Export for agents</button><button id="design-page-markdown" type="button" class="quiet-button">Export readable guide</button><button id="design-page-import" type="button" class="quiet-button">Import edition</button><input id="design-page-file" type="file" accept=".json,application/json" hidden></div><details class="design-page-versions"><summary>Earlier versions</summary><div id="design-page-history"></div><button id="design-page-reset" type="button" class="quiet-button">Restore published starting point</button></details><p id="design-page-status" role="status"></p><p class="design-edit-explanation">Write directly in the page. These handles and arrows set reading order; columns and width shape the document. Arrange windows applies that order to the canvas, with Undo available. Export the edition for its wording and reading layout; canvas view controls save the separate window arrangement.</p>`;
   root.querySelector('.design-masthead').after(tools);
   if (unreadableCopy) { const recover = document.createElement('button'); recover.type = 'button'; recover.className = 'quiet-button'; recover.textContent = 'Export unreadable save'; recover.onclick = () => download(new Blob([unreadableCopy], { type: 'text/plain' }), 'megaapp-design-unreadable.txt'); tools.querySelector('.design-page-versions').append(recover); }
   const status = tools.querySelector('#design-page-status'), container = root.querySelector('.design-principles');
@@ -29,7 +29,7 @@ export function createDesignEditor({ root, sections, defaults, onRender, onMutat
     field(section.querySelector('h2'), `Heading for ${id} principle`, 'title', id, 300);
     field(section.querySelector(':scope > p'), `Wording for ${id} principle`, 'text', id, 6000);
     const bar = document.createElement('div'); bar.className = 'design-principle-shape'; bar.hidden = true;
-    bar.innerHTML = `<button type="button" class="quiet-button design-move-handle" data-direct-input aria-label="Drag to move ${id} principle">⠿</button><button type="button" class="quiet-button design-move-earlier" aria-label="Move ${id} principle earlier">↑</button><button type="button" class="quiet-button design-move-later" aria-label="Move ${id} principle later">↓</button><label><input type="checkbox" class="design-full-width">Full width</label>`;
+    bar.innerHTML = `<button type="button" class="quiet-button design-move-handle" data-direct-input aria-label="Drag to move ${id} principle">⠿</button><button type="button" class="quiet-button design-move-earlier" aria-label="Move ${id} principle earlier">↑</button><button type="button" class="quiet-button design-move-later" aria-label="Move ${id} principle later">↓</button><label><input type="checkbox" class="design-full-width">Wide in document</label>`;
     section.prepend(bar); controls.set(id, bar);
     bar.querySelector('.design-move-earlier').onclick = () => { const order = edition.content.layout.order, index = order.indexOf(id); if (index > 0) move(id, order[index - 1]); };
     bar.querySelector('.design-move-later').onclick = () => { const order = edition.content.layout.order, index = order.indexOf(id); if (index < order.length - 1) move(id, order[index + 2] || null); };
@@ -67,7 +67,11 @@ export function createDesignEditor({ root, sections, defaults, onRender, onMutat
     drag.ghost.style.transform = `translate(${Math.max(12, Math.min(innerWidth - drag.ghost.offsetWidth - 12, event.clientX + 16))}px, ${Math.max(8, Math.min(innerHeight - drag.ghost.offsetHeight - 8, event.clientY - 22))}px)`;
     for (const section of sections.values()) delete section.dataset.drop;
     drag.before = undefined;
-    const bounds = container.getBoundingClientRect(), order = edition.content.layout.order.filter(id => id !== drag.id);
+    // Canvas windows keep their document identities and order. The grid wrapper
+    // is display:contents there, so its own rectangle cannot bound a drop.
+    const boxes = root.dataset.canvasCamera ? [...sections.values()].map(section => section.getBoundingClientRect()).filter(box => box.width && box.height) : [];
+    const bounds = boxes.length ? { left: Math.min(...boxes.map(box => box.left)), right: Math.max(...boxes.map(box => box.right)), top: Math.min(...boxes.map(box => box.top)), bottom: Math.max(...boxes.map(box => box.bottom)) } : container.getBoundingClientRect();
+    const order = edition.content.layout.order.filter(id => id !== drag.id);
     if (drag.moved && event.clientX >= bounds.left - 48 && event.clientX <= bounds.right + 48 && event.clientY >= bounds.top - 48 && event.clientY <= bounds.bottom + 48) {
       let nearest;
       for (const [index, id] of order.entries()) {
@@ -126,6 +130,7 @@ export function createDesignEditor({ root, sections, defaults, onRender, onMutat
   }
   toggle.onclick = () => { editing = !editing; edition.endGroup(); endDrag(); onModeChange?.(); render(); if (editing) fields[0].input.focus({ preventScroll: true }); onMutation('Reshape design document', editing ? 'Editing enabled' : 'Reading view restored'); };
   for (const [id, action] of [['design-page-undo', 'undo'], ['design-page-redo', 'redo'], ['design-page-reset', 'reset']]) tools.querySelector(`#${id}`).onclick = () => { edition[action](); persist(); render(); onMutation(action + ' design document', 'Local edition restored'); };
+  tools.querySelector('#design-page-arrange').onclick = () => root.querySelector('#design-canvas-reset')?.click();
   tools.querySelector('#design-page-columns').onchange = event => { edition.layout({ columns: Number(event.target.value) }); persist(); render(); onMutation('Change design columns', 'Local layout updated'); };
   function download(blob, name) { const url = URL.createObjectURL(blob), link = document.createElement('a'); link.href = url; link.download = name; link.click(); setTimeout(() => URL.revokeObjectURL(url), 10000); }
   tools.querySelector('#design-page-export').onclick = () => { download(new Blob([JSON.stringify(designEnvelope(edition.content), null, 2) + '\n'], { type: 'application/json' }), 'megaapp-design.json'); onMutation('Export design edition', 'Portable agent-readable edition created'); };
@@ -136,9 +141,18 @@ export function createDesignEditor({ root, sections, defaults, onRender, onMutat
     try { if (chosen.size > 1024 * 1024) throw new Error('Choose an edition smaller than 1 MB.'); const content = readDesignEnvelope(JSON.parse(await chosen.text())); if (generation !== importGeneration) return; edition.replace(content); persist(); render(); onMutation('Import design edition', 'Edition loaded; previous work retained'); }
     catch (error) { if (generation === importGeneration) status.textContent = `Could not import: ${error.message}`; } finally { if (generation === importGeneration) file.value = ''; }
   };
-  let resizeFrame, observedWidth;
+  let resizeFrame;
+  const observedWidths = new WeakMap();
   function scheduleSize() { if (resizeFrame) return; resizeFrame = requestAnimationFrame(() => { resizeFrame = null; for (const { input } of fields) size(input); }); }
-  const resize = new ResizeObserver(entries => { const width = entries[0].contentRect.width; if (width === observedWidth) return; observedWidth = width; scheduleSize(); }); resize.observe(root);
+  const resize = new ResizeObserver(entries => {
+    let changed = false;
+    for (const entry of entries) {
+      if (entry.contentRect.width === observedWidths.get(entry.target)) continue;
+      observedWidths.set(entry.target, entry.contentRect.width); changed = true;
+    }
+    if (changed) scheduleSize();
+  });
+  for (const node of [root, ...sections.values(), root.querySelector('.design-masthead'), root.querySelector('.design-footnote')]) resize.observe(node);
   root.querySelector('.design-about').addEventListener('toggle', scheduleSize);
   window.addEventListener('keydown', event => { if (event.key === 'Escape' && drag) { event.preventDefault(); endDrag('Escape'); } });
   window.addEventListener('blur', () => endDrag('Window blurred')); document.addEventListener('visibilitychange', () => { if (document.hidden) endDrag('App hidden'); });

@@ -426,3 +426,53 @@ select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 .design-marks-toggle[aria-expanded="true"] { outline: 1px solid var(--line); outline-offset: 3px; }
 :root[data-meta-side="left"] .design-marks-toggle { left: 220px; right: auto; }
 body.intro-open .design-marks-toggle, body.meta-is-open .design-marks-toggle, body.intro-open .design-markup-tools, body.meta-is-open .design-markup-tools { visibility: hidden; }
+
+/* A continuous Design space. Window chrome owns arrangement; words keep native input. */
+#panel-design.design-panel { height: 100dvh; min-height: 0; max-width: none; margin: 0; padding: 0; overflow: hidden; }
+#design-guide.design-canvas { height: 100%; width: 100%; overflow: clip; isolation: isolate; outline-offset: -3px; }
+.design-canvas-background { position: absolute; inset: 0; touch-action: none; background-color: var(--paper); background-image: radial-gradient(circle, var(--line) .7px, transparent .8px); cursor: grab; }
+.design-canvas-background:active { cursor: grabbing; }
+.design-canvas-world { position: absolute; top: 0; left: 0; width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
+.design-canvas .design-principles { display: contents; }
+.design-canvas .design-window { position: absolute; min-width: 260px; margin: 0; padding: 20px 24px 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: 0 3px 12px color-mix(in srgb, var(--ink) 4%, transparent); pointer-events: auto; overflow-wrap: anywhere; }
+.design-canvas .design-masthead { display: block; }
+.design-canvas-masthead-body { display: flex; align-items: start; gap: 32px; }
+.design-canvas-masthead-body > div:first-child { flex: 1; min-width: 0; }
+.design-canvas .design-masthead h1 { font-size: 2.6rem; }
+.design-canvas .design-masthead > .design-window-chrome { flex: none; min-width: 0; }
+.design-window-chrome { display: flex; align-items: center; margin: -20px -24px 18px; padding: 0 8px 0 12px; border-bottom: 1px solid var(--line); gap: 4px; }
+.design-window-handle, .design-window-focus, .design-window-resize { border: 0; background: transparent; color: var(--muted); box-shadow: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: .73rem; min-height: 44px; min-width: 44px; border-radius: 8px; }
+.design-window-handle { flex: 1; text-align: left; padding: 10px 8px; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.design-window-handle:active { cursor: grabbing; }
+.design-window-focus { padding: 8px; font-size: 1rem; }
+.design-window-resize { position: absolute; right: 0; bottom: 0; padding: 10px; touch-action: none; cursor: ew-resize; font-size: .9rem; }
+.design-canvas .design-window > h2 { font-size: 1.2rem; letter-spacing: -.025em; }
+.design-canvas .design-window > p { font-size: .88rem; }
+.design-canvas .design-footnote { display: block; padding-right: 24px; }
+.design-canvas .design-footnote > details { margin-top: 10px; }
+.design-canvas .design-footnote > details > summary { min-height: 44px; }
+.design-canvas .context-toy { margin: 0; border: 0; padding: 0; }
+.design-canvas .design-edit-tools { margin-top: 18px; }
+.design-canvas-controls { position: absolute; z-index: 12; top: calc(12px + env(safe-area-inset-top)); left: 12px; max-width: calc(100% - 24px); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.design-canvas-navigation { display: flex; gap: 4px; align-items: center; padding: 4px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--floating-shadow); }
+.design-canvas-navigation > button, .design-canvas-navigation > select { min-height: 44px; margin: 0; font-size: .74rem; }
+.design-canvas-navigation > select { width: 190px; max-width: 36vw; border: 0; padding: 8px; background-color: transparent; }
+.design-canvas-options { position: relative; }
+.design-canvas-options > summary { min-width: 58px; min-height: 44px; cursor: pointer; padding: 12px 8px; font-size: .74rem; list-style: none; color: var(--muted); text-align: center; border-radius: 10px; }
+.design-canvas-options > summary::-webkit-details-marker { display: none; }
+.design-canvas-options > div { position: absolute; top: calc(100% + 10px); right: 0; width: 310px; max-width: calc(100vw - 24px); max-height: calc(100dvh - 100px); overflow-y: auto; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--floating-shadow); }
+.design-canvas-options p { color: var(--muted); font-size: .74rem; line-height: 1.5; margin: 12px 0; }
+.design-canvas-options > div > button { display: block; width: 100%; text-align: left; min-height: 44px; font-size: .75rem; }
+.design-canvas-zoom-actions { display: flex; gap: 8px; }
+.design-canvas-zoom-actions > button { flex: 1; min-height: 44px; }
+@media (max-width: 650px) {
+  .design-canvas-masthead-body { display: block; }
+  .design-canvas .design-masthead h1 { font-size: 2.1rem; }
+  .design-canvas .design-signature { text-align: left; }
+  .design-canvas .design-window { padding: 18px 20px 24px; }
+  .design-window-chrome { margin: -18px -20px 16px; }
+  .design-canvas-navigation { gap: 0; padding: 2px; }
+  .design-canvas-navigation > button { padding: 8px; font-size: .68rem; }
+  .design-canvas-navigation > select { width: 120px; max-width: 30vw; font-size: .68rem; }
+  .design-canvas-options > summary { min-width: 46px; font-size: .68rem; padding-inline: 4px; }
+}
