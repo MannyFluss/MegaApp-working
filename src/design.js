@@ -204,6 +204,58 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
     record(`Understand ${term}`, "Definition shown in context");
   }
   const termCancellations = new Set(), termCleanup = new WeakMap();
+  let proseContact, proseTimer, proseTarget;
+  function cancelProseTerm() { proseContact = proseTarget = null; clearTimeout(proseTimer); proseTimer = null; }
+  termCancellations.add(cancelProseTerm);
+  const proseTerm = target => target.closest?.('.design-vocabulary');
+  // Keep native selection/callouts in charge during contact. A brief release
+  // grace period lets a repeated click become word/paragraph selection before
+  // a modal explanation can take focus.
+  document.addEventListener('pointerdown', cancelProseTerm, true);
+  root.addEventListener('pointerdown', event => {
+    const element = proseTerm(event.target);
+    if (!element || event.defaultPrevented || !event.isPrimary || event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    proseContact = { element, id: event.pointerId, x: event.clientX, y: event.clientY, started: performance.now() };
+  });
+  document.addEventListener('pointermove', event => {
+    if (proseContact?.id === event.pointerId && Math.hypot(event.clientX - proseContact.x, event.clientY - proseContact.y) > 10) cancelProseTerm();
+  });
+  document.addEventListener('pointerup', event => {
+    if (proseContact?.id !== event.pointerId) return;
+    const contact = proseContact; proseContact = null;
+    if (event.defaultPrevented || event.button !== 0 || proseTerm(event.target) !== contact.element || performance.now() - contact.started > 350 || Math.hypot(event.clientX - contact.x, event.clientY - contact.y) > 10 || !getSelection()?.isCollapsed) return;
+    proseTarget = contact.element;
+    proseTimer = setTimeout(() => {
+      proseTimer = proseTarget = null;
+      if (contact.element.isConnected && !contact.element.closest('[hidden], [inert]') && getSelection()?.isCollapsed) explain(contact.element.dataset.term, contact.element);
+    }, 350);
+  });
+  for (const name of ['pointercancel', 'contextmenu']) document.addEventListener(name, cancelProseTerm, true);
+  // Touch's implicit capture is normally released after a successful pointerup.
+  document.addEventListener('lostpointercapture', event => { if (proseContact?.id === event.pointerId) cancelProseTerm(); }, true);
+  document.addEventListener('scroll', cancelProseTerm, { capture: true, passive: true });
+  document.addEventListener('wheel', cancelProseTerm, { passive: true });
+  document.addEventListener('selectionchange', () => { if (!getSelection()?.isCollapsed) cancelProseTerm(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) cancelProseTerm(); });
+  window.addEventListener('blur', cancelProseTerm);
+  window.addEventListener('hashchange', cancelProseTerm);
+  root.addEventListener('click', event => {
+    const element = proseTerm(event.target);
+    if (!element) return;
+    if (event.detail > 1) cancelProseTerm();
+    // Accessibility activation need not deliver a pointer sequence.
+    if (event.detail === 0 && !event.pointerType) { cancelProseTerm(); explain(element.dataset.term, element); }
+  });
+  root.addEventListener('focusout', event => {
+    const target = proseContact?.element || proseTarget;
+    if (target && event.relatedTarget !== target && !target.contains(event.relatedTarget)) cancelProseTerm();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') cancelProseTerm();
+    const element = proseTerm(event.target);
+    if (!element || !['Enter', ' '].includes(event.key)) return;
+    event.preventDefault(); cancelProseTerm(); if (!event.repeat) explain(element.dataset.term, element);
+  });
   function bindTerm(element, term) {
     element.setAttribute("aria-haspopup", "dialog");
     let timer, point, held = false;
@@ -229,6 +281,7 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
       paragraph.append(document.createTextNode(value.slice(position, match.index)));
       const term = names.find(t => t.toLowerCase() === match[0].toLowerCase()), link = document.createElement("span");
       link.className = "design-vocabulary"; link.textContent = match[0]; link.dataset.term = term;
+      link.tabIndex = 0; link.setAttribute('role', 'button'); link.setAttribute('aria-haspopup', 'dialog'); link.setAttribute('aria-label', `Understand ${term}`);
       paragraph.append(link); position = pattern.lastIndex;
     }
     paragraph.append(document.createTextNode(value.slice(position)));
@@ -242,6 +295,7 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
   editor = createDesignEditor({ root, sections, defaults: designContent,
     onModeChange() { termCancellations.forEach(cancel => cancel()); if (dialog.open) dialog.close(); selectedExplanation?.remove(); },
     onRender(content, editing) {
+      cancelProseTerm();
       root.querySelector("h1").textContent = content.title;
       root.querySelector(".design-introduction").textContent = content.introduction;
       root.querySelector(".design-about p").textContent = content.note;

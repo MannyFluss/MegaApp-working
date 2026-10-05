@@ -340,7 +340,7 @@ select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 .design-principle > h2, .design-vocabulary, .reading-word, .reading-word b {
   -webkit-user-select: text; user-select: text; -webkit-touch-callout: default;
 }
-.design-vocabulary { cursor: text; }
+.design-vocabulary, .design-vocabulary .reading-word b { cursor: help; }
 .reading-word b { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; cursor: text; }
 .reading-word b { font-weight: 650; }
 .design-feedback { font-size: .75rem; margin-top: 12px; }
