@@ -30,7 +30,7 @@ Restore useful state when I return. Save locally, sync deliberately, and make re
 
 Software is material I can reshape. A Tool follows dependable defaults; a Toy has room to play. Reading preferences allow app overrides. Preserve work, understandable access, and agent-operable actions. Policy governs authority; protocol governs interaction.
 
-One living surface for my design. Feel a response, define a boundary, reshape the page. Tap a marked dictionary term for its meaning, or highlight text normally; a selected term offers its meaning nearby. Explore my context opens the whole dictionary as a map with proposed connections and open questions. Move words to arrange the view; their meanings remain. Pencil adds free markup; its controls live here on demand. Give feedback keeps a moment for my explanation; I choose when to export it. Reading preferences live in Meta. Local editions and working material stay on this device. The detailed layer model remains open.
+One living surface for my design. Feel a response, define a boundary, reshape the page. Tap a marked dictionary term for its meaning, or highlight text normally; a selected term offers its meaning nearby. Explore my context opens the whole dictionary as a map with proposed connections and open questions. Move words to arrange the view; their meanings remain. Pencil adds free markup; its controls open beside the Pencil button. Give feedback keeps a moment for my explanation; I choose when to export it. Reading preferences live in Meta. Local editions and working material stay on this device. The detailed layer model remains open.
 
 <!-- MegaApp layout: {"order":["touch","scope","still","capability","context","continuity","override"],"wide":["override"],"columns":2} -->
 

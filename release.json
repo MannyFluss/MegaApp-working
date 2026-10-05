@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "75b6bd7bdb7a3657732b5b0043c4349dd368ee78ecd1133045798eea4a517a50",
+  "sourceDigest": "31bc7b9ac6e53b14c5ac4e48d1eb9d3ab850f9d72541018b23c03b719c905891",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -13,7 +13,7 @@
     },
     {
       "path": "docs/design.md",
-      "sha256": "1992d842705ccd81ee6bb4362c89c1d509df8927ffbda5d64f33919d11b205c6"
+      "sha256": "b05160ca3c51c77a30ab09eb2d6dce6c732d8f0a6c4ca0c03cab021353f4b6fb"
     },
     {
       "path": "docs/pdf-library.md",
@@ -33,7 +33,7 @@
     },
     {
       "path": "frontend.css",
-      "sha256": "16d50ea98762f52f7108c7b0fe27b88219e6a7c0b765234e9e4d900be7a6c083"
+      "sha256": "2b50d28b38b4214b529100c9ee695266d9236d13327b24cbbad1b7417d99139e"
     },
     {
       "path": "icons/apple-touch-icon.png",
@@ -113,7 +113,7 @@
     },
     {
       "path": "src/design-content.js",
-      "sha256": "a303a0f44b04bcbaf768fbad6adf7d93dd3f9fd0759bb7fa6c3a1492cd21a224"
+      "sha256": "9222f9864f3dc3413a8e1e251f62616ee89b30b854372c419660a6ea6a19f9ea"
     },
     {
       "path": "src/design-edition.js",
@@ -125,7 +125,7 @@
     },
     {
       "path": "src/design-markup.js",
-      "sha256": "2e91a303ec9cf666e29379408daf22bdaebf9799fd87056ff4b42a60238524de"
+      "sha256": "aa291f008f08702b5d02c07f3fed73c73e11f001c0994bcaea34754ca9ff8554"
     },
     {
       "path": "src/design.js",
@@ -209,7 +209,7 @@
     },
     {
       "path": "src/page-markup.js",
-      "sha256": "88dd8eb16483b8e5a9f667f1a5628418b45b86ffcc00f07d14b90bd0234b211e"
+      "sha256": "372c3fcde3de8abc629f73f9f697a64054e9d48090447ea7cd7d7e6ba0ea02b2"
     },
     {
       "path": "src/pdf-workspace.js",
@@ -269,7 +269,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "85b827ad9e606c6f11e305532df372061fc26eae9e4db57bf82e37b69ddc19a3"
+      "sha256": "873f196b3cf1e83f825f22a1e4962230d94a7c5bd34ef7134cd6b1624ec1f4f4"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

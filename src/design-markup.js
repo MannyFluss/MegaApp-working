@@ -1,31 +1,53 @@
 import { freezeJSON } from "./moment-codec.js";
-import { emptyMarkup, readMarkup, projectStroke, projectMapStroke } from './page-markup.js';
+import { emptyMarkup, readMarkup, projectStroke, projectMapStroke, MAX_MARKUP_POINTS, markupPointCount, remainingMarkupPoints } from './page-markup.js';
 import { storageName } from './environment.js';
 
 export function createDesignMarkup({ root, onAction, onStart = () => {} }) {
-  const tools = document.createElement('details'); tools.className = 'design-markup-tools'; tools.innerHTML = `<summary>Pencil markup</summary><div class="design-markup-controls"><label><input id="markup-enabled" type="checkbox" checked> Pencil draws over this page</label><label><input id="markup-visible" type="checkbox" checked> Show marks</label><label>Ink <input id="markup-color" type="color" value="#ad405b"></label><label>Width <input id="markup-width" type="range" min="1" max="12" step="1" value="3"></label><button id="markup-undo" type="button" class="quiet-button">Undo mark</button><button id="markup-redo" type="button" class="quiet-button">Redo</button><button id="markup-clear" type="button" class="quiet-button">Clear marks</button><label><input id="markup-any-pointer" type="checkbox"> Draw with any pointer</label><p>Fingers keep normal selection and scrolling. Marks scale with their part of the page; text can reflow underneath. Draw with any pointer temporarily owns page gestures. Turn it off to read normally.</p><p id="markup-status" role="status">Marks save on this device and travel with your kept feedback.</p></div>`;
-  root.querySelector('.design-footnote').append(tools);
+  const tools = document.createElement('section'); tools.className = 'design-markup-tools'; tools.id = 'design-markup-palette'; tools.hidden = true; tools.setAttribute('aria-label', 'Pencil markup');
+  tools.innerHTML = `<header class="design-markup-heading"><strong>Pencil markup</strong><button id="markup-close" type="button" class="quiet-button" aria-label="Close Pencil markup">×</button></header><div class="design-markup-controls"><div class="design-markup-brush"><label>Ink <input id="markup-color" type="color" value="#ad405b"></label><label class="design-markup-width">Width <output id="markup-width-value" for="markup-width">3</output><input id="markup-width" type="range" min="1" max="12" step="1" value="3"></label></div><div class="design-markup-actions"><button id="markup-undo" type="button" class="quiet-button">Undo mark</button><button id="markup-redo" type="button" class="quiet-button">Redo</button><label><input id="markup-visible" type="checkbox" checked> Show marks</label></div><details class="design-markup-options"><summary>Page input and saved marks</summary><label><input id="markup-enabled" type="checkbox" checked> Pencil draws over this page</label><label><input id="markup-any-pointer" type="checkbox"> Draw with any pointer</label><p>Fingers keep normal selection and scrolling. Any-pointer drawing takes over page gestures until turned off.</p><div class="design-markup-actions"><button id="markup-export" type="button" class="quiet-button">Save marks JSON</button><button id="markup-clear" type="button" class="quiet-button">Clear marks</button></div><p>Redo restores cleared marks, including after reload.</p></details><p id="markup-status" role="status">Marks save on this device.</p></div>`;
+  root.append(tools);
   const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); overlay.classList.add('design-ink'); overlay.setAttribute('aria-hidden', 'true'); root.append(overlay);
   const enabled = tools.querySelector('#markup-enabled'), any = tools.querySelector('#markup-any-pointer'), status = tools.querySelector('#markup-status');
-  const visible = tools.querySelector('#markup-visible');
-  const visibility = document.createElement('button'); visibility.type = 'button'; visibility.id = 'design-marks-toggle'; visibility.className = 'quiet-button design-marks-toggle'; visibility.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17l-1 4 4-1L20 8l-4-4L5 17Zm9-11 4 4"/></svg>'; root.querySelector('.design-footnote').prepend(visibility);
-  function showMarks() { overlay.style.visibility = visible.checked ? 'visible' : 'hidden'; visibility.setAttribute('aria-label', visible.checked ? 'Hide Pencil marks' : 'Show Pencil marks'); visibility.title = visible.checked ? 'Hide Pencil marks' : 'Show Pencil marks'; visibility.setAttribute('aria-pressed', String(visible.checked)); }
+  const visible = tools.querySelector('#markup-visible'), color = tools.querySelector('#markup-color'), width = tools.querySelector('#markup-width');
+  const visibility = document.createElement('button'); visibility.type = 'button'; visibility.id = 'design-marks-toggle'; visibility.className = 'quiet-button design-marks-toggle'; visibility.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17l-1 4 4-1L20 8l-4-4L5 17Zm9-11 4 4"/></svg>'; visibility.setAttribute('aria-controls', tools.id); visibility.setAttribute('aria-expanded', 'false'); visibility.setAttribute('aria-label', 'Pencil markup'); visibility.title = 'Pencil markup'; root.querySelector('.design-footnote').prepend(visibility);
+  function showMarks() { overlay.style.visibility = visible.checked ? 'visible' : 'hidden'; visibility.classList.toggle('has-visible-marks', visible.checked); }
+  function brush() { tools.querySelector('#markup-width-value').value = width.value; visibility.style.setProperty('--markup-ink', color.value); }
+  function palette(open, { restoreFocus = false, record = true } = {}) {
+    if (open === !tools.hidden) return;
+    const focusInside = tools.contains(document.activeElement);
+    tools.hidden = !open; visibility.setAttribute('aria-expanded', String(open));
+    if (!open) tools.querySelector('.design-markup-options').open = false;
+    if (restoreFocus && focusInside) visibility.focus({ preventScroll: true });
+    if (record) onAction('Open Pencil controls', open ? 'Pencil palette opened beside the pen button' : 'Pencil palette dismissed; page input continues');
+  }
+  function revealRecovery() { palette(true); tools.querySelector('.design-markup-options').open = true; }
   const key = storageName('megaapp.design.markup.v1');
-  let ink = emptyMarkup(), future = [], unreadable = '', current = null, started = 0, moved = false, paintPending = false, savedError = '';
+  let ink = emptyMarkup(), future = [], unreadable = '', current = null, started = 0, moved = false, paintPending = false, currentPointBudget = 0, lastSaveFailed = false, savedError = '';
   try {
     unreadable = localStorage.getItem(key) || '';
     if (unreadable) {
       const saved = JSON.parse(unreadable); ink = readMarkup(saved); ink.strokes.forEach(freezeJSON);
       if(saved.recovery !== undefined) {
-        if(!Array.isArray(saved.recovery) || saved.recovery.length>60)throw new Error('Invalid mark recovery.');
+        if(!Array.isArray(saved.recovery) || saved.recovery.length>MAX_MARKUP_POINTS)throw new Error('Invalid mark recovery.');
+        // Reject oversized or repeated recovery before copying any of its points.
+        let recoveryPoints = markupPointCount(ink.strokes);
+        const identities = new Set(ink.strokes.map(stroke => stroke.id));
+        for (const group of saved.recovery) {
+          if (!Array.isArray(group) || group.length > MAX_MARKUP_POINTS) throw new Error('Invalid mark recovery.');
+          for (const stroke of group) {
+            if (!Array.isArray(stroke?.points) || !stroke.points.length || identities.has(stroke.id)) throw new Error('Invalid mark recovery.');
+            recoveryPoints += stroke.points.length;
+            if (recoveryPoints > MAX_MARKUP_POINTS) throw new Error('Invalid mark recovery: point budget exceeded.');
+            identities.add(stroke.id);
+          }
+        }
         future=saved.recovery.map(strokes=>readMarkup({...emptyMarkup(),strokes}).strokes.map(freezeJSON));
-        readMarkup({...emptyMarkup(),strokes:[...ink.strokes,...future.flat()]});
       }
       const prefs = saved.preferences;
       if (typeof prefs?.enabled === 'boolean') enabled.checked = prefs.enabled;
       if (typeof prefs?.visible === 'boolean') visible.checked = prefs.visible;
-      if (/^#[\da-f]{6}$/i.test(prefs?.color || '')) tools.querySelector('#markup-color').value = prefs.color;
-      if (Number.isFinite(prefs?.width) && prefs.width >= 1 && prefs.width <= 12) tools.querySelector('#markup-width').value = String(prefs.width);
+      if (/^#[\da-f]{6}$/i.test(prefs?.color || '')) color.value = prefs.color;
+      if (Number.isFinite(prefs?.width) && prefs.width >= 1 && prefs.width <= 12) width.value = String(prefs.width);
     }
   }
   catch {
@@ -34,7 +56,7 @@ export function createDesignMarkup({ root, onAction, onStart = () => {} }) {
       const recover = document.createElement('button'); recover.type = 'button'; recover.className = 'quiet-button'; recover.textContent = 'Export unreadable marks';
       recover.onclick = () => { const url = URL.createObjectURL(new Blob([unreadable], { type: 'text/plain' })), link = document.createElement('a'); link.href = url; link.download = 'megaapp-unreadable-page-marks.txt'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 10000); };
       tools.querySelector('.design-markup-controls').append(recover);
-    } else status.textContent = 'Device storage is unavailable. Marks can stay in this session; keep and export feedback before leaving.';
+    } else status.textContent = 'Device storage is unavailable. Marks can stay in this session; save marks JSON before leaving.';
   }
   function areaNode(id) {
     if (id.startsWith('principle:')) return [...root.querySelectorAll('.design-principle')].find(node => node.dataset.principle === id.slice(10));
@@ -56,8 +78,8 @@ export function createDesignMarkup({ root, onAction, onStart = () => {} }) {
   }
   function controls() { tools.querySelector('#markup-undo').disabled = Boolean(savedError) || !ink.strokes.length; tools.querySelector('#markup-redo').disabled = Boolean(savedError) || !future.length; tools.querySelector('#markup-clear').disabled = Boolean(savedError) || !ink.strokes.length; }
   function save() {
-    try { localStorage.setItem(key, JSON.stringify({ ...ink, recovery: future, preferences: { enabled: enabled.checked, visible: visible.checked, color: tools.querySelector('#markup-color').value, width: Number(tools.querySelector('#markup-width').value) } })); status.textContent = `${ink.strokes.length} mark${ink.strokes.length === 1 ? '' : 's'} saved on this device. Kept feedback includes them.`; }
-    catch { status.textContent = 'Marks are in this session. Saving failed; keep and export feedback before leaving.'; }
+    try { lastSaveFailed = false; localStorage.setItem(key, JSON.stringify({ ...ink, recovery: future, preferences: { enabled: enabled.checked, visible: visible.checked, color: color.value, width: Number(width.value) } })); status.textContent = `${ink.strokes.length} mark${ink.strokes.length === 1 ? '' : 's'} saved on this device.`; }
+    catch { lastSaveFailed = true; revealRecovery(); status.textContent = 'Marks are in this session. Saving failed; save marks JSON before leaving.'; }
     controls();
   }
   // Retain committed paths. Only the active path changes while drawing.
@@ -104,7 +126,7 @@ export function createDesignMarkup({ root, onAction, onStart = () => {} }) {
   function point(event) {
     const box = areaNode(current.area).getBoundingClientRect();
     const camera = current.area === 'context-map' ? JSON.parse(areaNode(current.area).dataset.camera) : {x:0,y:0,zoom:1};
-    return { x: (event.clientX - box.left-camera.x) / Math.max(1, box.width) / camera.zoom, y: (event.clientY - box.top-camera.y) / Math.max(1, box.height) / camera.zoom, t: Math.max(0, Math.round(event.timeStamp - started)), pressure: Math.max(0, Math.min(1, Number.isFinite(event.pressure) ? event.pressure : .5)) };
+    return { x: (event.clientX - box.left-camera.x) / Math.max(1, box.width) / camera.zoom, y: (event.clientY - box.top-camera.y) / Math.max(1, box.height) / camera.zoom, t: Math.max(0, Math.round(event.timeStamp - started), current.points.at(-1)?.t || 0), pressure: Math.max(0, Math.min(1, Number.isFinite(event.pressure) ? event.pressure : .5)) };
   }
   function finish(commit, outcome) {
     if (!current) return;
@@ -118,21 +140,30 @@ export function createDesignMarkup({ root, onAction, onStart = () => {} }) {
     if (!visible.checked || !enabled.checked || savedError || exempt(event.target) || event.button !== 0 || !event.isPrimary || (event.pointerType !== 'pen' && !any.checked)) return;
     event.preventDefault(); event.stopImmediatePropagation();
     if (current) finish(false);
-    if (ink.strokes.length >= 60 || ink.strokes.reduce((n, stroke) => n + stroke.points.length, 0) >= 11000) { status.textContent = 'This page has reached its ink limit. Keep/export feedback, then clear marks to continue.'; return; }
+    currentPointBudget = remainingMarkupPoints(ink.strokes);
+    if (!currentPointBudget) { revealRecovery(); status.textContent = `This page has reached its ink budget.${lastSaveFailed ? ' Saving failed; marks remain in this session.' : ''} Save marks JSON before clearing; Redo can restore cleared marks.`; onAction('Page ink budget reached', 'New mark blocked; exact marks and recovery remain'); return; }
     onStart();
     const area = areaFor(event.target, event), box = areaNode(area).getBoundingClientRect(); started = event.timeStamp; moved = false;
-    current = { id: crypto.randomUUID(), area, color: tools.querySelector('#markup-color').value, width: Number(tools.querySelector('#markup-width').value), geometry: { width: Math.max(1, box.width), height: Math.max(1, box.height), ...(area === 'context-map' ? {zoom:JSON.parse(areaNode(area).dataset.camera).zoom} : {}) }, points: [], pointerId: event.pointerId };
+    current = { id: crypto.randomUUID(), area, color: color.value, width: Number(width.value), geometry: { width: Math.max(1, box.width), height: Math.max(1, box.height), ...(area === 'context-map' ? {zoom:JSON.parse(areaNode(area).dataset.camera).zoom} : {}) }, points: [], pointerId: event.pointerId };
     current.points.push(point(event)); try { root.setPointerCapture(event.pointerId); } catch { /* Synthetic events have no active hardware pointer. */ } refresh();
   }, true);
   root.addEventListener('pointermove', event => {
     if (!current || event.pointerId !== current.pointerId) return;
     if (event.buttons === 0) { finish(false); return; }
     event.preventDefault(); event.stopImmediatePropagation();
-    if (current.points.length >= 999) { status.textContent = 'Long mark ended at the point limit. Start another stroke.'; finish(true, 'Stroke saved at its point limit'); return; }
+    if (current.points.length >= currentPointBudget) { finish(true, 'Stroke saved at the page ink budget; every accepted point preserved'); revealRecovery(); status.textContent = `This page has reached its ink budget. Your mark is preserved.${lastSaveFailed ? ' Saving failed; marks remain in this session.' : ''} Save marks JSON before clearing; Redo can restore cleared marks.`; return; }
     const next = point(event), prev = current.points.at(-1);
     if (Math.hypot((next.x - prev.x) * current.geometry.width, (next.y - prev.y) * current.geometry.height) >= 2) { current.points.push(next); moved = true; refresh(); }
   }, true);
-  root.addEventListener('pointerup', event => { if (current && event.pointerId === current.pointerId) { event.preventDefault(); event.stopImmediatePropagation(); finish(true, moved ? 'Freehand stroke saved with area, geometry, timing and pressure' : 'Ink point saved with page context'); } }, true);
+  root.addEventListener('pointerup', event => {
+    if (!current || event.pointerId !== current.pointerId) return;
+    event.preventDefault(); event.stopImmediatePropagation();
+    // The release endpoint belongs to the mark, even below the move sampling gap.
+    const next = point(event), prev = current.points.at(-1);
+    if (current.points.length < currentPointBudget && (next.x !== prev.x || next.y !== prev.y)) { current.points.push(next); moved = true; }
+    finish(true, moved ? 'Freehand stroke saved with area, geometry, timing and pressure' : 'Ink point saved with page context');
+    if (!remainingMarkupPoints(ink.strokes)) { revealRecovery(); status.textContent = `This page has reached its ink budget. Your mark is preserved.${lastSaveFailed ? ' Saving failed; marks remain in this session.' : ''} Save marks JSON before clearing; Redo can restore cleared marks.`; }
+  }, true);
   for (const name of ['pointercancel', 'lostpointercapture']) root.addEventListener(name, event => { if (current?.pointerId === event.pointerId) finish(false); }, true);
   // Safari's stylus Touch Events guard preserves ordinary direct-finger events.
   // Mixed contacts remain browser/OS controlled; PointerEvent cancellation alone
@@ -148,18 +179,33 @@ export function createDesignMarkup({ root, onAction, onStart = () => {} }) {
   for (const type of ['touchend', 'touchcancel']) root.addEventListener(type, event => {
     if (current && [...event.changedTouches].some(touch => touch.touchType === 'stylus') && ![...event.touches].some(touch => touch.touchType === 'stylus')) finish(type === 'touchend', 'Stroke saved at stylus touch end');
   }, { passive: true });
-  function mode() { if (savedError) { any.checked = false; status.textContent = savedError; return; } finish(false); if (!enabled.checked) any.checked = false; root.classList.toggle('design-draw-any', visible.checked && enabled.checked && any.checked); status.textContent = any.checked ? 'Drawing surface owns page gestures. Turn off Draw with any pointer to return to native reading.' : enabled.checked ? 'Pencil draws; fingers retain normal browser interaction.' : 'Native page input, including Pencil, passes through.'; if (!savedError) { try { localStorage.setItem(key, JSON.stringify({ ...ink, recovery: future, preferences: { enabled: enabled.checked, visible: visible.checked, color: tools.querySelector('#markup-color').value, width: Number(tools.querySelector('#markup-width').value) } })); } catch { status.textContent += ' This choice could not be saved.'; } } onAction('Choose page input', status.textContent); }
+  function mode() { if (savedError) { any.checked = false; status.textContent = savedError; return; } finish(false); if (!enabled.checked) any.checked = false; root.classList.toggle('design-draw-any', visible.checked && enabled.checked && any.checked); status.textContent = any.checked ? 'Drawing surface owns page gestures. Turn off Draw with any pointer to return to native reading.' : enabled.checked ? 'Pencil draws; fingers retain normal browser interaction.' : 'Native page input, including Pencil, passes through.'; if (!savedError) { try { localStorage.setItem(key, JSON.stringify({ ...ink, recovery: future, preferences: { enabled: enabled.checked, visible: visible.checked, color: color.value, width: Number(width.value) } })); } catch { revealRecovery(); status.textContent += ' This choice could not be saved. Save marks JSON before leaving.'; } } onAction('Choose page input', status.textContent); }
   enabled.onchange = mode; any.onchange = mode;
   visible.onchange = () => { finish(false); showMarks(); if (!visible.checked) { any.checked=false; root.classList.remove('design-draw-any'); } if(!savedError)save(); onAction('Set page marks visibility',visible.checked?'Saved marks shown':'Marks hidden; saved drawings preserved'); };
-  visibility.onclick = () => {visible.checked=!visible.checked;visible.onchange();};
+  visibility.onclick = event => { const open = tools.hidden; palette(open); if (open && event.detail === 0) color.focus({ preventScroll: true }); };
+  tools.querySelector('#markup-close').onclick = () => palette(false, { restoreFocus: true });
+  document.addEventListener('pointerdown', event => {
+    if (tools.contains(event.target) || visibility.contains(event.target)) return;
+    // Drawing keeps the brush at hand. Native reading dismisses it naturally.
+    if (visible.checked && enabled.checked && !savedError && !exempt(event.target) && (event.pointerType === 'pen' || any.checked)) return;
+    palette(false);
+  }, true);
   tools.querySelector('#markup-undo').onclick = () => { finish(false); if (ink.strokes.length) { future.push([ink.strokes.pop()]); save(); refresh(); onAction('Undo page markup', 'Last mark removed with recovery available'); } };
   tools.querySelector('#markup-redo').onclick = () => { finish(false); if (future.length) { ink.strokes.push(...future.pop()); save(); refresh(); onAction('Restore page markup', 'Removed marks restored'); } };
   tools.querySelector('#markup-clear').onclick = () => { finish(false); if (ink.strokes.length) { future.push(ink.strokes); ink = emptyMarkup(); save(); refresh(); onAction('Clear page markup', 'Marks cleared; Redo can restore them'); } };
-  tools.querySelector('#markup-color').onchange = () => { if (!savedError) save(); onAction('Choose markup ink', 'Ink color changed'); };
-  tools.querySelector('#markup-width').onchange = () => { if (!savedError) save(); onAction('Choose markup width', 'Stroke width changed'); };
-  window.addEventListener('keydown', event => { if(event.key === 'Escape' && current){event.preventDefault();finish(false);} });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) finish(false); }); window.addEventListener('blur', () => finish(false));
-  controls(); showMarks(); refresh();
+  color.onchange = () => { brush(); if (!savedError) save(); onAction('Choose markup ink', 'Ink color changed'); };
+  width.oninput = brush;
+  width.onchange = () => { brush(); if (!savedError) save(); onAction('Choose markup width', 'Stroke width changed'); };
+  tools.querySelector('.design-markup-options').addEventListener('toggle', () => { if (!tools.hidden) onAction('Inspect Pencil options', tools.querySelector('.design-markup-options').open ? 'Page input and saved marks controls opened' : 'Page input and saved marks controls folded'); });
+  tools.querySelector('#markup-export').onclick = () => {
+    finish(false);
+    const snapshot = savedError ? unreadable : JSON.stringify({ ...ink, recovery: future, preferences: { enabled: enabled.checked, visible: visible.checked, color: color.value, width: Number(width.value) } }, null, 2);
+    const url = URL.createObjectURL(new Blob([snapshot], { type: 'application/json' })), link = document.createElement('a'); link.href = url; link.download = 'megaapp-page-marks.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 10000);
+    onAction('Export page markup', 'Exact marks and recovery JSON prepared for browser download');
+  };
+  window.addEventListener('keydown', event => { if (event.key !== 'Escape') return; if (current) { event.preventDefault(); finish(false); } if (!tools.hidden) { event.preventDefault(); palette(false, { restoreFocus: true }); } });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { finish(false); palette(false, { record: false }); } }); window.addEventListener('blur', () => finish(false));
+  controls(); showMarks(); brush(); refresh();
   function captureContext() {
     const page = root.getBoundingClientRect(), areas = {}, targets = [];
     for (const area of new Set(ink.strokes.map(stroke => stroke.area))) {
@@ -170,7 +216,7 @@ export function createDesignMarkup({ root, onAction, onStart = () => {} }) {
         targets.push({ id: `${area}:${target.id || index}`, label: (target.getAttribute('aria-label') || target.dataset.term || target.textContent || '').slice(0, 120), area, x: rect.left - page.left, y: rect.top - page.top, width: rect.width, height: rect.height });
       }
     }
-    return { ...ink, visible: visible.checked, pageGeometry: { width: page.width, height: page.height, areas, targets }, input: visible.checked && enabled.checked ? any.checked ? 'any-pointer' : 'pencil' : 'native', ink: { color: tools.querySelector('#markup-color').value, width: Number(tools.querySelector('#markup-width').value) }, currentStroke: current ? { area: current.area, color: current.color, width: current.width, geometry: current.geometry, points: current.points } : null };
+    return { ...ink, visible: visible.checked, controls: { open: !tools.hidden, optionsOpen: tools.querySelector('.design-markup-options').open }, pageGeometry: { width: page.width, height: page.height, areas, targets }, input: visible.checked && enabled.checked ? any.checked ? 'any-pointer' : 'pencil' : 'native', ink: { color: color.value, width: Number(width.value) }, currentStroke: current ? { area: current.area, color: current.color, width: current.width, geometry: current.geometry, points: current.points } : null };
   }
-  return { refresh: invalidate, hide() { finish(false); }, captureContext };
+  return { refresh: invalidate, hide() { finish(false); palette(false, { record: false }); }, captureContext };
 }
