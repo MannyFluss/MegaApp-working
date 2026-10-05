@@ -8,7 +8,7 @@ export function validateMoment(moment) {
   if (!moment || moment.format !== MOMENT_FORMAT || moment.version !== 1 || typeof moment.id !== "string" || typeof moment.capturedAt !== "string" ||
       !Number.isFinite(moment.duration) || moment.duration < 0 || moment.duration > 600000 || !Array.isArray(moment.events) || moment.events.length > 50000 ||
       typeof moment.explanation !== "string" || moment.explanation.length > 12000 ||
-      (moment.title !== undefined && (typeof moment.title !== "string" || moment.title.length > 160))) throw new Error("Expected a MegaApp moment (version 1).");
+      (moment.title !== undefined && (typeof moment.title !== "string" || moment.title.length > 160))) throw new Error("Expected a MegaApp moment (version 1 or 2).");
   if (moment.naming !== undefined) {
     const n = moment.naming;
     if (!n || n.standard !== MOMENT_NAMING_STANDARD || n.version !== 1 || !["automatic", "custom"].includes(n.mode) || !["moment", "feedback"].includes(n.kind) ||
@@ -135,6 +135,7 @@ function namedActivity(event, fallback = false) {
   return null;
 }
 export function suggestMomentName(moment) {
+  moment = decodeMoment(moment);
   const events = [...(moment.events || [])].reverse();
   const rawApp = events.find(event => appNames[event.app])?.app || moment.context?.app || moment.naming?.app;
   const app = Object.hasOwn(appNames, rawApp) ? rawApp : "megaapp", appName = appNames[app] || "MegaApp";

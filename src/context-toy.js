@@ -98,7 +98,6 @@ export function createContextToy({ onAction }) {
     else if(old.id) select(old.id);
   }
   function cancel() { if(gesture) complete(true); releaseCaptures(); }
-  element.closest('#panel-design')?.addEventListener('pagemarkupstart', cancel);
   const excluded=target=>target.closest?.('.context-detail, .context-home');
   map.addEventListener('pointerdown',event=>{
     if(excluded(event.target) || pointers.size>=2 || event.button!==0 || (event.pointerType!=='touch' && !event.isPrimary)) return;
@@ -134,7 +133,7 @@ export function createContextToy({ onAction }) {
   element.addEventListener('toggle',event=>{if(event.target!==element || !graph)return;if(element.open){measure();onAction('Open context Toy','Whole dictionary map opened');}else {cancel();clearTimeout(wheelTimer);if(wheelStart){camera=wheelStart;wheelStart=null;paint();}}persist();});
   const observer=new ResizeObserver(()=>measure());observer.observe(map);window.addEventListener('blur',cancel);document.addEventListener('visibilitychange',()=>{if(document.hidden)cancel();});
   function viewContext(){return{camera:copy(camera),viewport:{width,height},positions:points.map(p=>({id:p.id,x:p.x/width,y:p.y/height})),placement:'visual-arrangement'};}
-  return {element,
+  return {element, interrupt: cancel,
     update(content){const next=buildContextGraph(content),different=JSON.stringify(next)!==JSON.stringify(graph);if(!different)return;cancel();graph=next;authored=Object.fromEntries(Object.entries(authored).filter(([id])=>graph.nodes.some(n=>n.id===id)));if(!graph.nodes.some(n=>n.id===focused))focused=graph.nodes[0].id;build();measure(true);persist();},
     hide(){cancel();clearTimeout(wheelTimer);if(wheelStart){camera=wheelStart;wheelStart=null;paint();persist();}},
     captureContext(){const focus=graph?.nodes.find(n=>n.id===focused);return{open:element.open,view:'whole-map',focused:focus?{id:focus.id,label:focus.label,kind:focus.kind}:null,connections:'assistant-proposals',...viewContext(),interaction:gesture?{kind:gesture.kind,phase:'active',node:gesture.id||null,samples:copy(gesture.samples)}:copy(interaction)};},

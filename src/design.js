@@ -237,7 +237,7 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
   function renderReading() { root.dataset.selection = 'browser'; applyReadingStyle(root, emphasis); }
   const contextToy = createContextToy({ onAction: (action, outcome) => record(action, outcome) });
   root.querySelector('.design-footnote').before(contextToy.element);
-  const markup = createDesignMarkup({ root, onAction: (action, outcome) => record(action, outcome) });
+  const markup = createDesignMarkup({ root, onStart: contextToy.interrupt, onAction: (action, outcome) => record(action, outcome) });
   let renderedTerms, selectedExplanation;
   editor = createDesignEditor({ root, sections, defaults: designContent,
     onModeChange() { termCancellations.forEach(cancel => cancel()); if (dialog.open) dialog.close(); selectedExplanation?.remove(); },

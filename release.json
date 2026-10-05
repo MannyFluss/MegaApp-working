@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "8e33cc6c29c86b92c6b4fc91ca78650ad14ecdb3e724449c262cb5b022d33246",
+  "sourceDigest": "c1a2dc61229e66589a37bde173e7b5d393607cdbf15bbbc77569eaf6493ad67e",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -105,7 +105,7 @@
     },
     {
       "path": "src/context-toy.js",
-      "sha256": "9f41d97be65c5fea5acbf69d89a349209db3b021993c1b506d90b44aa646a6ca"
+      "sha256": "61ae29686b4f3c875403622eaf4771662f8752fdfd31b48151cc3bddaa8f87fe"
     },
     {
       "path": "src/design-boundaries.js",
@@ -125,11 +125,11 @@
     },
     {
       "path": "src/design-markup.js",
-      "sha256": "c26a001572c44a619361520b7071bc4b03fc4debd6eb5213ea18107749633961"
+      "sha256": "2e91a303ec9cf666e29379408daf22bdaebf9799fd87056ff4b42a60238524de"
     },
     {
       "path": "src/design.js",
-      "sha256": "465ec5e328b78c5727ab3ee27c9f95bde026ef0d86d77915a4ecb921688a9824"
+      "sha256": "1091342ef1db879f347d9756521d194b321cfbf39e7433ea6b0031e11141a795"
     },
     {
       "path": "src/drive-adapter.js",
@@ -197,11 +197,11 @@
     },
     {
       "path": "src/moment-record.js",
-      "sha256": "c6e3c1cce4ee435e96fa1a0e366ca593d612d6ca534ff580df74118a0cd32319"
+      "sha256": "beff15f6416fbd97c8d442eb3a9eab830946cbb1a40dd7cf85452cccdc4d340c"
     },
     {
       "path": "src/moment-replay.js",
-      "sha256": "d8e490a9750497ce6a2206c1910e9416edf5e623074b42945cf3e7076535e9e7"
+      "sha256": "2d3cb37fd88d2cde903c440be66daf20b124dc87f2b763944ca73972d741c369"
     },
     {
       "path": "src/moments.js",
@@ -269,7 +269,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "a17145f90bee40588731f5753fbcbbc4972b44a6f4fd9d971d22057487ae59ba"
+      "sha256": "b573899a064a4ee6f181029442d2d5cda94e256255eb6b67a3a8065934ec6b3b"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

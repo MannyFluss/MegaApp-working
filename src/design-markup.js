@@ -2,7 +2,7 @@ import { freezeJSON } from "./moment-codec.js";
 import { emptyMarkup, readMarkup, projectStroke, projectMapStroke } from './page-markup.js';
 import { storageName } from './environment.js';
 
-export function createDesignMarkup({ root, onAction }) {
+export function createDesignMarkup({ root, onAction, onStart = () => {} }) {
   const tools = document.createElement('details'); tools.className = 'design-markup-tools'; tools.innerHTML = `<summary>Pencil markup</summary><div class="design-markup-controls"><label><input id="markup-enabled" type="checkbox" checked> Pencil draws over this page</label><label><input id="markup-visible" type="checkbox" checked> Show marks</label><label>Ink <input id="markup-color" type="color" value="#ad405b"></label><label>Width <input id="markup-width" type="range" min="1" max="12" step="1" value="3"></label><button id="markup-undo" type="button" class="quiet-button">Undo mark</button><button id="markup-redo" type="button" class="quiet-button">Redo</button><button id="markup-clear" type="button" class="quiet-button">Clear marks</button><label><input id="markup-any-pointer" type="checkbox"> Draw with any pointer</label><p>Fingers keep normal selection and scrolling. Marks scale with their part of the page; text can reflow underneath. Draw with any pointer temporarily owns page gestures. Turn it off to read normally.</p><p id="markup-status" role="status">Marks save on this device and travel with your kept feedback.</p></div>`;
   root.querySelector('.design-footnote').append(tools);
   const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); overlay.classList.add('design-ink'); overlay.setAttribute('aria-hidden', 'true'); root.append(overlay);
@@ -119,9 +119,9 @@ export function createDesignMarkup({ root, onAction }) {
     event.preventDefault(); event.stopImmediatePropagation();
     if (current) finish(false);
     if (ink.strokes.length >= 60 || ink.strokes.reduce((n, stroke) => n + stroke.points.length, 0) >= 11000) { status.textContent = 'This page has reached its ink limit. Keep/export feedback, then clear marks to continue.'; return; }
+    onStart();
     const area = areaFor(event.target, event), box = areaNode(area).getBoundingClientRect(); started = event.timeStamp; moved = false;
     current = { id: crypto.randomUUID(), area, color: tools.querySelector('#markup-color').value, width: Number(tools.querySelector('#markup-width').value), geometry: { width: Math.max(1, box.width), height: Math.max(1, box.height), ...(area === 'context-map' ? {zoom:JSON.parse(areaNode(area).dataset.camera).zoom} : {}) }, points: [], pointerId: event.pointerId };
-    root.dispatchEvent(new CustomEvent('pagemarkupstart', { bubbles: true }));
     current.points.push(point(event)); try { root.setPointerCapture(event.pointerId); } catch { /* Synthetic events have no active hardware pointer. */ } refresh();
   }, true);
   root.addEventListener('pointermove', event => {
