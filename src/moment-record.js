@@ -99,11 +99,16 @@ function namedActivity(event, fallback = false) {
     if (action === "Import design edition") return label("design-edition", "imported", "Design edition imported");
     if (event.target === "design-touch-object" && action === "Pointer moved") return label("surface", "drag-observed", "Surface drag");
     if (event.target === "design-touch-object" && action === "Control key") return label("surface", "key-observed", "Surface key input");
+    if (action === "Set page marks visibility") return label("page-markup", outcome === "Saved marks shown" ? "shown" : "hidden", outcome === "Saved marks shown" ? "Page marks shown" : "Page marks hidden");
     if (action === "Draw page markup") return label("page-markup", "drawn", "Page markup drawn");
     if (action === "Cancel page markup") return label("page-markup", "cancelled", "Page mark cancelled");
     if (action === "Clear page markup") return label("page-markup", "cleared", "Page marks cleared");
     if (action === "Undo page markup") return label("page-markup", "undone", "Page mark undone");
     if (action === "Restore page markup") return label("page-markup", "restored", "Page marks restored");
+    if (action === "Arrange context concept") return label("context-map", "arranged", "Context map arranged");
+    if (action === "Navigate context map") return label("context-map", "navigated", "Context map explored");
+    if (action === "Restore context arrangement") return label("context-map", "restored", "Context arrangement restored");
+    if (action === "Cancel context map gesture") return label("context-map", "cancelled", "Map gesture cancelled");
     if (action === "Export context map") return label("context-map", "exported", "Context map exported");
     if (fallback && action === "Explore context concept") return label("context-map", "explored", "Context concept explored");
     if (action === "Tune shared response") return label("input-response", "previewed", "Input response previewed");

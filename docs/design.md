@@ -16,7 +16,7 @@ Enjoyment draws me into what I do and feel. Quiet and focused is the default; st
 
 ## Complexity resolves into clarity.
 
-I govern my data. Shared names and structure make it usable across apps and agents, expressed clearly for me. Color has stable meaning across apps. Actions and explanations stay close to the work. Exploring the system is easy and immersive.
+Simplicity comes first. Interact with the thing itself; controls appear when they help. I govern my data. Shared names and structure make it usable across apps and agents, expressed clearly for me. Color has stable meaning across apps. Actions and explanations stay close to the work. Exploring the system is easy and immersive.
 
 ## I can improve it through use.
 
@@ -30,7 +30,7 @@ Restore useful state when I return. Save locally, sync deliberately, and make re
 
 Software is material I can reshape. A Tool follows dependable defaults; a Toy has room to play. Reading preferences allow app overrides. Preserve work, understandable access, and agent-operable actions. Policy governs authority; protocol governs interaction.
 
-One living surface for my design. Feel a response, define a boundary, reshape the page. Highlight text normally; a recognized term offers its meaning nearby. Explore my context opens a dictionary Toy with proposed connections and open questions. Pencil adds free markup; its controls live here on demand. Give feedback keeps a moment for my explanation; I choose when to export it. Reading preferences live in Meta. Local editions and working material stay on this device. The detailed layer model remains open.
+One living surface for my design. Feel a response, define a boundary, reshape the page. Highlight text normally; a recognized term offers its meaning nearby. Explore my context opens the whole dictionary as a map with proposed connections and open questions. Move words to arrange the view; their meanings remain. Pencil adds free markup; its controls live here on demand. Give feedback keeps a moment for my explanation; I choose when to export it. Reading preferences live in Meta. Local editions and working material stay on this device. The detailed layer model remains open.
 
 <!-- MegaApp layout: {"order":["touch","scope","still","capability","context","continuity","override"],"wide":["override"],"columns":2} -->
 

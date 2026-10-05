@@ -348,46 +348,50 @@ select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 .design-selection-status { font-size: .75rem; line-height: 1.5; color: var(--ink); margin-top: 10px; max-width: 72ch; }
 .design-vocabulary:hover { background: transparent; color: var(--ink); }
 
-/* A quiet, on-demand neighborhood map, composed from the living dictionary. */
+/* The dictionary is a landscape. Its controls appear at the point of use. */
 .context-toy { border-top: 1px solid var(--line); margin-top: 24px; padding: 14px 0 8px; }
 .context-toy > summary { font-family: Georgia, serif; font-size: 1.25rem; cursor: pointer; padding: 8px 0; }
 .context-toy > summary span { font: .72rem system-ui, sans-serif; color: var(--muted); margin-left: 12px; }
 .context-toy-body { padding-top: 12px; }
-.context-invitation { font-family: Georgia, serif; font-size: 1.15rem; margin-bottom: 6px; }
-.context-key, #context-kind, #context-count, #context-save { font-size: .75rem; color: var(--muted); line-height: 1.5; }
-.context-key { max-width: 75ch; margin-bottom: 16px; }
-.context-workspace { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 24px; align-items: start; }
-.context-map { position: relative; height: 340px; border-radius: 24px; background: var(--stage); }
-.context-map svg, .context-nodes { position: absolute; inset: 0; width: 100%; height: 100%; }
-.context-map svg { pointer-events: none; }
-.context-map path { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 5; opacity: .5; }
-.context-node { position: absolute; transform: translate(-50%, -50%); width: 29%; max-width: 160px; min-height: 48px; padding: 10px 7px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; font-size: .78rem; line-height: 1.35; box-shadow: none; overflow-wrap: anywhere; }
-.context-node[data-focused="true"] { font-family: Georgia, serif; font-size: 1.05rem; border-color: var(--accent); background: var(--accent-soft); }
-.context-node[data-kind="question"] { border-style: dashed; }
-.context-node small { display: block; color: var(--muted); font: .65rem system-ui, sans-serif; margin-top: 4px; }
-.context-node:focus-visible, .context-relation:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.context-detail { min-width: 0; }
-.context-detail h3 { font-family: Georgia, serif; font-size: 1.6rem; margin: 4px 0 10px; overflow-wrap: anywhere; }
-#context-definition { font-size: .88rem; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
-#context-connections { list-style: none; padding: 0; margin: 8px 0 0; max-height: 190px; overflow-y: auto; }
-#context-connections li { padding: 7px 0; }
-.context-relation { background: transparent; color: var(--ink); border: 0; padding: 2px 0; border-radius: 0; box-shadow: none; min-height: 32px; text-decoration: underline dotted; text-underline-offset: 4px; font-size: .8rem; }
-#context-connections p { font-size: .75rem; color: var(--muted); line-height: 1.5; margin: 4px 0 0; }
-.context-index, .context-portable { margin-top: 14px; }
-.context-index summary, .context-portable summary { cursor: pointer; padding: 8px 0; font-size: .8rem; }
-#context-total { color: var(--muted); font-size: .7rem; margin-left: 8px; }
-.context-index label, .context-portable p { display: block; font-size: .75rem; color: var(--muted); line-height: 1.5; margin-bottom: 8px; }
+.context-map { position: relative; height: clamp(480px, 68vh, 660px); border-radius: 24px; background: var(--stage); overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: grab; }
+.context-map[data-exploring="true"] { cursor: grabbing; }
+.context-lines, .context-nodes { position: absolute; inset: 0; width: 100%; height: 100%; transform-origin: 0 0; pointer-events: none; }
+.context-lines path { fill: none; stroke: var(--muted); stroke-width: .85; stroke-dasharray: 2 6; opacity: .22; }
+.context-lines path[data-active="true"] { stroke: var(--accent); opacity: .65; stroke-width: 1.25; }
+.context-concept { position: absolute; transform: translate(-50%, -50%); min-height: 44px; padding: 5px 4px; background: transparent; color: var(--ink); border: 0; border-radius: 0; box-shadow: none; font-family: Georgia, serif; line-height: 1.2; pointer-events: auto; touch-action: none; cursor: grab; overflow-wrap: anywhere; }
+.context-concept:hover, .context-concept:active { background: transparent; box-shadow: none; }
+.context-concept i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--ink); margin: 0 auto 5px; }
+.context-concept[data-kind="question"] { color: var(--muted); font-style: italic; }
+.context-concept[data-kind="question"] i { background: var(--stage); border: 1px solid var(--muted); }
+.context-concept[data-near="false"] { opacity: .5; }
+.context-concept[data-focused="true"], .context-concept[data-moving="true"] { color: var(--accent); opacity: 1; }
+.context-concept[data-focused="true"] i, .context-concept[data-moving="true"] i { background: var(--accent); }
+.context-concept[data-match="false"] { opacity: .18; }
+.context-concept:focus-visible, .context-map:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 8px; }
+.context-home, .context-dismiss { position: absolute; width: 44px; height: 44px; padding: 11px; border: 0; background: transparent; color: var(--muted); box-shadow: none; }
+.context-home { right: 8px; top: 8px; z-index: 1; }
+.context-home svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.2; }
+.context-hint { position: absolute; bottom: 14px; left: 20px; right: 20px; margin: 0; font-size: .7rem; color: var(--muted); pointer-events: none; }
+.context-detail { position: absolute; z-index: 2; max-height: 220px; overflow-y: auto; padding: 20px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 8px 24px #0000000d; touch-action: pan-y; -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; cursor: auto; }
+.context-dismiss { top: 2px; right: 2px; font: 20px system-ui; }
+#context-kind { padding-right: 28px; }
+.context-detail h3 { font-family: Georgia, serif; font-size: 1.45rem; margin: 4px 0 10px; overflow-wrap: anywhere; }
+#context-definition { font-size: .82rem; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.context-key, #context-kind, #context-count, #context-save { font-size: .7rem; color: var(--muted); line-height: 1.5; }
+.context-map-footer { display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 8px 24px; padding-top: 12px; }
+.context-key { margin: 0; }
+.context-options { flex: 1; text-align: right; min-width: 130px; }
+.context-options[open] { flex-basis: 100%; text-align: left; }
+.context-options summary, .context-connections summary { cursor: pointer; font-size: .75rem; min-height: 44px; padding-block: 8px; }
+.context-options label, .context-options p { display: block; font-size: .75rem; color: var(--muted); line-height: 1.5; margin-bottom: 8px; }
 #context-search { width: min(100%, 360px); }
-#context-catalog { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-#context-catalog button { font-size: .75rem; min-height: 44px; }
-#context-catalog button[aria-pressed="true"] { border-color: var(--accent); }
-@media (max-width: 650px) {
-  .context-workspace { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-  .context-map { height: 310px; }
-  .context-node { font-size: .7rem; }
-  .context-node[data-focused="true"] { font-size: .9rem; }
-  #context-total { display: block; margin: 4px 0 0 16px; }
-}
+.context-access { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.context-access button { font-size: .75rem; }
+#context-connections { list-style: none; padding: 0; margin: 8px 0 0; }
+#context-connections li { padding: 7px 0; }
+.context-relation { background: transparent; color: var(--ink); border: 0; padding: 2px 0; border-radius: 0; box-shadow: none; min-height: 44px; text-decoration: underline dotted; text-underline-offset: 4px; font-size: .8rem; }
+#context-connections p { font-size: .75rem; color: var(--muted); line-height: 1.5; margin: 4px 0 0; }
+@media (max-width: 650px) { .context-map { height: 540px; border-radius: 16px; } .context-hint { left: 12px; font-size: .65rem; } }
 
 #design-guide { position: relative; }
 .design-ink { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 2; }

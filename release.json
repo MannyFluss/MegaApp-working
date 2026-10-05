@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "eddfb6c7796e1741e0b17a4f1ad7fcf6e7b5e53dcd04d4fd4ed3ce2738f9ddfd",
+  "sourceDigest": "16b4334e649016a06c0be9f3a58133d38e1884439a6fca8204523c0e3fefb3c2",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -13,7 +13,7 @@
     },
     {
       "path": "docs/design.md",
-      "sha256": "e731376670c58656da01e73d2bc87e30611604221041d48c9f677061082fe4da"
+      "sha256": "e4b6529040cb76a8dbc8717f3a82af10923ba0008ca929d03243a022d3b4747d"
     },
     {
       "path": "docs/pdf-library.md",
@@ -33,7 +33,7 @@
     },
     {
       "path": "frontend.css",
-      "sha256": "431989dc2c4c73eb036e8551e5337b13547aee4e1ddfacfc201174ab0f5467f8"
+      "sha256": "4bedfdfe01208cdc05c42b2a16775e495d6ad65812b0a84e4f93256a2ad46ad0"
     },
     {
       "path": "icons/apple-touch-icon.png",
@@ -100,8 +100,12 @@
       "sha256": "d14af3334eb500afe49963923a6d020269f8c085ebcf8897741de1af4706455f"
     },
     {
+      "path": "src/context-map.js",
+      "sha256": "ec9240b7482dab3de9780229b70111dc771491f515fd18b49374766d5e2b335a"
+    },
+    {
       "path": "src/context-toy.js",
-      "sha256": "ea182fce6bc63268a06b6cd5b6ff20cdccbd0628a59b9841ee6bb15eedab1d11"
+      "sha256": "00c9d85bc481a2b21308bfb0b1ec9fc66fe11499fcf866f9a2e7b1217100aa99"
     },
     {
       "path": "src/design-boundaries.js",
@@ -109,7 +113,7 @@
     },
     {
       "path": "src/design-content.js",
-      "sha256": "9b02ef4b301fea6afee5698e32ea04f15f9366cf62613f77cd7ce2f2ccb366f7"
+      "sha256": "5672702e47b10c63520de550935db5687528933aa7273f9641f6c1fc289fef05"
     },
     {
       "path": "src/design-edition.js",
@@ -121,11 +125,11 @@
     },
     {
       "path": "src/design-markup.js",
-      "sha256": "5ad06092079d2eadd776f10b4d3253d9e00ccb61ac0526d7dd9064968bcbefdc"
+      "sha256": "8a45730f02e97d144a5b7815abaff9dccd4821ea195c812fec9cc9e856d0c3a7"
     },
     {
       "path": "src/design.js",
-      "sha256": "803eb73dca8c5f8ad77e63016e056f84c028cb74b6329c2614b8fccc27ec06fd"
+      "sha256": "465ec5e328b78c5727ab3ee27c9f95bde026ef0d86d77915a4ecb921688a9824"
     },
     {
       "path": "src/drive-adapter.js",
@@ -189,7 +193,7 @@
     },
     {
       "path": "src/moment-record.js",
-      "sha256": "dc9e0791a079c291be906059f57ba60fcccc1f39b97ebdbbdb0b32785b40b2dc"
+      "sha256": "787c1dba2195eee3917df06539e80ce8e1179e0551ecf24e9666c3b76f3dccde"
     },
     {
       "path": "src/moment-replay.js",
@@ -201,7 +205,7 @@
     },
     {
       "path": "src/page-markup.js",
-      "sha256": "ad69c20c41981f7875f59b49f24693e5301d8edf19f3220e936c6949127d15df"
+      "sha256": "88dd8eb16483b8e5a9f667f1a5628418b45b86ffcc00f07d14b90bd0234b211e"
     },
     {
       "path": "src/pdf-workspace.js",
@@ -261,7 +265,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "c914f95e7234e03416d636ea6e46f11a641021cb9b4366c9cf4f15f424f1b9c6"
+      "sha256": "142fa2e958f28fb7db2eb4f6c70896eb4c303b28affe94fccd079d8da9d087e9"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

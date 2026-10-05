@@ -282,6 +282,6 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
     captureContext,
     applyReadingPreference(enabled) { if (emphasis === enabled) return; emphasis = enabled; renderReading(); applyReadingStyle(dialog, emphasis); },
     applySettings() { if (document.activeElement === response || document.activeElement === settling) return; response.value = String(input.response); settling.value = String(input.settling); controls(); },
-    setVisible(visible) { if (!visible) { surface.reset(); cancelDrag(); markup.hide(); editor?.hide(); termCancellations.forEach(cancel => cancel()); selectedExplanation?.remove(); if (dialog.open) dialog.close(); } },
+    setVisible(visible) { if (!visible) { surface.reset(); cancelDrag(); markup.hide(); contextToy.hide(); editor?.hide(); termCancellations.forEach(cancel => cancel()); selectedExplanation?.remove(); if (dialog.open) dialog.close(); } },
   };
 }
