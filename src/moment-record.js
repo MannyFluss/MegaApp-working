@@ -8,7 +8,7 @@ export function validateMoment(moment) {
   if (!moment || moment.format !== MOMENT_FORMAT || moment.version !== 1 || typeof moment.id !== "string" || typeof moment.capturedAt !== "string" ||
       !Number.isFinite(moment.duration) || moment.duration < 0 || moment.duration > 600000 || !Array.isArray(moment.events) || moment.events.length > 50000 ||
       typeof moment.explanation !== "string" || moment.explanation.length > 12000 ||
-      (moment.title !== undefined && (typeof moment.title !== "string" || moment.title.length > 160))) throw new Error("Expected a MegaApp moment (version 1 or 2).");
+      (moment.title !== undefined && (typeof moment.title !== "string" || moment.title.length > 160))) throw new Error("Expected a MegaApp moment (version 1, 2 or 3).");
   if (moment.naming !== undefined) {
     const n = moment.naming;
     if (!n || n.standard !== MOMENT_NAMING_STANDARD || n.version !== 1 || !["automatic", "custom"].includes(n.mode) || !["moment", "feedback"].includes(n.kind) ||
@@ -21,14 +21,15 @@ export function validateMoment(moment) {
   }
   return moment;
 }
-export function createMomentBuffer({ now = () => performance.now(), wall = () => new Date().toISOString(), seconds = 60, maxBytes = 2000000 } = {}) {
+export function createMomentBuffer({ now = () => performance.now(), wall = () => new Date().toISOString(), seconds = 60, maxBytes = 2000000, maxInkBytes = 64000000 } = {}) {
   let events = [], bytes = 0, sequence = 0, paused = false, boundary = "Session began";
   const pool = createValuePool();
   function removeFirst() { const row = events.shift(); bytes -= row.bytes; if (row.context !== undefined) pool.release(row.context); }
   function clearEvents() { while (events.length) removeFirst(); }
   function prune(time) {
-    while (events.length && (time - events[0].time > seconds * 1000 || bytes + pool.bytes > maxBytes)) {
-      removeFirst(); boundary = "Earlier history expired";
+    while (events.length && (time - events[0].time > seconds * 1000 || bytes + pool.bytes - pool.inkBytes > maxBytes || pool.inkBytes > maxInkBytes)) {
+      const inkLimit = pool.inkBytes > maxInkBytes;
+      removeFirst(); boundary = inkLimit ? "Earlier ink history exceeded the recording memory budget; current marks remain in the capture" : "Earlier history expired";
     }
   }
   return {
@@ -173,9 +174,18 @@ export function momentFilename(moment, extension) {
 }
 export function momentMarkdown(moment, { standalone = false } = {}) {
   moment = decodeMoment(moment);
-  const inkRecords = [], inkKeys = new Map();
+  // Interned children usually have the same identity. Walk only changed
+  // branches instead of serializing the whole ink workspace at each action.
+  function equal(a,b) {
+    if (a===b) return true;
+    if (!a || !b || typeof a!=='object' || typeof b!=='object' || Array.isArray(a)!==Array.isArray(b)) return false;
+    const keys=Object.keys(a),other=Object.keys(b);
+    return keys.length===other.length && keys.every((key,i)=>key===other[i] && equal(a[key],b[key]));
+  }
+  const inkRecords = [], inkKeys = new Map(), strokeKeys = new WeakMap();
   function inkReference(stroke) {
-    const key = JSON.stringify(stroke);
+    let key = strokeKeys.get(stroke);
+    if (!key) { key=JSON.stringify(stroke);strokeKeys.set(stroke,key); }
     if (!inkKeys.has(key)) { inkKeys.set(key, inkRecords.length + 1); inkRecords.push(stroke); }
     return { inkRecord: inkKeys.get(key), ...(stroke.id ? { id: stroke.id } : {}), area: stroke.area, pointCount: stroke.points?.length || 0 };
   }
@@ -190,7 +200,7 @@ export function momentMarkdown(moment, { standalone = false } = {}) {
   for (const event of moment.events.filter(event => event.kind !== "frame" && event.action !== "Pointer moved")) {
     lines.push(`- ${(event.time / 1000).toFixed(2)}s · ${event.app || "shell"} · ${event.action || event.kind}${event.target ? ` · ${event.target}` : ""}${event.outcome ? ` · ${event.outcome}` : ""}`);
     if (event.kind === "action" && moment.includeContext && event.context) {
-      const changes = Object.fromEntries(Object.entries(event.context).filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(previous?.[key])));
+      const changes = Object.fromEntries(Object.entries(event.context).filter(([key, value]) => !equal(value,previous?.[key])));
       const removed = Object.keys(previous || {}).filter(key => !Object.hasOwn(event.context, key));
       if (Object.keys(changes).length || removed.length) lines.push("", "Declared context at this action (changed fields; removed fields listed separately):", "", "```json", JSON.stringify({ changed: present(changes), removed }, null, 2), "```", "");
       previous = event.context;
@@ -208,7 +218,7 @@ export function momentMarkdown(moment, { standalone = false } = {}) {
   }
   if (!moment.includeContext) lines.push("", "Captured content and app state excluded by my choice.");
   if (moment.voiceNote) lines.push("", "A voice note exists. Audio is included only in the ZIP export; it is not transcribed into this text.");
-  lines.push("", "This is recorded evidence and the user's explanation. No AI interpretation is included.", "Visual replay reconstructs the Design example from recorded frames; it is not a screen video or a replay of other apps.");
+  lines.push("", "This is recorded evidence and the user's explanation. No AI interpretation is included.", "Visual replay reconstructs recorded Design ink, target locations, the example and document. Handwriting is not transcribed; other apps retain interaction timelines.");
   return lines.join("\n");
 }
 export async function createMomentStore({ indexedDB = globalThis.indexedDB, name = "megaapp-moments-v1" } = {}) {

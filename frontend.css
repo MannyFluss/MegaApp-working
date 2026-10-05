@@ -343,6 +343,22 @@ select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 .design-vocabulary, .design-vocabulary .reading-word b { cursor: help; }
 .reading-word b { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; cursor: text; }
 .reading-word b { font-weight: 650; }
+.meta-reading-prefix { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.meta-reading-prefix input { flex: 1; min-width: 120px; min-height: 44px; accent-color: var(--accent); }
+.meta-reading-prefix output { min-width: 3ch; font-variant-numeric: tabular-nums; }
+.meta-reading-preview { padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); line-height: 1.6; }
+.meta-reading-font label { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.meta-reading-font input[type="file"] { width: 100%; min-height: 44px; min-width: 0; max-width: 100%; }
+:root[data-reading-font="device"] #design-guide [data-reading-text],
+:root[data-reading-font="device"] #design-guide h1,
+:root[data-reading-font="device"] .design-principle > h2,
+:root[data-reading-font="device"] #design-term-definition,
+:root[data-reading-font="device"] .meta-reading-preview {
+  font-family: "MegaApp device reading font", var(--body-font, system-ui), sans-serif;
+  font-synthesis: none;
+  font-variant-ligatures: common-ligatures contextual;
+  font-feature-settings: "liga" 1, "clig" 1, "calt" 1;
+}
 .design-feedback { font-size: .75rem; margin-top: 12px; }
 .design-select-text { font-size: .72rem; padding: 6px 10px; }
 .design-selection-status { font-size: .75rem; line-height: 1.5; color: var(--ink); margin-top: 10px; max-width: 72ch; }

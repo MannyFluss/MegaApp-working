@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "5043239197c3f1ddfaf80497b4afb4ed57ed4898631d2b1727ec8f3f70731fdd",
+  "sourceDigest": "2a242249ae1b327bd6d0cc6d79e9df7efdc8dd8468c9e8c95ed28d4697f06b96",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -33,7 +33,7 @@
     },
     {
       "path": "frontend.css",
-      "sha256": "12ab46a5f89dd6e1872eee7146240cf2aaef2bd450bc449ca6aec9b84a0180f4"
+      "sha256": "9265566f7dc91ea1d04bbf55a7e846d35e00e7a22687f505881da51423cac5fa"
     },
     {
       "path": "icons/apple-touch-icon.png",
@@ -61,7 +61,7 @@
     },
     {
       "path": "moments.css",
-      "sha256": "3867deb96f87618ee708ee1c8861bd52db3501c563e1fc5454ce929e1d23ba4e"
+      "sha256": "57639940301a9766a85aa5eaaa01f3e68362ef681b2ecd6945f41b3fc0b514b7"
     },
     {
       "path": "output/pdf/a-place-for-papers.pdf",
@@ -81,7 +81,7 @@
     },
     {
       "path": "src/app.js",
-      "sha256": "630f4dc3d715f460551f5bd2974df062a5304843398734bef605776c766b29b2"
+      "sha256": "877ab88f6b5f04f4a6188c9061fef9b63280530177ba3fc3506bf3327ad3e908"
     },
     {
       "path": "src/audio-worklet.js",
@@ -133,11 +133,11 @@
     },
     {
       "path": "src/design-markup.js",
-      "sha256": "0666c901d456cbbeee71ac6abeb49092a956aa39fc8a5fdf4449b2b8f53607d1"
+      "sha256": "40e760874793c78f839a140cbcc0654e861e307208b877c169c507f70ba289ac"
     },
     {
       "path": "src/design.js",
-      "sha256": "297fd4c2545dea924ce0a553ecf8e763e319a2f6f75f400b9d248a5f7296a248"
+      "sha256": "ec04b550ca035267d87c9c03c0adee2478bf110589ac6cedd831c6f9b9d10f0d"
     },
     {
       "path": "src/drive-adapter.js",
@@ -176,6 +176,14 @@
       "sha256": "6c033eca0ad50b1fd015ccd6fd1531c655e6bae389699b168f2424cc73360150"
     },
     {
+      "path": "src/ink-journal-browser.js",
+      "sha256": "68ab3165d95afbc95d8b5b346964fc7b2b12dee60e342d502b34f460de963bf5"
+    },
+    {
+      "path": "src/ink-journal.js",
+      "sha256": "c9c1ae19411a05916f33c772bda222cd0515c8a2d63a0b190f86cbb417bda43d"
+    },
+    {
       "path": "src/input.js",
       "sha256": "71c7ec0223bd9933ae5f47fe1fddfcc5160c8db974aa4afc498177acbfc6f21d"
     },
@@ -193,7 +201,7 @@
     },
     {
       "path": "src/meta.js",
-      "sha256": "b4c7316078047086a9475c68602b9c10b38b5d104708f21ca388879d2d2e2ff4"
+      "sha256": "5a4a95da81aa62269fd3b2356530d3cb9d9979e55a4a0df0f03888fef9822f59"
     },
     {
       "path": "src/mock-drive.js",
@@ -201,23 +209,27 @@
     },
     {
       "path": "src/moment-codec.js",
-      "sha256": "8e46d78be9de092eec87c6376bfcc727be774d5a3c1012aeb9e2881e29e4836d"
+      "sha256": "acab40de25dc5072cb530b83f51c93b0423f6110f96019b7b159aad2b5e43b00"
+    },
+    {
+      "path": "src/moment-ink.js",
+      "sha256": "27f165089c6c9e0e62e5078948c232438eeb25b8c1da0b2a0fb902e1c30918ce"
     },
     {
       "path": "src/moment-record.js",
-      "sha256": "b10b64482a40ac4996a8b06af042446cf1f885058b5fcc9b50cac241396deb0b"
+      "sha256": "72220844e86c2ef0fc425e99d81999188b25da6c938cc54a24e1706e6e116c1e"
     },
     {
       "path": "src/moment-replay.js",
-      "sha256": "2d3cb37fd88d2cde903c440be66daf20b124dc87f2b763944ca73972d741c369"
+      "sha256": "cc2572a616a0059d2f7f6cf4b3b11f540b427b09a6947b350396c42340ebbec8"
     },
     {
       "path": "src/moments.js",
-      "sha256": "7817ca04b2b09cb041ef7447786260ed83629fb3313ce48b552ba62bd90b7f4d"
+      "sha256": "3965e7655c0645e8318b44291449f85d8e4440d8d540ee8e20e477597af2890b"
     },
     {
       "path": "src/page-markup.js",
-      "sha256": "372c3fcde3de8abc629f73f9f697a64054e9d48090447ea7cd7d7e6ba0ea02b2"
+      "sha256": "e7f9a2cecbc62d23ad340d5097b46fe3a261c51493c8ffa16facd2ff7d9d16e8"
     },
     {
       "path": "src/pdf-workspace.js",
@@ -244,6 +256,10 @@
       "sha256": "f3422f6a421839b903d009a55b8ca85de2f40279da579aa4122af15d9c99b3ee"
     },
     {
+      "path": "src/reading-font.js",
+      "sha256": "93a9c19f86efc1d7b3f19a75f9df9d19854923f2338960d442435a728fc911f4"
+    },
+    {
       "path": "src/reading-git.js",
       "sha256": "e2b9451b56a737af8996da6b0af49a85b9e3c2738656b69b39fb6b9f29277349"
     },
@@ -253,7 +269,7 @@
     },
     {
       "path": "src/reading-style.js",
-      "sha256": "870c3bb3c80a2c0053edfde0a01e2d160c51164313976d21d3afed4125f777b2"
+      "sha256": "48e7525fc02b70370849572ae7e035e929479cd0c8a7e0fd26347389e688d47f"
     },
     {
       "path": "src/reading.js",
@@ -265,7 +281,7 @@
     },
     {
       "path": "src/state.js",
-      "sha256": "2414b50eb30db961385bcf7fab1c284ef59174217ef72be1c79a2c08fdc18b3e"
+      "sha256": "3e8679d8a3d5e4fe778e2d7fff0eb2e4a3bd382619ff9ac84d4f0081206ab31a"
     },
     {
       "path": "src/webmcp.js",
@@ -277,7 +293,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "efcc3b62d98f0ac9eadaafe1381e97db13a75516fcce77fad57fbe8f453a5ab3"
+      "sha256": "d0d55f8cedf2aa37095497a8ce3b3b3f0ca1df96ca16511a1187b99cc37b56d9"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

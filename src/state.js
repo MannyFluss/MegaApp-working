@@ -214,6 +214,17 @@ export async function createSampleStore() {
     warning,
     rows,
     snapshot: () => structuredClone(data),
+    setMany(values) {
+      const changes = values.map(({ name, type, value }) => ({ name: validateName(name), type, value: structuredClone(validateValue(type, value)) }));
+      return mutate(() => {
+        const next = structuredClone(data);
+        for (const row of changes) {
+          const index = next.variables.findIndex(value => value.name === row.name);
+          if (index < 0) next.variables.push(row); else next.variables[index] = row;
+        }
+        return commit(next);
+      });
+    },
     set(name, type, value) {
       validateName(name);
       validateValue(type, value);

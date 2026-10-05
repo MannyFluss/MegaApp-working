@@ -1,22 +1,23 @@
 // Portable ink: geometry and observations, never guessed drawing semantics.
-// Bound observations, rather than hand lifts. Every stroke has at least one
-// point, so the same budget also bounds the number of stored stroke records.
+// Storage is an incremental journal, not a page-wide point budget. This legacy
+// constant describes preceding saves only; it no longer limits new work.
 export const MAX_MARKUP_POINTS = 12000;
 export function markupPointCount(strokes) { return strokes.reduce((count, stroke) => count + stroke.points.length, 0); }
-export function remainingMarkupPoints(strokes) { return Math.max(0, MAX_MARKUP_POINTS - markupPointCount(strokes)); }
+export function remainingMarkupPoints() { return Infinity; }
 export function emptyMarkup() { return { format: 'megaapp.page-markup', version: 1, placement: 'area-relative', strokes: [] }; }
-export function readMarkup(value) {
-  if (value?.format !== 'megaapp.page-markup' || value.version !== 1 || value.placement !== 'area-relative' || !Array.isArray(value.strokes) || value.strokes.length > MAX_MARKUP_POINTS) throw new Error('Expected page markup version 1, within its point budget.');
-  let count = 0;
+export function readMarkup(value, { copy = true } = {}) {
+  if (value?.format !== 'megaapp.page-markup' || value.version !== 1 || value.placement !== 'area-relative' || !Array.isArray(value.strokes)) throw new Error('Expected page markup version 1.');
   const strokes = value.strokes.map(stroke => {
-    if (typeof stroke.id !== 'string' || stroke.id.length > 80 || typeof stroke.area !== 'string' || stroke.area.length > 80 || !/^#[\da-f]{6}$/i.test(stroke.color) || !Number.isFinite(stroke.width) || stroke.width < 1 || stroke.width > 12 || !Array.isArray(stroke.points) || !stroke.points.length || stroke.points.length > MAX_MARKUP_POINTS || !Number.isFinite(stroke.geometry?.width) || stroke.geometry.width <= 0 || !Number.isFinite(stroke.geometry?.height) || stroke.geometry.height <= 0) throw new Error('Invalid stroke.');
+    if (!stroke || typeof stroke !== 'object' || typeof stroke.id !== 'string' || !stroke.id || stroke.id.length > 80 || typeof stroke.area !== 'string' || stroke.area.length > 80 || typeof stroke.color !== 'string' || !/^#[\da-f]{6}$/i.test(stroke.color) || !Number.isFinite(stroke.width) || stroke.width < 1 || stroke.width > 12 || !Array.isArray(stroke.points) || !stroke.points.length || !Number.isFinite(stroke.geometry?.width) || stroke.geometry.width <= 0 || !Number.isFinite(stroke.geometry?.height) || stroke.geometry.height <= 0) throw new Error('Invalid stroke.');
     if (stroke.geometry.zoom !== undefined && (!Number.isFinite(stroke.geometry.zoom) || stroke.geometry.zoom < .25 || stroke.geometry.zoom > 5)) throw new Error('Invalid map ink scale.');
-    count += stroke.points.length;
-    if (count > MAX_MARKUP_POINTS) throw new Error('Too much ink: the point budget was exceeded.');
-    const points = stroke.points.map(point => {
-      if (['x', 'y', 't', 'pressure'].some(key => !Number.isFinite(point[key])) || Math.abs(point.x) > 100 || Math.abs(point.y) > 100 || point.t < 0 || point.t > 3600000 || point.pressure < 0 || point.pressure > 1) throw new Error('Invalid ink point.');
-      return { x: point.x, y: point.y, t: point.t, pressure: point.pressure };
-    });
+    const validatePoint = point => {
+      if (!point || typeof point !== 'object' || ['x', 'y', 't', 'pressure'].some(key => !Number.isFinite(point[key])) || Math.abs(point.x) > 100 || Math.abs(point.y) > 100 || point.t < 0 || point.t > 3600000 || point.pressure < 0 || point.pressure > 1) throw new Error('Invalid ink point.');
+      return copy ? { x: point.x, y: point.y, t: point.t, pressure: point.pressure } : point;
+    };
+    let points;
+    if (copy) points = stroke.points.map(validatePoint);
+    else { stroke.points.forEach(validatePoint); points = stroke.points; }
+    if (!copy) return stroke;
     return { id: stroke.id, area: stroke.area, color: stroke.color, width: stroke.width, geometry: { width: stroke.geometry.width, height: stroke.geometry.height, ...(stroke.geometry.zoom === undefined ? {} : { zoom: stroke.geometry.zoom }) }, points };
   });
   if (new Set(strokes.map(stroke => stroke.id)).size !== strokes.length) throw new Error('Invalid ink: duplicate stroke identity.');

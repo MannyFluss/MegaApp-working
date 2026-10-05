@@ -70,3 +70,12 @@ body.intro-open .moment-keep, body.meta-is-open .moment-keep { visibility: hidde
 .moment-replay-document h3 { font-family: var(--display-font); font-size: 1.3rem; margin-block: 8px; }
 .moment-replay-document h4 { margin-block: 12px 6px; }
 .moment-replay-document p { white-space: pre-wrap; color: var(--muted); line-height: 1.6; }
+.moment-replay-ink { margin-block: 18px; }
+.moment-replay-ink h3 { font-family: var(--display-font); font-size: 1.2rem; margin-bottom: 8px; }
+.moment-ink-stage { height: min(420px, 55vh); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); touch-action: none; }
+.moment-ink-svg { display: block; width: 100%; height: 100%; }
+.moment-ink-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; align-items: center; }
+.moment-ink-controls button, .moment-ink-controls select { min-height: 44px; font: inherit; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
+.moment-ink-controls label { display: flex; align-items: center; gap: 8px; }
+.moment-ink-controls select { max-width: 190px; }
+.moment-ink-status, .moment-ink-help, .moment-ink-controls { color: var(--muted); font-size: .78rem; }

@@ -6,10 +6,11 @@ import { createPhysicalSurface } from "./input.js";
 import { createBoundaryExample } from "./design-boundaries.js";
 import { createDesignEditor } from "./design-editor.js";
 import { storageName } from "./environment.js";
-import { applyReadingStyle } from "./reading-style.js";
+import { applyReadingStyle, readingPrefix } from "./reading-style.js";
 
 export function createDesign({ input, onSettings, notify, onMoment = () => {}, onFeedback = () => {} }) {
-  let editor, canvas, emphasis = false;
+  let editor, canvas, emphasis = false, prefix = .5, deviceFont = null;
+  const readingPresentation = () => ({ enabled: emphasis && !deviceFont?.enabled, prefix });
   const root = document.getElementById("design-guide");
   root.innerHTML = `<header class="design-masthead"><div><h1></h1><p class="design-introduction"></p></div><div class="design-signature">MegaApp<br><span>Manny’s design</span></div></header><div class="design-principles"></div><footer class="design-footnote"><details class="design-about"><summary>About this page</summary><p></p></details><details class="design-dictionary"><summary>Dictionary</summary><div class="design-term-links" aria-label="Dictionary terms"></div></details></footer>`;
   root.querySelector("h1").textContent = designContent.title;
@@ -201,7 +202,7 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
   function explain(term, trigger) {
     if (dialog.open) return;
     priorTerm = trigger; dialog.querySelector("h2").textContent = term;
-    dialog.querySelector("#design-term-definition").textContent = (editor?.content || designContent).terms[term]; applyReadingStyle(dialog, emphasis); dialog.showModal();
+    dialog.querySelector("#design-term-definition").textContent = (editor?.content || designContent).terms[term]; applyReadingStyle(dialog, readingPresentation()); dialog.showModal();
     record(`Understand ${term}`, "Definition shown in context");
   }
   const termCancellations = new Set(), termCleanup = new WeakMap();
@@ -288,7 +289,7 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
     paragraph.append(document.createTextNode(value.slice(position)));
   }
   for (const button of root.querySelectorAll("[data-term]")) bindTerm(button, button.dataset.term);
-  function renderReading() { root.dataset.selection = 'browser'; applyReadingStyle(root, emphasis); }
+  function renderReading() { root.dataset.selection = 'browser'; applyReadingStyle(root, readingPresentation()); }
   const contextToy = createContextToy({ onAction: (action, outcome) => record(action, outcome) });
   root.querySelector('.design-footnote').before(contextToy.element);
   const markup = createDesignMarkup({ root, onStart: contextToy.interrupt, onAction: (action, outcome) => record(action, outcome) });
@@ -335,12 +336,12 @@ export function createDesign({ input, onSettings, notify, onMoment = () => {}, o
       contextToy: contextToy.captureContext(),
       canvas: canvas?.captureContext(),
       markup: markup.captureContext(),
-      reading: { wordEmphasis: emphasis, selection: 'browser' } };
+      reading: { wordEmphasis: emphasis, prefix, font: deviceFont, activePresentation: deviceFont?.enabled ? 'device-font' : emphasis ? 'word-emphasis' : 'default', selection: 'browser' } };
   }
   function record(action, outcome, kind = "action", interaction) { onMoment({ kind, app: "design", action, outcome, context: { ...captureContext(), ...(interaction ? { interaction } : {}) } }); }
   return {
     captureContext,
-    applyReadingPreference(enabled) { if (emphasis === enabled) return; emphasis = enabled; renderReading(); applyReadingStyle(dialog, emphasis); },
+    applyReadingPreference(enabled, coverage, font = null) { const nextPrefix = readingPrefix(coverage); if (emphasis === enabled && prefix === nextPrefix && JSON.stringify(deviceFont) === JSON.stringify(font)) return; emphasis = enabled; prefix = nextPrefix; deviceFont = font; renderReading(); applyReadingStyle(dialog, readingPresentation()); markup.refresh(); canvas?.refresh(); },
     applySettings() { if (document.activeElement === response || document.activeElement === settling) return; response.value = String(input.response); settling.value = String(input.settling); controls(); },
     setVisible(visible) { if (!visible) { surface.reset(); cancelDrag(); markup.hide(); contextToy.hide(); editor?.hide(); canvas?.hide(); termCancellations.forEach(cancel => cancel()); selectedExplanation?.remove(); if (dialog.open) dialog.close(); } },
   };
