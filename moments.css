@@ -13,6 +13,13 @@ body.intro-open .moment-keep, body.meta-is-open .moment-keep { visibility: hidde
 .moment-heading p { color: var(--muted); font-size: .78rem; margin-top: 8px; }
 .moment-note-label { display: block; margin-bottom: 8px; font-weight: 550; }
 #moment-note { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; color: var(--ink); font: inherit; padding: 12px; resize: vertical; }
+.moment-name, #moment-copy-text { width: 100%; min-height: 44px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; color: var(--ink); font: inherit; padding: 12px; }
+#moment-filename { overflow-wrap: anywhere; margin: 8px 0 22px; }
+#moment-copy-fallback { margin: 16px 0; }
+#moment-copy-text { resize: vertical; user-select: text; -webkit-user-select: text; -webkit-touch-callout: default; }
+#moment-copy-select { margin-top: 8px; }
+.moment-copy-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+.moment-copy-actions p { margin: 0; flex: 1 1 180px; }
 .moment-voice { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 .moment-voice button { font-size: .8rem; }
 .moment-voice audio { width: min(100%, 300px); height: 44px; }

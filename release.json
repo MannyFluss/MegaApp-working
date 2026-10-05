@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "febe858671f7524b96abe195a32a6aa8f004c33939d4a02da013220effd848ac",
+  "sourceDigest": "356adcc709e34c53e8b11eb5bcd320935495ef80c8e7d9d228ed959a1d1e5edd",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -61,7 +61,7 @@
     },
     {
       "path": "moments.css",
-      "sha256": "e48e291eb79f0e3f1f8bdca0f5ae00739f0a7f64862ff209ad89467b50ac1de9"
+      "sha256": "8d98e6ffa07a64d32fedef1c17f230ba36d6d07a0b08190237613ef622f64ce8"
     },
     {
       "path": "output/pdf/a-place-for-papers.pdf",
@@ -177,15 +177,15 @@
     },
     {
       "path": "src/moment-record.js",
-      "sha256": "6045ca2c0abb66f6aac25089e8a317d620faf99b7432d5cc1fee38040c69a2de"
+      "sha256": "456d71a22144617d45b45b3acdfbb49d18e0bfcf4efab7065b455686506b3f8a"
     },
     {
       "path": "src/moment-replay.js",
-      "sha256": "3cbd370018ba354e1370496e04fd28dbb95541b228c9b5d57e1f4808b43e2134"
+      "sha256": "a5ed9c46a70b0ff04daf4f591ba18cc36029eec463513bca42c8b29b56ce9d33"
     },
     {
       "path": "src/moments.js",
-      "sha256": "d69010d94fb7905b21e8e1e36eb5cb62908f58407259f095fa08a2eb3b4fe2aa"
+      "sha256": "878b1fdcb2f205bb80cd015b2766fcaa93add683f336fd321ff720763b839d78"
     },
     {
       "path": "src/pdf-workspace.js",
@@ -245,7 +245,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "0121b72da8a8073db3eb2ea68cb083a74f1226b282cd7a2bffef3a341bf0452a"
+      "sha256": "d4aae66efa98f7a213448d74eeccdb0edfeabf909a3adec580867f18a0bf2c95"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

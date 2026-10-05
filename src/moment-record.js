@@ -4,7 +4,8 @@ const copy = value => JSON.parse(JSON.stringify(value));
 export function validateMoment(moment) {
   if (!moment || moment.format !== MOMENT_FORMAT || moment.version !== 1 || typeof moment.id !== "string" || typeof moment.capturedAt !== "string" ||
       !Number.isFinite(moment.duration) || moment.duration < 0 || moment.duration > 600000 || !Array.isArray(moment.events) || moment.events.length > 50000 ||
-      typeof moment.explanation !== "string" || moment.explanation.length > 12000) throw new Error("Expected a MegaApp moment (version 1).");
+      typeof moment.explanation !== "string" || moment.explanation.length > 12000 ||
+      (moment.title !== undefined && (typeof moment.title !== "string" || moment.title.length > 160))) throw new Error("Expected a MegaApp moment (version 1).");
   let previous = -1;
   for (const event of moment.events) {
     if (!event || !Number.isFinite(event.time) || event.time < 0 || event.time < previous || event.time > moment.duration || typeof event.kind !== "string" || typeof event.action !== "string") throw new Error("Moment events must be ordered inside the captured interval.");
@@ -62,11 +63,33 @@ export function selectMoment(moment, start = 0, end = moment.duration, includeCo
   if (includeContext && end < moment.duration) selected.context = copy(moment.events.filter(event => event.time <= end && event.context).at(-1)?.context || {});
   return selected;
 }
-export function momentMarkdown(moment) {
-  const lines = ["# A moment from MegaApp", "", `Captured: ${moment.capturedAt}`, `Duration: ${(moment.duration / 1000).toFixed(1)} seconds`, `History boundary: ${moment.boundary}`, "", "## My explanation", "", moment.explanation || "No explanation supplied.", "", "## Observed interactions", ""];
-  for (const event of moment.events.filter(event => event.kind !== "frame" && event.action !== "Pointer moved")) lines.push(`- ${(event.time / 1000).toFixed(2)}s · ${event.app || "shell"} · ${event.action || event.kind}${event.target ? ` · ${event.target}` : ""}${event.outcome ? ` · ${event.outcome}` : ""}`);
-  lines.push("", "Detailed physical-input samples and visual frames are retained in moment.json. This readable timeline lists action boundaries.");
+export function momentTitle(moment) {
+  const app = moment.context?.app || moment.events.find(event => event.app)?.app || "MegaApp";
+  return moment.title?.trim() || `${app[0].toUpperCase()}${app.slice(1)} moment`;
+}
+export function momentFilename(moment, extension) {
+  const title = momentTitle(moment).normalize("NFKC").replace(/[^\p{L}\p{N}\p{M} _-]/gu, " ").trim().replace(/[\s_]+/g, "-").toLowerCase();
+  const date = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.exec(moment.capturedAt)?.[0].replace(/[T:]/g, "-") || "undated";
+  const id = moment.id.replace(/[^a-z0-9]/gi, "").slice(0, 8) || "record";
+  return `${Array.from(title || "moment").slice(0, 70).join("")}-${date}-${id}.${extension === "zip" ? "zip" : "json"}`;
+}
+export function momentMarkdown(moment, { standalone = false } = {}) {
+  const lines = [`# ${momentTitle(moment).replace(/[\r\n]+/g, " ")}`, "", `Moment: ${moment.id}`, `Captured: ${moment.capturedAt}`, `Duration: ${(moment.duration / 1000).toFixed(1)} seconds`, `History boundary: ${moment.boundary}`, "", "## My explanation", "", moment.explanation || "No explanation supplied.", "", "## Observed interactions", ""];
+  let previous = moment.includeContext ? moment.baseline : undefined;
+  if (previous) lines.push("Starting context (immediately before the selected range):", "", "```json", JSON.stringify(previous, null, 2), "```", "");
+  for (const event of moment.events.filter(event => event.kind !== "frame" && event.action !== "Pointer moved")) {
+    lines.push(`- ${(event.time / 1000).toFixed(2)}s · ${event.app || "shell"} · ${event.action || event.kind}${event.target ? ` · ${event.target}` : ""}${event.outcome ? ` · ${event.outcome}` : ""}`);
+    if (event.kind === "action" && moment.includeContext && event.context) {
+      const changes = Object.fromEntries(Object.entries(event.context).filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(previous?.[key])));
+      const removed = Object.keys(previous || {}).filter(key => !Object.hasOwn(event.context, key));
+      if (Object.keys(changes).length || removed.length) lines.push("", "Declared context at this action (changed fields; removed fields listed separately):", "", "```json", JSON.stringify({ changed: changes, removed }, null, 2), "```", "");
+      previous = event.context;
+    }
+  }
+  lines.push("", standalone ? "This text includes action boundaries and declared context changes. Continuous pointer samples and visual frames are omitted; Copy full JSON preserves those separately." : "Detailed physical-input samples and visual frames are retained in moment.json. This readable timeline lists action boundaries and declared context changes.");
   if (moment.includeContext && moment.context) lines.push("", "## Captured app context", "", "```json", JSON.stringify(moment.context, null, 2), "```");
+  if (!moment.includeContext) lines.push("", "Captured content and app state excluded by my choice.");
+  if (moment.voiceNote) lines.push("", "A voice note exists. Audio is included only in the ZIP export; it is not transcribed into this text.");
   lines.push("", "This is recorded evidence and the user's explanation. No AI interpretation is included.", "Visual replay reconstructs the Design example from recorded frames; it is not a screen video or a replay of other apps.");
   return lines.join("\n");
 }
