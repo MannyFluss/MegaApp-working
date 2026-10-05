@@ -14,6 +14,10 @@ body.intro-open .moment-keep, body.meta-is-open .moment-keep { visibility: hidde
 .moment-note-label { display: block; margin-bottom: 8px; font-weight: 550; }
 #moment-note { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; color: var(--ink); font: inherit; padding: 12px; resize: vertical; }
 .moment-name, #moment-copy-text { width: 100%; min-height: 44px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; color: var(--ink); font: inherit; padding: 12px; }
+.moment-label { font-weight: 550; overflow-wrap: anywhere; margin-bottom: 2px; }
+.moment-naming { margin-bottom: 20px; }
+.moment-naming summary { min-height: 44px; padding: 12px 0; font-size: .8rem; color: var(--muted); cursor: pointer; }
+#moment-automatic-name { margin-top: 8px; }
 #moment-filename { overflow-wrap: anywhere; margin: 8px 0 22px; }
 #moment-copy-fallback { margin: 16px 0; }
 #moment-copy-text { resize: vertical; user-select: text; -webkit-user-select: text; -webkit-touch-callout: default; }

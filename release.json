@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "356adcc709e34c53e8b11eb5bcd320935495ef80c8e7d9d228ed959a1d1e5edd",
+  "sourceDigest": "59797ffefce949684ec433fbe12a4d3e0d694e1260ab630aedcab899f6f3a683",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -9,11 +9,11 @@
     },
     {
       "path": "docs/design-dictionary.md",
-      "sha256": "33b7d62d61039985fb2f7b21949a96977b1615159e6df6957025c4f306968a18"
+      "sha256": "fb0859e503e4637822bfb8bbd8abd307037359e087dc43affa4e244fb290cc1d"
     },
     {
       "path": "docs/design.md",
-      "sha256": "6827c7a06ccdcdc5c3ce6b62d279691372a85b878f7828f10616b2cb0c7a2dc2"
+      "sha256": "f26b35fc56d5def465ae4a4fc86b527fe742c6a644a39483ff20309efbd4e16c"
     },
     {
       "path": "docs/pdf-library.md",
@@ -61,7 +61,7 @@
     },
     {
       "path": "moments.css",
-      "sha256": "8d98e6ffa07a64d32fedef1c17f230ba36d6d07a0b08190237613ef622f64ce8"
+      "sha256": "3867deb96f87618ee708ee1c8861bd52db3501c563e1fc5454ce929e1d23ba4e"
     },
     {
       "path": "output/pdf/a-place-for-papers.pdf",
@@ -101,7 +101,7 @@
     },
     {
       "path": "src/design-content.js",
-      "sha256": "778a9c09854a004a8cb0c6b72c3393d4486d85fe2baa0fd51a4aceb8409fae27"
+      "sha256": "3896f2658e084d23515831039b68f392368b693ab1bf467132a0347a487e4b3a"
     },
     {
       "path": "src/design-edition.js",
@@ -177,15 +177,15 @@
     },
     {
       "path": "src/moment-record.js",
-      "sha256": "456d71a22144617d45b45b3acdfbb49d18e0bfcf4efab7065b455686506b3f8a"
+      "sha256": "9d0898f64347f7a4ba5ad190b31454a0b446c256ceebe2e2fda30e185ae90aa3"
     },
     {
       "path": "src/moment-replay.js",
-      "sha256": "a5ed9c46a70b0ff04daf4f591ba18cc36029eec463513bca42c8b29b56ce9d33"
+      "sha256": "7350cec0cfbf0626d6051d6d4027e18e3b4278e9513ba33b5813fc99391cf084"
     },
     {
       "path": "src/moments.js",
-      "sha256": "878b1fdcb2f205bb80cd015b2766fcaa93add683f336fd321ff720763b839d78"
+      "sha256": "40f9e9c1eebfd4dfae5060371d13f7188beb63a98aaaf83e85f4117016d3fe16"
     },
     {
       "path": "src/pdf-workspace.js",
@@ -245,7 +245,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "d4aae66efa98f7a213448d74eeccdb0edfeabf909a3adec580867f18a0bf2c95"
+      "sha256": "7b66008850d61a170366325bf590beb7ae3304ec667bf9524ea32e8c103eacad"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

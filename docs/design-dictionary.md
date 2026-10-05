@@ -2,6 +2,10 @@
 
 These are the terms used by Manny's design page. They are the starting point for the full dictionary and mental-schema decisions.
 
+## Data control
+
+My final authority over how my data is organized, used and shared.
+
 ## Design
 
 How MegaApp is organized, experienced, and understood.

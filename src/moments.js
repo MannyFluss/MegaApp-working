@@ -1,4 +1,4 @@
-import { createMomentBuffer, createMomentStore, selectMoment, momentMarkdown, momentTitle, momentFilename } from "./moment-record.js";
+import { createMomentBuffer, createMomentStore, selectMoment, momentMarkdown, momentTitle, momentFilename, hasCustomMomentName, nameMoment } from "./moment-record.js";
 import { mountMomentReplay, momentReplayHTML } from "./moment-replay.js";
 import { createPortableZip } from "./file-export.js";
 import { storageName } from "./environment.js";
@@ -8,13 +8,13 @@ export function createMoments({ getApp, getDesignContext, closeMeta, notify, onO
   try { buffer.setPaused(localStorage.getItem(pauseKey) === "true"); } catch { /* Session preference still works. */ }
   const storeReady = createMomentStore({ name: storageName("megaapp-moments-v1") });
   const deleted = new Set();
-  let draft, replay, priorFocus, capturing = false, longRecording = false, saveChain = Promise.resolve(), voice, voiceStream, audio, timer, saveTimer, saveGeneration = 0, copyGeneration = 0;
+  let draft, replay, priorFocus, capturing = false, longRecording = false, saveChain = Promise.resolve(), voice, voiceStream, audio, timer, saveTimer, saveGeneration = 0, copyGeneration = 0, nameMode = "automatic";
   const system = document.createElement("section"); system.className = "moment-system"; system.dataset.momentPrivate = "";
   system.innerHTML = `<div class="moment-system-heading"><strong>Moments</strong><span id="moment-record-status"></span></div><p>Recent interactions stay on this device. Keep a moment to review and export it.</p><div class="moment-system-actions"><button id="moment-pause" class="quiet-button" type="button"></button><button id="moment-long" class="quiet-button" type="button">Start longer recording</button><button id="moment-library" class="quiet-button" type="button">Saved moments</button></div>`;
   document.querySelector(".meta-system").append(system);
   const keepButton = document.createElement("button"); keepButton.id = "moment-keep"; keepButton.type = "button"; keepButton.className = "moment-keep quiet-button"; keepButton.textContent = "Keep moment"; keepButton.dataset.momentPrivate = ""; document.querySelector(".app-shell").append(keepButton);
   const dialog = document.createElement("dialog"); dialog.id = "moment-dialog"; dialog.className = "moment-dialog"; dialog.dataset.momentPrivate = ""; dialog.setAttribute("aria-labelledby", "moment-title");
-  dialog.innerHTML = `<header class="moment-heading"><div><h1 id="moment-title">My moment.</h1><p id="moment-description"></p></div><button id="moment-close" class="quiet-button" type="button">Close</button></header><div id="moment-review"><label class="moment-note-label" for="moment-name">Name this moment</label><input id="moment-name" class="moment-name" type="text" maxlength="160" autocomplete="off" placeholder="A name I will recognize"><p id="moment-filename" class="moment-export-help"></p><label class="moment-note-label" for="moment-note">What was happening for me?</label><textarea id="moment-note" rows="3" maxlength="12000" placeholder="What I wanted, noticed, or felt. My explanation goes beside the recorded evidence."></textarea><div class="moment-copy-actions"><button id="moment-copy" class="primary-button" type="button">Copy as text</button><p id="moment-copy-status" class="moment-export-help" role="status"></p></div><div id="moment-copy-fallback" hidden><label class="moment-note-label" for="moment-copy-text">Text ready to copy</label><textarea id="moment-copy-text" rows="6" readonly></textarea><button id="moment-copy-select" class="quiet-button" type="button">Select all text</button><p class="moment-export-help">Use the browser’s Copy command, then paste into your agent conversation.</p></div><div class="moment-voice"><button id="moment-voice" class="quiet-button" type="button">Add voice note</button><button id="moment-voice-remove" class="quiet-button" type="button" hidden>Remove voice note</button><audio id="moment-audio" controls hidden></audio><span id="moment-voice-status" role="status"></span></div><div class="moment-trim"><label>From <input id="moment-from" type="range" min="0" max="1" step="any" value="0"></label><label>To <input id="moment-to" type="range" min="0" max="1" step="any" value="1"></label><output id="moment-range"></output></div><label class="moment-context-choice"><input id="moment-content" type="checkbox" checked> Include captured content and app state</label><div id="moment-replay"></div><details class="moment-timeline"><summary>Recorded interactions</summary><ol id="moment-events"></ol><pre id="moment-context"></pre></details><footer class="moment-review-actions"><button id="moment-export" class="quiet-button" type="button">Export moment</button><button id="moment-json" class="quiet-button" type="button">Save JSON</button><button id="moment-delete" class="quiet-button" type="button">Delete moment</button><span id="moment-save-status" role="status"></span></footer><details class="moment-timeline"><summary>Full recording as text</summary><p class="moment-export-help">Includes every selected event and visual frame. It can be much longer than the readable account. Audio stays in the ZIP.</p><button id="moment-copy-json" class="quiet-button" type="button">Copy full JSON</button></details><p class="moment-export-help">Copy as text includes my explanation, actions and declared context changes. Export includes a readable account, structured events and a replay page. Open the ZIP’s replay.html to watch the Design example. Nothing is sent to an agent automatically.</p></div><div id="moment-saved" hidden><p id="moment-library-status"></p><ul id="moment-saved-list"></ul></div>`;
+  dialog.innerHTML = `<header class="moment-heading"><div><h1 id="moment-title">My moment.</h1><p id="moment-description"></p></div><button id="moment-close" class="quiet-button" type="button">Close</button></header><div id="moment-review"><p id="moment-label" class="moment-label"></p><details id="moment-naming" class="moment-naming"><summary>Rename moment</summary><label class="moment-note-label" for="moment-name">Optional name</label><input id="moment-name" class="moment-name" type="text" maxlength="160" autocomplete="off"><button id="moment-automatic-name" class="quiet-button" type="button" hidden>Use automatic name</button><p class="moment-export-help">The default follows recorded actions. Renaming overrides the label; the recording keeps its identity.</p><p id="moment-filename" class="moment-export-help"></p></details><label class="moment-note-label" for="moment-note">What was happening for me?</label><textarea id="moment-note" rows="3" maxlength="12000" placeholder="What I wanted, noticed, or felt. My explanation goes beside the recorded evidence."></textarea><div class="moment-copy-actions"><button id="moment-copy" class="primary-button" type="button">Copy as text</button><p id="moment-copy-status" class="moment-export-help" role="status"></p></div><div id="moment-copy-fallback" hidden><label class="moment-note-label" for="moment-copy-text">Text ready to copy</label><textarea id="moment-copy-text" rows="6" readonly></textarea><button id="moment-copy-select" class="quiet-button" type="button">Select all text</button><p class="moment-export-help">Use the browser’s Copy command, then paste into your agent conversation.</p></div><div class="moment-voice"><button id="moment-voice" class="quiet-button" type="button">Add voice note</button><button id="moment-voice-remove" class="quiet-button" type="button" hidden>Remove voice note</button><audio id="moment-audio" controls hidden></audio><span id="moment-voice-status" role="status"></span></div><div class="moment-trim"><label>From <input id="moment-from" type="range" min="0" max="1" step="any" value="0"></label><label>To <input id="moment-to" type="range" min="0" max="1" step="any" value="1"></label><output id="moment-range"></output></div><label class="moment-context-choice"><input id="moment-content" type="checkbox" checked> Include captured content and app state</label><div id="moment-replay"></div><details class="moment-timeline"><summary>Recorded interactions</summary><ol id="moment-events"></ol><pre id="moment-context"></pre></details><footer class="moment-review-actions"><button id="moment-export" class="quiet-button" type="button">Export moment</button><button id="moment-json" class="quiet-button" type="button">Save JSON</button><button id="moment-delete" class="quiet-button" type="button">Delete moment</button><span id="moment-save-status" role="status"></span></footer><details class="moment-timeline"><summary>Full recording as text</summary><p class="moment-export-help">Includes every selected event and visual frame. It can be much longer than the readable account. Audio stays in the ZIP.</p><button id="moment-copy-json" class="quiet-button" type="button">Copy full JSON</button></details><p class="moment-export-help">Copy as text includes my explanation, actions and declared context changes. Export includes a readable account, structured events and a replay page. Open the ZIP’s replay.html to watch the Design example. Nothing is sent to an agent automatically.</p></div><div id="moment-saved" hidden><p id="moment-library-status"></p><ul id="moment-saved-list"></ul></div>`;
   document.body.append(dialog);
   const $ = id => document.getElementById(id);
   function context() {
@@ -64,12 +64,14 @@ export function createMoments({ getApp, getDesignContext, closeMeta, notify, onO
   }
   function selection() {
     const value = selectMoment(draft, rangeValue("moment-from"), rangeValue("moment-to"), $("moment-content").checked);
-    value.explanation = $("moment-note").value; value.title = $("moment-name").value.trim().slice(0, 160); return value;
+    value.explanation = $("moment-note").value;
+    return nameMoment(value, nameMode === "custom" ? $("moment-name").value.trim().slice(0, 160) : undefined);
   }
   function save() {
     clearTimeout(saveTimer);
     if (!draft) return;
-    draft.title = $("moment-name").value.trim().slice(0, 160); draft.explanation = $("moment-note").value; draft.review = { start: rangeValue("moment-from"), end: rangeValue("moment-to"), includeContext: $("moment-content").checked };
+    const named = selection(); draft.title = named.title; draft.naming = named.naming;
+    draft.explanation = $("moment-note").value; draft.review = { start: rangeValue("moment-from"), end: rangeValue("moment-to"), includeContext: $("moment-content").checked };
     const value = { ...structuredClone(draft), ...(audio ? { audio } : {}) };
     const generation = ++saveGeneration;
     $("moment-save-status").textContent = "Saving on this device…";
@@ -93,7 +95,8 @@ export function createMoments({ getApp, getDesignContext, closeMeta, notify, onO
     $("moment-title").textContent = "My moment.";
     $("moment-description").textContent = `${new Date(moment.capturedAt).toLocaleString()} · ${moment.boundary}`;
     $("moment-note").value = moment.explanation || "";
-    $("moment-name").value = momentTitle(moment); resetCopy();
+    nameMode = hasCustomMomentName(moment) ? "custom" : "automatic";
+    $("moment-name").value = momentTitle(moment); $("moment-naming").open = false; resetCopy();
     for (const id of ["moment-from", "moment-to"]) { $(id).max = String(moment.duration); $(id).disabled = !moment.duration; }
     $("moment-from").value = String(moment.review?.start || 0); $("moment-to").value = String(moment.review?.end ?? moment.duration);
     $("moment-content").checked = moment.review?.includeContext ?? true;
@@ -103,17 +106,24 @@ export function createMoments({ getApp, getDesignContext, closeMeta, notify, onO
     if (capturing) return;
     if (buffer.paused) { notify("Recording is paused. Resume it in Meta before keeping a moment."); return; }
     capturing = true;
-    try { const moment = buffer.snapshot(context()); if (feedback) moment.title = momentTitle(moment).replace(/ moment$/, " feedback"); longRecording = false; buffer.setWindow(60); status(); review(moment); open(); if (feedback) { $('moment-title').textContent = 'My feedback.'; $('moment-description').textContent = 'This moment is kept. Tell me what felt wrong or right; you can export it when ready.'; $('moment-note').focus({ preventScroll: true }); } await saveChain; }
+    try { let moment = buffer.snapshot(context()); if (feedback) moment.naming = { kind: "feedback" }; moment = nameMoment(moment); longRecording = false; buffer.setWindow(60); status(); review(moment); open(); if (feedback) { $('moment-title').textContent = 'My feedback.'; $('moment-description').textContent = 'This moment is kept. Tell me what felt wrong or right; you can export it when ready.'; $('moment-note').focus({ preventScroll: true }); } await saveChain; }
     finally { capturing = false; }
   }
   keepButton.onclick = keep;
   function resetCopy() { copyGeneration++; $("moment-copy-status").textContent = ""; $("moment-copy-fallback").hidden = true; $("moment-copy-text").value = ""; }
-  function updateFilename() { $("moment-filename").textContent = `Files use this name: ${momentFilename(selection(), "json")}`; }
-  $("moment-name").addEventListener("input", () => { resetCopy(); updateFilename(); queueSave(); });
+  function updateFilename() {
+    const named = selection(); $("moment-label").textContent = named.title;
+    if (nameMode === "automatic") $("moment-name").value = named.title;
+    $("moment-automatic-name").hidden = nameMode === "automatic";
+    $("moment-filename").textContent = `Files use this name: ${momentFilename(named, "json")}`;
+  }
+  $("moment-name").addEventListener("input", () => { nameMode = "custom"; resetCopy(); updateFilename(); queueSave(); });
+  $("moment-name").addEventListener("blur", () => { if (!$("moment-name").value.trim()) { nameMode = "automatic"; updateFilename(); } });
+  $("moment-automatic-name").onclick = () => { nameMode = "automatic"; resetCopy(); updateFilename(); queueSave(); };
   $("moment-note").addEventListener("input", () => { resetCopy(); queueSave(); });
   for (const id of ["moment-from", "moment-to", "moment-content"]) $(id).addEventListener("input", () => {
     if (Number($("moment-from").value) > Number($("moment-to").value)) { if (id === "moment-from") $("moment-to").value = $("moment-from").value; else $("moment-from").value = $("moment-to").value; }
-    resetCopy(); renderReview(); queueSave();
+    resetCopy(); updateFilename(); renderReview(); queueSave();
   });
   function download(blob, name) { const link = document.createElement("a"), url = URL.createObjectURL(blob); link.href = url; link.download = name; link.click(); setTimeout(() => URL.revokeObjectURL(url), 60000); }
   function copyText(full = false) {

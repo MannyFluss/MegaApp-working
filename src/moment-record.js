@@ -1,11 +1,17 @@
 // Deterministic capture data. No DOM, model, network, or inferred intent.
 export const MOMENT_FORMAT = "megaapp-moment";
+export const MOMENT_NAMING_STANDARD = "megaapp-moment-name";
 const copy = value => JSON.parse(JSON.stringify(value));
 export function validateMoment(moment) {
   if (!moment || moment.format !== MOMENT_FORMAT || moment.version !== 1 || typeof moment.id !== "string" || typeof moment.capturedAt !== "string" ||
       !Number.isFinite(moment.duration) || moment.duration < 0 || moment.duration > 600000 || !Array.isArray(moment.events) || moment.events.length > 50000 ||
       typeof moment.explanation !== "string" || moment.explanation.length > 12000 ||
       (moment.title !== undefined && (typeof moment.title !== "string" || moment.title.length > 160))) throw new Error("Expected a MegaApp moment (version 1).");
+  if (moment.naming !== undefined) {
+    const n = moment.naming;
+    if (!n || n.standard !== MOMENT_NAMING_STANDARD || n.version !== 1 || !["automatic", "custom"].includes(n.mode) || !["moment", "feedback"].includes(n.kind) ||
+        [n.app, n.topic, n.result].some(value => typeof value !== "string" || !value || value.length > 80)) throw new Error("Expected a supported moment naming standard.");
+  }
   let previous = -1;
   for (const event of moment.events) {
     if (!event || !Number.isFinite(event.time) || event.time < 0 || event.time < previous || event.time > moment.duration || typeof event.kind !== "string" || typeof event.action !== "string") throw new Error("Moment events must be ordered inside the captured interval.");
@@ -63,9 +69,72 @@ export function selectMoment(moment, start = 0, end = moment.duration, includeCo
   if (includeContext && end < moment.duration) selected.context = copy(moment.events.filter(event => event.time <= end && event.context).at(-1)?.context || {});
   return selected;
 }
+const appNames = { design: "Design", reading: "Reading", canvas: "Canvas", marble: "Marble", jump: "Jump", files: "Files", device: "Device", state: "State" };
+// Versioned, inspectable labels: only recorded operations/outcomes determine a
+// default. Free text, document titles and guessed intent never become labels.
+function namedActivity(event, fallback = false) {
+  const { action, outcome = "" } = event;
+  const label = (topic, result, title) => ({ topic, result, title });
+  if (event.app === "design") {
+    if (action === "Begin my edit") {
+      if (outcome === "Blocked: overlapping active boundary") return label("edit-boundary", "overlap-blocked", "Edit boundary overlap blocked");
+      if (outcome === "Boundary reserved") return label("edit-boundary", "reserved", "Edit boundary reserved");
+      return label("edit-boundary", "observed", "Edit boundary interaction");
+    }
+    if (action === "Define my boundary") return label("text-boundary", "selected", "Text boundary selected");
+    if (/^Apply edit \d+$/.test(action) && outcome === "Text changed") return label("text-edit", "applied", "Text replacement applied");
+    if (/^Cancel edit \d+$/.test(action)) return label("text-edit", "cancelled", "Text edit cancelled");
+    if (action === "Undo text change") return label("text-edit", "undone", "Text change undone");
+    if (action === "Use my own text") return label("working-text", "changed", "Working text changed");
+    if (action === "Reset text example") return label("working-text", "reset", "Text example reset");
+    if (action === "Change introduction") return label("introduction", "changed", "Introduction changed");
+    if (action === "Change title") return label("document-title", "changed", "Document title changed");
+    if (action === "Change note") return label("document-note", "changed", "Document note changed");
+    if (/^Change principle (touch|still|scope|capability|context|continuity|override)$/.test(action)) return label("principle", "changed", "Design principle changed");
+    if (["Rearrange design principles", "Change principle width", "Change design columns"].includes(action)) return label("document-layout", "changed", "Document layout changed");
+    if (action === "Finish principle drag") return outcome === "Principle placed at the shown insertion point" ? label("document-layout", "changed", "Design principle moved") : label("document-layout", "kept", "Design order kept");
+    if (action === "Cancel principle drag") return label("document-layout", "cancelled", "Principle move cancelled");
+    if (/^(undo|redo|reset) design document$/.test(action) || action === "Restore design version") return label("document-version", "restored", "Design version restored");
+    if (action === "Export design edition") return label("design-edition", "exported", "Design edition exported");
+    if (action === "Import design edition") return label("design-edition", "imported", "Design edition imported");
+    if (event.target === "design-touch-object" && action === "Pointer moved") return label("surface", "drag-observed", "Surface drag");
+    if (event.target === "design-touch-object" && action === "Control key") return label("surface", "key-observed", "Surface key input");
+    if (action === "Tune shared response") return label("input-response", "previewed", "Input response previewed");
+    if (fallback && action.startsWith("Understand ")) return label("dictionary", "opened", "Dictionary meaning opened");
+    if (fallback && action === "Choose text interaction") return outcome.includes("Browser selection enabled") ? label("text-selection", "enabled", "Browser text selection enabled") : label("dictionary", "restored", "Dictionary interaction restored");
+    if (fallback && action === "Reshape design document") return label("document-mode", "changed", "Document editing mode changed");
+  }
+  if (action === "Set reading preference") return label("reading-preference", "changed", "Reading preference changed");
+  if (action === "Set Meta reach") return label("control-reach", "changed", "Control reach changed");
+  if (event.kind === "control") {
+    const controls = { "reading-prev": ["page", "requested", "Previous page requested"], "reading-next": ["page", "requested", "Next page requested"], "reading-fit": ["page-view", "requested", "Page fit requested"], "reading-zoom-in": ["page-view", "requested", "Zoom in requested"], "reading-zoom-out": ["page-view", "requested", "Zoom out requested"], "draw-tool": ["drawing-tool", "activated", "Drawing tool activated"] };
+    if (controls[event.target]) return label(...controls[event.target]);
+  }
+  return null;
+}
+export function suggestMomentName(moment) {
+  const events = [...(moment.events || [])].reverse();
+  const rawApp = events.find(event => appNames[event.app])?.app || moment.context?.app || moment.naming?.app;
+  const app = Object.hasOwn(appNames, rawApp) ? rawApp : "megaapp", appName = appNames[app] || "MegaApp";
+  const kind = moment.naming?.kind === "feedback" || events.some(event => event.action === "Give design feedback") || moment.title === `${appName} feedback` ? "feedback" : "moment";
+  const local = events.filter(event => event.app === app);
+  const activity = local.map(event => namedActivity(event)).find(Boolean) || local.map(event => namedActivity(event, true)).find(Boolean) || { topic: "interaction", result: "recorded", title: "Recent interactions" };
+  return { title: `${appName} ${kind} — ${activity.title}`, naming: { standard: MOMENT_NAMING_STANDARD, version: 1, mode: "automatic", kind, app, topic: activity.topic, result: activity.result } };
+}
+export function hasCustomMomentName(moment) {
+  if (!moment.title?.trim()) return false;
+  if (moment.naming?.mode) return moment.naming.mode === "custom";
+  // The preceding release used these exact generic automatic titles. All other
+  // legacy names remain personal overrides; no existing evidence is rewritten.
+  return !Object.values(appNames).concat("MegaApp").some(app => [app + " moment", app + " feedback"].includes(moment.title.trim()));
+}
+export function nameMoment(moment, customTitle) {
+  const suggested = suggestMomentName(moment), title = customTitle?.trim();
+  return { ...moment, ...suggested, ...(title ? { title, naming: { ...suggested.naming, mode: "custom" } } : {}) };
+}
 export function momentTitle(moment) {
-  const app = moment.context?.app || moment.events.find(event => event.app)?.app || "MegaApp";
-  return moment.title?.trim() || `${app[0].toUpperCase()}${app.slice(1)} moment`;
+  if (hasCustomMomentName(moment) || (moment.naming?.standard === MOMENT_NAMING_STANDARD && moment.naming.version === 1 && moment.title?.trim())) return moment.title.trim();
+  return suggestMomentName(moment).title;
 }
 export function momentFilename(moment, extension) {
   const title = momentTitle(moment).normalize("NFKC").replace(/[^\p{L}\p{N}\p{M} _-]/gu, " ").trim().replace(/[\s_]+/g, "-").toLowerCase();

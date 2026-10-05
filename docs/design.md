@@ -16,7 +16,7 @@ Enjoyment draws me into what I do and feel. Quiet and focused is the default; st
 
 ## Complexity resolves into clarity.
 
-My work has structure agents can understand, expressed clearly for me. Color has stable meaning across apps. Actions and explanations stay close to the work. Exploring the system is easy and immersive.
+I govern my data. Shared names and structure make it usable across apps and agents, expressed clearly for me. Color has stable meaning across apps. Actions and explanations stay close to the work. Exploring the system is easy and immersive.
 
 ## I can improve it through use.
 
