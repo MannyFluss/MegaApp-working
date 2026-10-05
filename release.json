@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "16b4334e649016a06c0be9f3a58133d38e1884439a6fca8204523c0e3fefb3c2",
+  "sourceDigest": "74cc1bf81f13d29ad6349e87a812ec81bc52b897f9a3f45cd22ee0859c264a18",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -33,7 +33,7 @@
     },
     {
       "path": "frontend.css",
-      "sha256": "4bedfdfe01208cdc05c42b2a16775e495d6ad65812b0a84e4f93256a2ad46ad0"
+      "sha256": "c2470b2d91236ace495cc9fe8e97d25acf9fb713a3a3b8a525467e1ac69b98f0"
     },
     {
       "path": "icons/apple-touch-icon.png",
@@ -125,7 +125,7 @@
     },
     {
       "path": "src/design-markup.js",
-      "sha256": "8a45730f02e97d144a5b7815abaff9dccd4821ea195c812fec9cc9e856d0c3a7"
+      "sha256": "ce5e65496d8e21e74ec097d96864e912af3e201645f8083ecd1c0edf486359d0"
     },
     {
       "path": "src/design.js",
@@ -265,7 +265,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "142fa2e958f28fb7db2eb4f6c70896eb4c303b28affe94fccd079d8da9d087e9"
+      "sha256": "4642774433e921b5fa245b5cd40747d4329a3dec800298e88720b75be84a97ab"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

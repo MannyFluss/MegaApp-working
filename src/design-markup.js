@@ -7,8 +7,8 @@ export function createDesignMarkup({ root, onAction }) {
   const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); overlay.classList.add('design-ink'); overlay.setAttribute('aria-hidden', 'true'); root.append(overlay);
   const enabled = tools.querySelector('#markup-enabled'), any = tools.querySelector('#markup-any-pointer'), status = tools.querySelector('#markup-status');
   const visible = tools.querySelector('#markup-visible');
-  const visibility = document.createElement('button'); visibility.type = 'button'; visibility.id = 'design-marks-toggle'; visibility.className = 'quiet-button'; root.querySelector('.design-footnote').prepend(visibility);
-  function showMarks() { overlay.style.visibility = visible.checked ? 'visible' : 'hidden'; visibility.textContent = visible.checked ? 'Hide marks' : 'Show marks'; visibility.setAttribute('aria-pressed', String(visible.checked)); }
+  const visibility = document.createElement('button'); visibility.type = 'button'; visibility.id = 'design-marks-toggle'; visibility.className = 'quiet-button design-marks-toggle'; visibility.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17l-1 4 4-1L20 8l-4-4L5 17Zm9-11 4 4"/></svg>'; root.querySelector('.design-footnote').prepend(visibility);
+  function showMarks() { overlay.style.visibility = visible.checked ? 'visible' : 'hidden'; visibility.setAttribute('aria-label', visible.checked ? 'Hide Pencil marks' : 'Show Pencil marks'); visibility.title = visible.checked ? 'Hide Pencil marks' : 'Show Pencil marks'; visibility.setAttribute('aria-pressed', String(visible.checked)); }
   const key = storageName('megaapp.design.markup.v1');
   let ink = emptyMarkup(), future = [], unreadable = '', current = null, started = 0, moved = false, paintPending = false, savedError = '';
   try {
@@ -53,7 +53,7 @@ export function createDesignMarkup({ root, onAction }) {
     if (target.closest?.('.design-masthead')) return 'masthead';
     return 'page';
   }
-  function controls() { tools.querySelector('#markup-undo').disabled = !ink.strokes.length; tools.querySelector('#markup-redo').disabled = !future.length; tools.querySelector('#markup-clear').disabled = !ink.strokes.length; }
+  function controls() { tools.querySelector('#markup-undo').disabled = Boolean(savedError) || !ink.strokes.length; tools.querySelector('#markup-redo').disabled = Boolean(savedError) || !future.length; tools.querySelector('#markup-clear').disabled = Boolean(savedError) || !ink.strokes.length; }
   function save() {
     try { localStorage.setItem(key, JSON.stringify({ ...ink, recovery: future, preferences: { enabled: enabled.checked, visible: visible.checked, color: tools.querySelector('#markup-color').value, width: Number(tools.querySelector('#markup-width').value) } })); status.textContent = `${ink.strokes.length} mark${ink.strokes.length === 1 ? '' : 's'} saved on this device. Kept feedback includes them.`; }
     catch { status.textContent = 'Marks are in this session. Saving failed; keep and export feedback before leaving.'; }

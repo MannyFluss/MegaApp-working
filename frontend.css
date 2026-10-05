@@ -406,3 +406,9 @@ select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 .design-markup-controls input[type="range"] { width: 100px; }
 .design-markup-controls input[type="color"] { width: 48px; height: 44px; padding: 3px; }
 .design-markup-controls > p { flex-basis: 100%; max-width: 72ch; font-size: .75rem; color: var(--muted); line-height: 1.5; }
+
+.design-marks-toggle { position: fixed; z-index: 14; right: 220px; bottom: calc(12px + env(safe-area-inset-bottom)); width: 45px; height: 45px; min-height: 45px; padding: 11px; border-radius: 14px; background: var(--surface); color: var(--muted); box-shadow: var(--floating-shadow); }
+.design-marks-toggle svg { display: block; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.design-marks-toggle[aria-pressed="true"] { color: var(--accent); }
+:root[data-meta-side="left"] .design-marks-toggle { left: 220px; right: auto; }
+body.intro-open .design-marks-toggle, body.meta-is-open .design-marks-toggle { visibility: hidden; }
