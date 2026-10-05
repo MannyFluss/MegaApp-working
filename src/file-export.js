@@ -19,18 +19,25 @@ function header(size) {
 export function safeFilename(name) {
   return String(name).replace(/[\\/\u0000-\u001f:*?"<>|]/g, "_").slice(0, 180) || "untitled";
 }
-export async function createPortableZip(entries) {
+export async function createPortableZip(entries, { compress = false } = {}) {
   if (entries.length > 65535) throw new Error("Export fewer than 65,536 versions at a time.");
   const parts = [], central = []; let offset = 0;
   for (const { name, blob } of entries) {
     if (offset + blob.size > 0xffffffff) throw new Error("Export this collection in smaller parts (below 4 GB).");
     const filename = encoder.encode(name), crc = await crc32(blob);
+    let payload = blob, method = 0;
+    if (compress && typeof CompressionStream !== "undefined" && blob.size) {
+      try {
+        const packed = await new Response(blob.stream().pipeThrough(new CompressionStream("deflate-raw"))).blob();
+        if (packed.size < blob.size) { payload = packed; method = 8; }
+      } catch { /* Older browsers still export standard, stored ZIP entries. */ }
+    }
     const local = header(30); local.u32(0, 0x04034b50); local.u16(4, 20); local.u16(6, 0x800);
-    local.u32(14, crc); local.u32(18, blob.size); local.u32(22, blob.size); local.u16(26, filename.length);
-    parts.push(local.bytes, filename, blob);
+    local.u16(8, method); local.u32(14, crc); local.u32(18, payload.size); local.u32(22, blob.size); local.u16(26, filename.length);
+    parts.push(local.bytes, filename, payload);
     const c = header(46); c.u32(0, 0x02014b50); c.u16(4, 20); c.u16(6, 20); c.u16(8, 0x800);
-    c.u32(16, crc); c.u32(20, blob.size); c.u32(24, blob.size); c.u16(28, filename.length); c.u32(42, offset);
-    central.push(c.bytes, filename); offset += 30 + filename.length + blob.size;
+    c.u16(10, method); c.u32(16, crc); c.u32(20, payload.size); c.u32(24, blob.size); c.u16(28, filename.length); c.u32(42, offset);
+    central.push(c.bytes, filename); offset += 30 + filename.length + payload.size;
   }
   const size = central.reduce((sum, value) => sum + value.length, 0), end = header(22);
   if (offset + size + 22 > 0xffffffff) throw new Error("Export this collection in smaller parts (below 4 GB).");

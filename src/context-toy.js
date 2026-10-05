@@ -98,6 +98,7 @@ export function createContextToy({ onAction }) {
     else if(old.id) select(old.id);
   }
   function cancel() { if(gesture) complete(true); releaseCaptures(); }
+  element.closest('#panel-design')?.addEventListener('pagemarkupstart', cancel);
   const excluded=target=>target.closest?.('.context-detail, .context-home');
   map.addEventListener('pointerdown',event=>{
     if(excluded(event.target) || pointers.size>=2 || event.button!==0 || (event.pointerType!=='touch' && !event.isPrimary)) return;

@@ -1,3 +1,4 @@
+import { freezeJSON } from "./moment-codec.js";
 import { emptyMarkup, readMarkup, projectStroke, projectMapStroke } from './page-markup.js';
 import { storageName } from './environment.js';
 
@@ -14,10 +15,10 @@ export function createDesignMarkup({ root, onAction }) {
   try {
     unreadable = localStorage.getItem(key) || '';
     if (unreadable) {
-      const saved = JSON.parse(unreadable); ink = readMarkup(saved);
+      const saved = JSON.parse(unreadable); ink = readMarkup(saved); ink.strokes.forEach(freezeJSON);
       if(saved.recovery !== undefined) {
         if(!Array.isArray(saved.recovery) || saved.recovery.length>60)throw new Error('Invalid mark recovery.');
-        future=saved.recovery.map(strokes=>readMarkup({...emptyMarkup(),strokes}).strokes);
+        future=saved.recovery.map(strokes=>readMarkup({...emptyMarkup(),strokes}).strokes.map(freezeJSON));
         readMarkup({...emptyMarkup(),strokes:[...ink.strokes,...future.flat()]});
       }
       const prefs = saved.preferences;
@@ -59,23 +60,46 @@ export function createDesignMarkup({ root, onAction }) {
     catch { status.textContent = 'Marks are in this session. Saving failed; keep and export feedback before leaving.'; }
     controls();
   }
+  // Retain committed paths. Only the active path changes while drawing.
+  // Camera, reflow and resize explicitly invalidate saved projections.
+  const paths = new Map();
+  let geometryDirty = true;
   function render() {
-    paintPending = false; const page = root.getBoundingClientRect(); overlay.setAttribute('viewBox', `0 0 ${Math.max(1, page.width)} ${Math.max(1, page.height)}`); overlay.replaceChildren();
-    for (const stroke of [...ink.strokes, ...(current ? [current] : [])]) {
-      const node = areaNode(stroke.area); if (!node || node.getBoundingClientRect().height < 1) continue;
-      const box = node.getBoundingClientRect(), area = { x: box.left-page.left, y: box.top-page.top, width: box.width, height: box.height }, camera = stroke.area === 'context-map' ? JSON.parse(node.dataset.camera || '{"x":0,"y":0,"zoom":1}') : null;
-      const points = camera ? projectMapStroke(stroke,area,camera) : projectStroke(stroke,area);
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path.setAttribute('d', points.map((p, i) => `${i ? 'L' : 'M'} ${p.x} ${p.y}`).join(' ') + (points.length === 1 ? ` l .01 .01` : ''));
-      path.setAttribute('stroke', stroke.color); path.setAttribute('stroke-width', String(stroke.width * box.width / stroke.geometry.width * (camera ? camera.zoom / (stroke.geometry.zoom || 1) : 1)));
-      if (camera) { const clip=document.createElementNS('http://www.w3.org/2000/svg','clipPath'), rect=document.createElementNS('http://www.w3.org/2000/svg','rect'); clip.id=`map-ink-${stroke.id}`; for(const [k,v] of Object.entries({x:area.x,y:area.y,width:area.width,height:area.height}))rect.setAttribute(k,String(v));clip.setAttribute('clipPathUnits','userSpaceOnUse');clip.append(rect);overlay.append(clip);path.setAttribute('clip-path',`url(#${clip.id})`); }
-      overlay.append(path);
+    paintPending = false;
+    const page = root.getBoundingClientRect();
+    overlay.setAttribute('viewBox', `0 0 ${Math.max(1, page.width)} ${Math.max(1, page.height)}`);
+    const strokes = [...ink.strokes, ...(current ? [current] : [])], ids = new Set(strokes.map(stroke => stroke.id));
+    for (const [id, saved] of paths) if (!ids.has(id)) { saved.path.remove(); saved.clip?.remove(); paths.delete(id); }
+    const areas = new Map();
+    for (const stroke of strokes) {
+      let saved = paths.get(stroke.id);
+      if (saved && !geometryDirty && stroke !== current && saved.pointCount === stroke.points.length) continue;
+      if (!areas.has(stroke.area)) {
+        const node = areaNode(stroke.area), box = node?.getBoundingClientRect();
+        areas.set(stroke.area, box && box.height >= 1 ? {box, area:{x:box.left-page.left,y:box.top-page.top,width:box.width,height:box.height}, camera:stroke.area==='context-map'?JSON.parse(node.dataset.camera || '{"x":0,"y":0,"zoom":1}'):null} : null);
+      }
+      const geometry = areas.get(stroke.area);
+      if (!geometry) { if (saved) saved.path.style.display = 'none'; continue; }
+      if (!saved) { const path = document.createElementNS('http://www.w3.org/2000/svg','path'); saved = {path}; paths.set(stroke.id,saved); overlay.append(path); }
+      const {box,area,camera} = geometry, {path} = saved;
+      path.style.display = ''; const points = camera ? projectMapStroke(stroke,area,camera) : projectStroke(stroke,area);
+      path.setAttribute('d', points.map((p,i)=>`${i?'L':'M'} ${p.x} ${p.y}`).join(' ') + (points.length===1?' l .01 .01':''));
+      saved.pointCount = stroke.points.length;
+      path.setAttribute('stroke',stroke.color);
+      path.setAttribute('stroke-width',String(stroke.width*box.width/stroke.geometry.width*(camera?camera.zoom/(stroke.geometry.zoom||1):1)));
+      if (camera) {
+        if (!saved.clip) { const clip=document.createElementNS('http://www.w3.org/2000/svg','clipPath'),rect=document.createElementNS('http://www.w3.org/2000/svg','rect'); clip.id=`map-ink-${stroke.id}`;clip.setAttribute('clipPathUnits','userSpaceOnUse');clip.append(rect);overlay.append(clip);saved.clip=clip;path.setAttribute('clip-path',`url(#${clip.id})`); }
+        for (const [k,v] of Object.entries({x:area.x,y:area.y,width:area.width,height:area.height})) saved.clip.firstChild.setAttribute(k,String(v));
+      }
     }
+    geometryDirty = false;
   }
   function refresh() { if (!paintPending) { paintPending = true; requestAnimationFrame(render); } }
-  const observer = new ResizeObserver(refresh); observer.observe(root);
+  function invalidate() { geometryDirty = true; refresh(); }
+  const observer = new ResizeObserver(invalidate); observer.observe(root);
   for (const node of root.querySelectorAll('.design-principle, .design-masthead, #design-context-toy')) observer.observe(node);
-  root.querySelector('#design-context-toy')?.addEventListener('toggle', refresh);
-  root.addEventListener('contextmapview', refresh);
+  root.querySelector('#design-context-toy')?.addEventListener('toggle', invalidate);
+  root.addEventListener('contextmapview', invalidate);
   const exempt = target => target.closest?.('.design-markup-tools, input, textarea, select, [contenteditable="true"], .design-page-tools, #design-marks-toggle, .context-detail, .context-home');
   function point(event) {
     const box = areaNode(current.area).getBoundingClientRect();
@@ -85,7 +109,7 @@ export function createDesignMarkup({ root, onAction }) {
   function finish(commit, outcome) {
     if (!current) return;
     const pointerId = current.pointerId, { pointerId: _, ...stroke } = current; current = null;
-    if (commit && stroke.points.length) { ink.strokes.push(stroke); future = []; save(); onAction('Draw page markup', outcome); }
+    if (commit && stroke.points.length) { ink.strokes.push(freezeJSON(stroke)); future = []; save(); onAction('Draw page markup', outcome); }
     else onAction('Cancel page markup', 'Interrupted mark discarded; previous marks preserved');
     try { if (root.hasPointerCapture(pointerId)) root.releasePointerCapture(pointerId); } catch { /* Already canceled by the browser. */ }
     refresh();
@@ -97,16 +121,19 @@ export function createDesignMarkup({ root, onAction }) {
     if (ink.strokes.length >= 60 || ink.strokes.reduce((n, stroke) => n + stroke.points.length, 0) >= 11000) { status.textContent = 'This page has reached its ink limit. Keep/export feedback, then clear marks to continue.'; return; }
     const area = areaFor(event.target, event), box = areaNode(area).getBoundingClientRect(); started = event.timeStamp; moved = false;
     current = { id: crypto.randomUUID(), area, color: tools.querySelector('#markup-color').value, width: Number(tools.querySelector('#markup-width').value), geometry: { width: Math.max(1, box.width), height: Math.max(1, box.height), ...(area === 'context-map' ? {zoom:JSON.parse(areaNode(area).dataset.camera).zoom} : {}) }, points: [], pointerId: event.pointerId };
+    root.dispatchEvent(new CustomEvent('pagemarkupstart', { bubbles: true }));
     current.points.push(point(event)); try { root.setPointerCapture(event.pointerId); } catch { /* Synthetic events have no active hardware pointer. */ } refresh();
   }, true);
   root.addEventListener('pointermove', event => {
-    if (!current || event.pointerId !== current.pointerId) return; event.preventDefault(); event.stopImmediatePropagation();
+    if (!current || event.pointerId !== current.pointerId) return;
+    if (event.buttons === 0) { finish(false); return; }
+    event.preventDefault(); event.stopImmediatePropagation();
     if (current.points.length >= 999) { status.textContent = 'Long mark ended at the point limit. Start another stroke.'; finish(true, 'Stroke saved at its point limit'); return; }
     const next = point(event), prev = current.points.at(-1);
     if (Math.hypot((next.x - prev.x) * current.geometry.width, (next.y - prev.y) * current.geometry.height) >= 2) { current.points.push(next); moved = true; refresh(); }
   }, true);
   root.addEventListener('pointerup', event => { if (current && event.pointerId === current.pointerId) { event.preventDefault(); event.stopImmediatePropagation(); finish(true, moved ? 'Freehand stroke saved with area, geometry, timing and pressure' : 'Ink point saved with page context'); } }, true);
-  for (const name of ['pointercancel', 'lostpointercapture']) root.addEventListener(name, () => finish(false), true);
+  for (const name of ['pointercancel', 'lostpointercapture']) root.addEventListener(name, event => { if (current?.pointerId === event.pointerId) finish(false); }, true);
   // Safari's stylus Touch Events guard preserves ordinary direct-finger events.
   // Mixed contacts remain browser/OS controlled; PointerEvent cancellation alone
   // cannot disable viewport panning. No global touch-action override for Pencil.
@@ -116,6 +143,11 @@ export function createDesignMarkup({ root, onAction }) {
     if (changed.length && changed.every(touch => touch.touchType === 'stylus') && ![...event.touches].some(touch => touch.touchType === 'direct')) event.preventDefault();
   }
   root.addEventListener('touchstart', stylusGuard, { passive: false }); root.addEventListener('touchmove', stylusGuard, { passive: false });
+  // Defensive alternate cleanup if an OS interruption delivers a stylus
+  // touch end without its pointer end. Leave the next contact ready.
+  for (const type of ['touchend', 'touchcancel']) root.addEventListener(type, event => {
+    if (current && [...event.changedTouches].some(touch => touch.touchType === 'stylus') && ![...event.touches].some(touch => touch.touchType === 'stylus')) finish(type === 'touchend', 'Stroke saved at stylus touch end');
+  }, { passive: true });
   function mode() { if (savedError) { any.checked = false; status.textContent = savedError; return; } finish(false); if (!enabled.checked) any.checked = false; root.classList.toggle('design-draw-any', visible.checked && enabled.checked && any.checked); status.textContent = any.checked ? 'Drawing surface owns page gestures. Turn off Draw with any pointer to return to native reading.' : enabled.checked ? 'Pencil draws; fingers retain normal browser interaction.' : 'Native page input, including Pencil, passes through.'; if (!savedError) { try { localStorage.setItem(key, JSON.stringify({ ...ink, recovery: future, preferences: { enabled: enabled.checked, visible: visible.checked, color: tools.querySelector('#markup-color').value, width: Number(tools.querySelector('#markup-width').value) } })); } catch { status.textContent += ' This choice could not be saved.'; } } onAction('Choose page input', status.textContent); }
   enabled.onchange = mode; any.onchange = mode;
   visible.onchange = () => { finish(false); showMarks(); if (!visible.checked) { any.checked=false; root.classList.remove('design-draw-any'); } if(!savedError)save(); onAction('Set page marks visibility',visible.checked?'Saved marks shown':'Marks hidden; saved drawings preserved'); };
@@ -140,5 +172,5 @@ export function createDesignMarkup({ root, onAction }) {
     }
     return { ...ink, visible: visible.checked, pageGeometry: { width: page.width, height: page.height, areas, targets }, input: visible.checked && enabled.checked ? any.checked ? 'any-pointer' : 'pencil' : 'native', ink: { color: tools.querySelector('#markup-color').value, width: Number(tools.querySelector('#markup-width').value) }, currentStroke: current ? { area: current.area, color: current.color, width: current.width, geometry: current.geometry, points: current.points } : null };
   }
-  return { refresh, hide() { finish(false); }, captureContext };
+  return { refresh: invalidate, hide() { finish(false); }, captureContext };
 }
