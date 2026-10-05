@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "a94eb044b05e2681d7d46a091a2a89f6a5e72def1c7060d2e73a6204cd9273db",
+  "sourceDigest": "eddfb6c7796e1741e0b17a4f1ad7fcf6e7b5e53dcd04d4fd4ed3ce2738f9ddfd",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -121,7 +121,7 @@
     },
     {
       "path": "src/design-markup.js",
-      "sha256": "d15779c520d2247d0972483054f7e63d180538e8e70ea1fe86ed42b58fd9ca60"
+      "sha256": "5ad06092079d2eadd776f10b4d3253d9e00ccb61ac0526d7dd9064968bcbefdc"
     },
     {
       "path": "src/design.js",
@@ -261,7 +261,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "f9423b61f048d14a8708c10db0edacfba909dbf960b6c81f2869c728c6076f76"
+      "sha256": "c914f95e7234e03416d636ea6e46f11a641021cb9b4366c9cf4f15f424f1b9c6"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

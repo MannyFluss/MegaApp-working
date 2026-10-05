@@ -18,10 +18,13 @@ export function createDesignMarkup({ root, onAction }) {
       if (Number.isFinite(prefs?.width) && prefs.width >= 1 && prefs.width <= 12) tools.querySelector('#markup-width').value = String(prefs.width);
     }
   }
-  catch { savedError = 'Existing marks could not be read. They remain in storage; export or recover them before drawing new marks.'; status.textContent = savedError; enabled.checked = false; enabled.disabled = true;
-    const recover = document.createElement('button'); recover.type = 'button'; recover.className = 'quiet-button'; recover.textContent = 'Export unreadable marks';
-    recover.onclick = () => { const url = URL.createObjectURL(new Blob([unreadable], { type: 'text/plain' })), link = document.createElement('a'); link.href = url; link.download = 'megaapp-unreadable-page-marks.txt'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 10000); };
-    tools.querySelector('.design-markup-controls').append(recover);
+  catch {
+    if (unreadable) {
+      savedError = 'Existing marks could not be read. They remain in storage; export or recover them before drawing new marks.'; status.textContent = savedError; enabled.checked = false; enabled.disabled = true;
+      const recover = document.createElement('button'); recover.type = 'button'; recover.className = 'quiet-button'; recover.textContent = 'Export unreadable marks';
+      recover.onclick = () => { const url = URL.createObjectURL(new Blob([unreadable], { type: 'text/plain' })), link = document.createElement('a'); link.href = url; link.download = 'megaapp-unreadable-page-marks.txt'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 10000); };
+      tools.querySelector('.design-markup-controls').append(recover);
+    } else status.textContent = 'Device storage is unavailable. Marks can stay in this session; keep and export feedback before leaving.';
   }
   function areaNode(id) {
     if (id.startsWith('principle:')) return [...root.querySelectorAll('.design-principle')].find(node => node.dataset.principle === id.slice(10));
