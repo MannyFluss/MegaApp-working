@@ -1,0 +1,47 @@
+#panel-taste { max-width: 1460px; margin: auto; min-height: 100dvh; padding: 32px clamp(20px, 4vw, 56px) 96px; }
+.taste-heading { display: flex; align-items: baseline; gap: 18px; margin-bottom: 22px; }
+.taste-heading h1 { font: 500 clamp(2rem, 4vw, 3rem)/1.1 var(--display-font); letter-spacing: -.04em; margin: 0; }
+.taste-heading p { color: var(--muted); margin: 0; font-size: .9rem; }
+.taste-target { display: flex; align-items: end; gap: 10px; max-width: 840px; }
+.taste-target label { flex: 1; font-size: .85rem; color: var(--muted); }
+.taste-target input { display: block; width: 100%; margin-top: 8px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); padding: 10px 14px; font: inherit; font-size: 1.1rem; }
+.taste-target button { flex-shrink: 0; }
+.taste-directions { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 16px 0 18px; }
+.taste-directions p { color: var(--muted); font-size: .85rem; margin: 0; }
+.taste-views { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 2vw, 26px); }
+.taste-attempt { min-width: 0; }
+.taste-canvas { display: block; width: 100%; height: clamp(240px, 35vh, 390px); border-radius: 16px; background: var(--stage); }
+.taste-method { color: var(--muted); font-size: .8rem; line-height: 1.5; margin: 12px 0 0; max-width: 74ch; }
+.taste-canvas:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.taste-attempt-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 12px; }
+.taste-letter { font: 500 1.6rem/1 var(--display-font); color: var(--ink); }
+.taste-choose { padding: 11px 16px; font-size: .85rem; white-space: normal; }
+.taste-feedback { display: flex; gap: 20px; align-items: start; margin-top: 26px; max-width: 920px; }
+.taste-feedback label { display: block; color: var(--muted); font-size: .85rem; }
+.taste-feedback label:first-child { flex: 1; }
+.taste-feedback textarea { width: 100%; display: block; margin-top: 8px; padding: 12px 14px; min-height: 68px; resize: vertical; background: var(--surface); color: var(--ink); border: 1px solid var(--line); font: inherit; }
+.taste-feedback select, .taste-data select { display: block; width: 100%; margin-top: 8px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); padding: 10px 12px; font: inherit; }
+.taste-alternatives { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+.taste-outcome { color: var(--muted); min-height: 1.4em; font-size: .85rem; margin: 14px 0 24px; }
+.taste-data { border-top: 1px solid var(--line); padding-top: 18px; max-width: 920px; }
+.taste-data summary { color: var(--ink); cursor: pointer; }
+.taste-data p, .taste-data label, .taste-data li { color: var(--muted); line-height: 1.6; font-size: .85rem; max-width: 72ch; }
+.taste-data-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.taste-history { padding-left: 22px; max-height: 380px; overflow: auto; }
+.taste-history li { margin: 12px 0; padding-left: 3px; }
+.taste-history p { margin: 4px 0; }
+.taste-history-note { color: var(--ink) !important; white-space: pre-wrap; overflow-wrap: anywhere; }
+.taste-save { background: var(--surface); color: var(--warning); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-top: 14px; max-width: 72ch; line-height: 1.5; }
+.taste-save-actions { display: flex; gap: 8px; margin-top: 8px; }
+#taste-round { white-space: nowrap; }
+@media (max-width: 760px) {
+  .taste-views { grid-template-columns: 1fr; gap: 28px; }
+  .taste-canvas { height: 280px; }
+  .taste-heading { align-items: start; flex-direction: column; gap: 8px; }
+  .taste-target { flex-wrap: wrap; }
+  .taste-target label { flex-basis: 100%; }
+  .taste-feedback { flex-direction: column; gap: 12px; }
+  .taste-feedback label { width: 100%; }
+  .taste-directions { align-items: start; }
+  .taste-directions button { flex-shrink: 0; }
+}

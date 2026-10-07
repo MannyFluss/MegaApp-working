@@ -20,6 +20,7 @@ import { storageName } from "./environment.js";
 import { createInputSystem } from "./input.js";
 import { createDesign } from "./design.js";
 import { createMoments } from "./moments.js";
+import { createTaste } from "./taste.js";
 
 const $ = (id) => document.getElementById(id);
 let moments;
@@ -107,6 +108,7 @@ const design = createDesign({ input, notify, onFeedback: () => moments?.keep({ f
   renderState();
   applyPreferences();
 } });
+const taste = createTaste({ notify, onMoment: event => moments?.record(event) });
 const tabs = [...document.querySelectorAll("[data-panel]")];
 const results = new Map();
 const lastAppKey = storageName("megaapp.last-app.v1");
@@ -118,6 +120,7 @@ function updateAppVisibility() {
   files.setVisible(activePanel === "files");
   reading.setVisible(working && activePanel === "reading");
   design.setVisible(working && activePanel === "design");
+  taste.setVisible(working && activePanel === "taste");
 }
 function focusApp() {
   const panel = $(`panel-${activePanel}`);

@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="./meta.css" />
     <link rel="stylesheet" href="./frontend.css" />
     <link rel="stylesheet" href="./moments.css" />
+    <link rel="stylesheet" href="./taste.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -95,6 +96,7 @@
           ><span>Files</span>
         </button>
         <button class="dock-button" id="tab-reading" role="tab" aria-selected="false" aria-controls="panel-reading" tabindex="-1" data-panel="reading"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5Z M14 3v5h5 M8 12h8 M8 16h6" /></svg><span>Reading</span></button>
+        <button class="dock-button" id="tab-taste" role="tab" aria-selected="false" aria-controls="panel-taste" tabindex="-1" data-panel="taste"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8c4-6 5 14 9 8S17 2 21 8 M3 16c4 6 5-14 9-8s5 14 9 8" /></svg><span>Feeling</span></button>
         <button
           class="dock-button"
           id="tab-device"
@@ -765,6 +767,32 @@
             Export a copy to move or back them up. Production state and cloud
             sync come later.
           </p>
+        </section>
+        <section id="panel-taste" class="panel taste-panel" role="tabpanel" aria-labelledby="tab-taste" hidden>
+          <header class="taste-heading"><h1>A feeling, three ways.</h1><p id="taste-round">Round 1</p></header>
+          <div class="taste-target">
+            <label>Feeling to aim for<input id="taste-target" maxlength="4000" value="Quiet anticipation" data-taste-edit /></label>
+            <button id="taste-start" class="quiet-button" type="button" data-taste-edit>Try this feeling</button>
+          </div>
+          <p class="taste-method">Your picks evolve these sketches. Feeling words and notes are saved, but aren’t interpreted by AI yet.</p>
+          <div class="taste-directions"><p id="taste-gesture">Tap or drag inside each view.</p><button id="taste-mode" class="quiet-button" type="button" aria-pressed="false" data-taste-edit>Watch motion</button></div>
+          <div id="taste-views" class="taste-views" aria-label="Three live feeling attempts"></div>
+          <div class="taste-feedback">
+            <label>What feels right or wrong? <span>(optional)</span><textarea id="taste-note" maxlength="4000" rows="2" placeholder="A feels spacious, but its response is too eager…" data-taste-edit></textarea></label>
+            <label>How close is your choice?<select id="taste-match" data-taste-edit><option value="unsure">Not sure yet</option><option value="far">Still far away</option><option value="close">Getting close</option><option value="yes">This has the feeling</option></select></label>
+          </div>
+          <div class="taste-alternatives"><button id="taste-none" class="quiet-button" type="button" data-taste-edit>None of these</button><button id="taste-tie" class="quiet-button" type="button" data-taste-edit>Can't tell</button><button id="taste-undo" class="quiet-button" type="button" data-taste-edit>Undo last choice</button></div>
+          <p id="taste-outcome" class="taste-outcome" role="status" aria-live="polite">Choose the closest; the next three will build on your feedback.</p>
+          <p id="taste-save" class="taste-save" role="alert" hidden></p>
+          <div class="taste-save-actions"><button id="taste-retry" class="quiet-button" type="button" hidden>Try saving again</button><button id="taste-backup" class="quiet-button" type="button" hidden>Export unreadable backup</button></div>
+          <details class="taste-data"><summary>History &amp; data</summary>
+            <p>Your picks steer movement, color, spacing, softness, and response in these three live materials. Your feeling and notes are kept for a future AI generation brief; this prototype does not interpret them or invent new behaviors with a connected model.</p>
+            <p>Choices, corrections, exact sketch settings, and up to 96 contact samples per view per round save on this device. They describe what you tried and chose, not what you felt. Export is yours to share.</p>
+            <label>Feeling session<select id="taste-sessions" data-taste-edit></select></label>
+            <div class="taste-data-actions"><button id="taste-export" class="quiet-button" type="button">Export data</button><button id="taste-brief" class="quiet-button" type="button">Export AI brief</button><button id="taste-import" class="quiet-button" type="button">Import data</button></div>
+            <input id="taste-file" type="file" accept="application/json,.json" hidden />
+            <p id="taste-record-count">0 saved comparisons</p><ol id="taste-history" class="taste-history"></ol>
+          </details>
         </section>
         <section
           id="panel-design"

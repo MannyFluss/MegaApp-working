@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "2a242249ae1b327bd6d0cc6d79e9df7efdc8dd8468c9e8c95ed28d4697f06b96",
+  "sourceDigest": "f8f7a9adffee9e30d0120a70a9c079feec206db05aa0b6eface39b90beaacb97",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -49,7 +49,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "2a31ef6b92903702114970c361b2d7ed55601d9b88a86d82ac98125d323c1729"
+      "sha256": "5daf0b63e71e0f5c0cf35176dad284e39ba868060a6edb3863671cdb36da24af"
     },
     {
       "path": "manifest.webmanifest",
@@ -81,7 +81,7 @@
     },
     {
       "path": "src/app.js",
-      "sha256": "877ab88f6b5f04f4a6188c9061fef9b63280530177ba3fc3506bf3327ad3e908"
+      "sha256": "38982c815c15455461c1c7631206c43f5e09537a75474fbf5bf003bb44c2a11a"
     },
     {
       "path": "src/audio-worklet.js",
@@ -284,6 +284,22 @@
       "sha256": "3e8679d8a3d5e4fe778e2d7fff0eb2e4a3bd382619ff9ac84d4f0081206ab31a"
     },
     {
+      "path": "src/taste-sketch.js",
+      "sha256": "d88a7580d34e154fbd47008ac1a73b468955e29254f42f27db48e7bfb9852926"
+    },
+    {
+      "path": "src/taste-state.js",
+      "sha256": "ef048c9034d46915535b6bc28220e92b0061e64393e31fa9e48bf54dc2ef7f35"
+    },
+    {
+      "path": "src/taste-storage.js",
+      "sha256": "fabf33124e18798ddaacb67c87f2c19549abece07752a07c3f5e76c18d25ac17"
+    },
+    {
+      "path": "src/taste.js",
+      "sha256": "12ad0c9af713704c3aedbec9c6b73ceef3f6da11a29f4b2056618d480edceb15"
+    },
+    {
       "path": "src/webmcp.js",
       "sha256": "b26b35577b518849a0daa81b64f8a7c3081fb9f5dad86b29f4dac7d64d4467b9"
     },
@@ -293,7 +309,11 @@
     },
     {
       "path": "sw.js",
-      "sha256": "d0d55f8cedf2aa37095497a8ce3b3b3f0ca1df96ca16511a1187b99cc37b56d9"
+      "sha256": "0ff9976e3f2e4a573165d0370587b6de271df10b288380a21e7b056bb89d60a6"
+    },
+    {
+      "path": "taste.css",
+      "sha256": "4e57e864b9b512193d76a79188beeec0677c8d463625fa7dbf1e0bbc1d6f5b39"
     },
     {
       "path": "vendor/pdfjs/LICENSE",
