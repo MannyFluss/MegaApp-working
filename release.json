@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "22649a8bcfef30adf3af169dd7be2884c5c971c34937e81ac36cc2a77cbafe9f",
+  "sourceDigest": "a1d9a3a97e6736936604d3f92b4b8e97e3d2ab89d4d25186be7aa4875c9ee6ac",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -317,7 +317,7 @@
     },
     {
       "path": "src/taste.js",
-      "sha256": "9eadca650ef48d6e51dec197ef59fd59ff3f11eb7724ff7d1c314f5ccdf995c4"
+      "sha256": "0f174ca591968762db9c6c27cb29d9a003d71c62ed6e5fae936752413c2bd825"
     },
     {
       "path": "src/webmcp.js",

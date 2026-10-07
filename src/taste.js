@@ -229,7 +229,7 @@ export function createTaste({ notify, onMoment } = {}) {
     finally { busy = false; renderControls(); }
   };
   motion.addEventListener('change', () => {
-    sketches.forEach(s => s.configure(session().mode, motion.matches)); sketches.forEach(s => s.setVisible(visible && !document.hidden));
+    sketches.forEach(s => s.configure(session().mode, motion.matches)); updatePreviewVisibility();
     $('gesture').textContent = isArtifactRound(session()) ? 'Try each live experience. Open larger to give it more room.' : motion.matches ? 'Tap or drag to explore. Reduced motion is on.' : session().mode === 'watch' ? 'Watch each attempt, then choose the closest.' : 'Tap or drag inside each view. Arrow keys and space work too.';
   });
   $('preview-close').onclick = () => $('preview').close();
