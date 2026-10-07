@@ -74,7 +74,7 @@ export function createTaste({ notify, onMoment, connection, openConnection } = {
     $('next-brief').disabled = !ready || !!corrupt; $('next-import').disabled = $('import').disabled;
     $('generate').hidden = !isArtifactRound(session());
     $('generate').disabled = !available();
-    $('generate').textContent = connection?.info().connected ? 'Generate three' : 'Connect Ollama';
+    $('generate').textContent = connection?.info().connected ? 'Generate three' : 'Ollama setup';
     $('cancel-generation').hidden = !generationController;
   }
   function renderHistory() {
@@ -103,7 +103,7 @@ export function createTaste({ notify, onMoment, connection, openConnection } = {
     $('target').value = value.draft.target ?? value.target; $('note').value = value.draft.note; $('match').value = value.draft.match;
     $('round').textContent = `Round ${value.round.index}`;
     $('mode').hidden = htmlRound; $('start').textContent = htmlRound ? 'Try this feeling' : 'Try HTML artifacts';
-    $('method').textContent = htmlRound ? connection?.info().connected ? 'Ollama creates complete HTML programs from your target and saved feedback. A choice generates the next three.' : 'These are runnable HTML artifacts. Connect Ollama to generate new programs from your choices.' : 'This saved session uses the earlier parameter sketches. Try HTML artifacts to start a code session.';
+    $('method').textContent = htmlRound ? connection?.info().connected ? 'Ollama creates complete HTML programs from your target and saved feedback. A choice generates the next three.' : 'These are runnable HTML artifacts. Export the AI brief and import the next code round; Ollama setup is in Meta.' : 'This saved session uses the earlier parameter sketches. Try HTML artifacts to start a code session.';
     $('mode').setAttribute('aria-pressed', String(value.mode === 'watch'));
     $('mode').textContent = value.mode === 'watch' ? 'Return to touch' : 'Watch motion';
     $('gesture').textContent = htmlRound ? 'Try each live experience. Open larger to give it more room.' : motion.matches ? 'Tap or drag to explore. Reduced motion is on.' : value.mode === 'watch' ? 'Watch each attempt, then choose the closest.' : 'Tap or drag inside each view. Arrow keys and space work too.';
@@ -191,7 +191,7 @@ export function createTaste({ notify, onMoment, connection, openConnection } = {
   }
   $('generate').onclick = generateNext;
   $('cancel-generation').onclick = () => { generationController?.abort(); };
-  connection?.subscribe(() => { renderControls(); if (isArtifactRound(session())) $('method').textContent = connection.info().connected ? 'Ollama creates complete HTML programs from your target and saved feedback. A choice generates the next three.' : 'These are runnable HTML artifacts. Connect Ollama to generate new programs from your choices.'; });
+  connection?.subscribe(() => { renderControls(); if (isArtifactRound(session())) $('method').textContent = connection.info().connected ? 'Ollama creates complete HTML programs from your target and saved feedback. A choice generates the next three.' : 'These are runnable HTML artifacts. Export the AI brief and import the next code round; Ollama setup is in Meta.'; });
   $('target').onkeydown = event => { if (event.key === 'Enter') { event.preventDefault(); $('start').click(); } };
   $('target').oninput = () => { if (!available()) return; session().draft.target = $('target').value; clearTimeout(draftTimer); draftTimer = setTimeout(persist, 300); };
   $('target').addEventListener('change', persist);

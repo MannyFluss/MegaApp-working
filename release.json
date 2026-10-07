@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "74c8f263c6bde3cebdb7b49a568d4f8c5aa365dea91a3511e174d93c3e94d171",
+  "sourceDigest": "a01fa88aeae45ce4c4370388ef718d3aa8b06d5398e0ed302cffbd81bc587a85",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -241,7 +241,7 @@
     },
     {
       "path": "src/ollama-connection.js",
-      "sha256": "05a496177c9b9f25edaa206235d752989b89962572dca7b5cd535eab5608b5ae"
+      "sha256": "d64fe71d0ec2d2e858c724c680abc5a321b4feedfdfb1616ed4310f662078560"
     },
     {
       "path": "src/page-markup.js",
@@ -325,7 +325,7 @@
     },
     {
       "path": "src/taste.js",
-      "sha256": "c9815d9b051ddb4a075225e6068188a161e163ceb3446a52e4fc521736f0fe9c"
+      "sha256": "999c0162db6b287b92f86fd657cce73702cbc32ee39095225eaefed73ca41e8f"
     },
     {
       "path": "src/webmcp.js",
@@ -337,7 +337,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "bbd952802abb2d0669022d063d63ea8ad862e21d98f7b46c342cb9f74645afaa"
+      "sha256": "03800914ebfaf365fbbaf8eaceebe47a760a3d9d9ceb1ced0053673893652b9e"
     },
     {
       "path": "taste.css",
