@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "f8f7a9adffee9e30d0120a70a9c079feec206db05aa0b6eface39b90beaacb97",
+  "sourceDigest": "134f98e80e342a454b0aa260cf33c05c312a3aebc0694e9d69cf5fafcc21a4e8",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -313,7 +313,7 @@
     },
     {
       "path": "taste.css",
-      "sha256": "4e57e864b9b512193d76a79188beeec0677c8d463625fa7dbf1e0bbc1d6f5b39"
+      "sha256": "78d7657390b15e30a45f7370466544cf31c3647ff676c57a7ed0a5630a2f533f"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

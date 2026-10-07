@@ -20,7 +20,7 @@
 .taste-feedback label { display: block; color: var(--muted); font-size: .85rem; }
 .taste-feedback label:first-child { flex: 1; }
 .taste-feedback textarea { width: 100%; display: block; margin-top: 8px; padding: 12px 14px; min-height: 68px; resize: vertical; background: var(--surface); color: var(--ink); border: 1px solid var(--line); font: inherit; }
-.taste-feedback select, .taste-data select { display: block; width: 100%; margin-top: 8px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); padding: 10px 12px; font: inherit; }
+.taste-feedback select, .taste-data select { display: block; width: 100%; margin-top: 8px; background-color: var(--surface); color: var(--ink); border: 1px solid var(--line); padding: 10px 36px 10px 12px; font: inherit; }
 .taste-alternatives { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
 .taste-outcome { color: var(--muted); min-height: 1.4em; font-size: .85rem; margin: 14px 0 24px; }
 .taste-data { border-top: 1px solid var(--line); padding-top: 18px; max-width: 920px; }
