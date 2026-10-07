@@ -136,6 +136,7 @@ export function validateSnapshot(data, { privateValues = false } = {}) {
     })),
     ...(privateValues && data._versions ? { _versions: { ...data._versions } } : {}),
     ...(privateValues && data._private ? { _private: structuredClone(data._private) } : {}),
+    ...(privateValues && data._blockVersion === 1 ? { _blockVersion: 1 } : {}),
   };
 }
 export function serializeValue(row) {
@@ -154,6 +155,7 @@ export async function createSampleStore() {
   function emit(names) { for (const callback of listeners) { try { callback(names); } catch { /* A view cannot roll back committed state. */ } } }
   function prepare(base, operation) {
     const next = internal(operation(structuredClone(base))), versions = { ...base._versions };
+    next._blockVersion = 1;
     const names = new Set([...base.variables.map(row => row.name), ...next.variables.map(row => row.name), ...Object.keys(base._private || {}), ...Object.keys(next._private || {})]), changed = [];
     for (const name of names) {
       const before = PRIVATE_STATE_NAMES.has(name) ? base._private?.[name] : base.variables.find(row => row.name === name);
@@ -180,7 +182,7 @@ export async function createSampleStore() {
     } else {
       result = prepare(data, operation);
       // Private values never spill into the weaker compatibility fallback.
-      if (mode === 'localstorage') localStorage.setItem(fallbackKey, JSON.stringify(publicSnapshot(result.next)));
+      if (mode === 'localstorage') localStorage.setItem(fallbackKey, JSON.stringify({ ...publicSnapshot(result.next), _blockVersion: 1 }));
     }
     data = result.next; emit(result.changed); channel?.postMessage(result.changed);
     return rows();
@@ -188,10 +190,13 @@ export async function createSampleStore() {
   function mutate(operation) { const result = queue.then(() => change(operation)); queue = result.catch(() => {}); return result; }
   try {
     db = await new Promise((resolve, reject) => {
-      const request = indexedDB.open(storageName('megaapp-sample'), 1);
-      request.onupgradeneeded = () => request.result.createObjectStore('snapshot');
-      request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
-      request.onblocked = () => reject(new Error('Close another MegaApp tab to open State.'));
+      // Older clients write their entire in-memory snapshot without revisions.
+      // A schema upgrade prevents them from overwriting the new shared block.
+      let declined = false;
+      const request = indexedDB.open(storageName('megaapp-sample'), 2);
+      request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains('snapshot')) request.result.createObjectStore('snapshot'); };
+      request.onsuccess = () => { if (declined) request.result.close(); else resolve(request.result); }; request.onerror = () => reject(request.error);
+      request.onblocked = () => { declined = true; reject(new Error('Close an older MegaApp tab, then reload to open shared State.')); };
     });
     db.onversionchange = () => db.close();
     const saved = await new Promise((resolve, reject) => {
@@ -200,19 +205,24 @@ export async function createSampleStore() {
     });
     if (saved) data = internal(saved);
     mode = 'indexeddb';
-    let fallback;
+    let fallback, blockFallback = false;
     try {
       const savedFallback = localStorage.getItem(fallbackKey);
-      if (savedFallback) fallback = validateSnapshot(JSON.parse(savedFallback));
+      if (savedFallback) { const decoded = JSON.parse(savedFallback); fallback = validateSnapshot(decoded); blockFallback = decoded._blockVersion === 1; }
     } catch { warning = 'A fallback State snapshot could not be read.'; }
-    if (fallback) await change(base => ({ ...fallback, ...(base._private ? { _private: base._private } : {}) }));
-  } catch {
+    if (fallback && data._blockVersion === 1 && !blockFallback) {
+      // Retain a competing old-client fallback; never silently replace new work.
+      await change(base => ({ ...base, variables: [...base.variables.filter(row => row.name !== 'system.state.legacyFallback'), { name: 'system.state.legacyFallback', type: 'object', value: fallback }] }));
+      warning = 'An older tab saved competing State. Its copy is preserved in system.state.legacyFallback.';
+    } else if (fallback) await change(base => ({ ...fallback, ...(base._private ? { _private: base._private } : {}) }));
+  } catch (error) {
+    const blockedMessage = /older MegaApp tab/.test(error?.message || '') ? `${error.message} ` : '';
     db?.close(); db = null; mode = 'session';
     try {
       const saved = localStorage.getItem(fallbackKey); if (saved) data = validateSnapshot(JSON.parse(saved));
       const testKey = storageName('megaapp.storage-test'); localStorage.setItem(testKey, '1'); localStorage.removeItem(testKey);
-      mode = 'localstorage'; warning = 'Using local storage; private keys last only for this session.';
-    } catch { warning = 'Storage is unavailable. State lasts for this session; export a copy.'; }
+      mode = 'localstorage'; warning = blockedMessage + 'Using local storage; private keys last only for this session.';
+    } catch { warning = blockedMessage + 'Storage is unavailable. State lasts for this session; export a copy.'; }
   }
   if (channel) channel.onmessage = async event => {
     if (!db || !Array.isArray(event.data)) return;

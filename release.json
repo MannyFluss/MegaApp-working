@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "4ef69ec63f80efcfab181e198aac053e6a74708b6d623306fc48168c1c6f1e24",
+  "sourceDigest": "112bd70380021a4a32b840aa4fdc2d5bc7756556df6f47ef4816c2e0442f1d82",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -301,7 +301,7 @@
     },
     {
       "path": "src/state.js",
-      "sha256": "e146d028686026984431a59e5f44376c7a4126b15d1c406979333259a5c56ef0"
+      "sha256": "6c9fd4917953e03bb2ed7c022870978c92b8b44d7b8416be38ae3653902c129e"
     },
     {
       "path": "src/taste-artifact.js",
@@ -341,7 +341,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "8757dd48e3a8803bd72eda6c30f3d6ab6cec4e635879e7bbdf438f00d5d4b86d"
+      "sha256": "64b2e6cf7a5506ece07970eebc232b73cd4d3e7a418ff763197cdacaf3db3410"
     },
     {
       "path": "taste.css",
