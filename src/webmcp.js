@@ -7,7 +7,7 @@ export function registerAgentTools({ store, renderState, openState }) {
     {
       name: "read_sample_variables",
       description:
-        "Read local demo variables. These user-created values are not a credential store.",
+        "Read shared State values. Private key contents are redacted.",
       inputSchema: {
         type: "object",
         properties: {},
@@ -23,7 +23,7 @@ export function registerAgentTools({ store, renderState, openState }) {
     {
       name: "save_sample_variable",
       description:
-        "Persist one typed demo value locally and display the sample state panel.",
+        "Persist one public State value locally and display State. Private keys use the connection controls.",
       inputSchema: {
         type: "object",
         properties: {

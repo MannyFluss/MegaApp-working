@@ -5,7 +5,7 @@ import { createTasteArtifact } from './taste-artifact.js';
 import { loadFeelingArtifacts } from './taste-seeds.js';
 import { focusedGenerationBrief } from './taste-generation.js';
 
-export function createTaste({ notify, onMoment, connection, openConnection } = {}) {
+export function createTaste({ notify, onMoment, connection, openConnection, stateReady } = {}) {
   const panel = document.getElementById('panel-taste');
   const $ = id => panel.querySelector(`#taste-${id}`);
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -268,7 +268,7 @@ export function createTaste({ notify, onMoment, connection, openConnection } = {
   const loaded = (async () => {
     let existing = false;
     try {
-      storage = await openTasteStorage(); const saved = await storage.load();
+      storage = await openTasteStorage({ stateReady }); const saved = await storage.load();
       if (saved.corrupt) { corrupt = saved.corrupt; blocked = true; error = saved.error; }
       else if (saved.workspace) { workspace = saved.workspace; existing = true; }
     } catch (e) { error = e.message; }
@@ -283,6 +283,17 @@ export function createTaste({ notify, onMoment, connection, openConnection } = {
     else await persist();
   })();
   return { loaded, captureContext,
+    async replaceSavedWorkspace(value, commit) {
+      const next = value == null ? createArtifactWorkspace('Quiet anticipation', await loadFeelingArtifacts()) : validateWorkspace(value);
+      await loaded; clearTimeout(draftTimer); draftTimer = undefined;
+      generationController?.abort(); generationNumber++; generationController = null; busy = false;
+      await saveQueue; await commit();
+      // Refresh the adapter's revision before subsequent app edits.
+      const saved = await storage.load({ migrateLegacy: false });
+      workspace = saved.workspace || next; corrupt = null; blocked = false;
+      render(); panel.dataset.saved = 'true';
+      if (!saved.workspace) await persist();
+    },
     setVisible(value) { visible = value; if (!value && $('preview').open) $('preview').close(); updatePreviewVisibility(); if (!value && draftTimer) persist(); },
   };
 }

@@ -1,7 +1,8 @@
 import { storageName } from './environment.js';
 import { validateWorkspace } from './taste-state.js';
+import { temporaryStateBlock, FEELING_STATE } from './state-block.js';
 
-export async function openTasteStorage() {
+async function readLegacyFeeling() {
   const db = await new Promise((resolve, reject) => {
     const request = indexedDB.open(storageName('megaapp-feeling-v1'), 1);
     request.onupgradeneeded = () => request.result.createObjectStore('workspace');
@@ -9,51 +10,48 @@ export async function openTasteStorage() {
     request.onerror = () => reject(request.error);
     request.onblocked = () => reject(new Error('Another tab is preventing the feeling store from opening.'));
   });
-  db.onversionchange = () => db.close();
-  let revision = 0, corruptRow;
-  return {
-    async load() {
+  try {
       const row = await new Promise((resolve, reject) => {
         const tx = db.transaction('workspace'), request = tx.objectStore('workspace').get('current');
         request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
       });
-      if (!row) return { workspace: null };
-      revision = row.revision;
-      try {
-        if (!Number.isSafeInteger(revision) || revision < 1) throw new Error('Invalid saved revision.');
-        return { workspace: validateWorkspace(row.data) };
-      } catch (error) { corruptRow = row; return { corrupt: row, error: error.message }; }
+      return row;
+  } finally { db.close(); }
+}
+
+export async function openTasteStorage({ stateReady = temporaryStateBlock() } = {}) {
+  const state = await stateReady;
+  let revision = state.version(FEELING_STATE), corruptRow, hasCorrupt = false, legacyCorrupt = false;
+  return {
+    async load({ migrateLegacy = true } = {}) {
+      await state.refresh();
+      let value = state.read(FEELING_STATE);
+      revision = state.version(FEELING_STATE);
+      if (value === undefined) {
+        if (!migrateLegacy) return { workspace: null };
+        const legacy = await readLegacyFeeling();
+        if (!legacy) return { workspace: null };
+        try {
+          if (!Number.isSafeInteger(legacy.revision) || legacy.revision < 1) throw new Error('Invalid saved revision.');
+          value = validateWorkspace(legacy.data);
+        } catch (error) { corruptRow = legacy; hasCorrupt = true; legacyCorrupt = true; return { corrupt: legacy, error: error.message }; }
+        await state.writeMany([{ name: FEELING_STATE, value }, { name: 'apps.feeling.migration', value: { version: 1, from: 'megaapp-feeling-v1', legacyRevision: legacy.revision } }], { expectedVersions: { [FEELING_STATE]: revision } });
+        revision = state.version(FEELING_STATE);
+      }
+      try { return { workspace: validateWorkspace(value) }; }
+      catch (error) { corruptRow = value; hasCorrupt = true; return { corrupt: value && typeof value === 'object' ? value : { rawValue: value }, error: error.message }; }
     },
-    save(workspace) {
-      return new Promise((resolve, reject) => {
-        if (corruptRow) { reject(new Error('Saved data is unreadable. Import a valid backup before replacing it.')); return; }
-        const tx = db.transaction('workspace', 'readwrite'), store = tx.objectStore('workspace');
-        const request = store.get('current'); let conflict = false;
-        request.onsuccess = () => {
-          const row = request.result;
-          if ((row?.revision || 0) !== revision) { conflict = true; tx.abort(); return; }
-          store.put({ revision: revision + 1, data: workspace }, 'current');
-        };
-        tx.oncomplete = () => { revision++; resolve(); };
-        tx.onabort = tx.onerror = () => reject(new Error(conflict ? 'Another tab saved a newer session. Export your session, then reload before making more choices.' : (tx.error?.message || 'The browser could not save this session.')));
-      });
+    async save(workspace) {
+      if (hasCorrupt) throw new Error('Saved data is unreadable. Import a valid backup before replacing it.');
+      await state.write(FEELING_STATE, validateWorkspace(workspace), { expectedVersion: revision });
+      revision = state.version(FEELING_STATE);
     },
-    recover(workspace) {
-      const validated = validateWorkspace(workspace);
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction('workspace', 'readwrite'), store = tx.objectStore('workspace'), request = store.get('current');
-        let nextRevision, conflict = false;
-        request.onsuccess = () => {
-          const row = request.result;
-          if (!corruptRow || JSON.stringify(row) !== JSON.stringify(corruptRow)) { conflict = true; tx.abort(); return; }
-          store.put(row, `unreadable-${Date.now()}`);
-          nextRevision = Number.isSafeInteger(row.revision) ? row.revision + 1 : 1;
-          store.put({ revision: nextRevision, data: validated }, 'current');
-        };
-        tx.oncomplete = () => { revision = nextRevision; corruptRow = null; resolve(); };
-        tx.onabort = tx.onerror = () => reject(new Error(conflict ? 'The saved session changed in another tab. Reload before importing.' : (tx.error?.message || 'Recovery could not be saved. The original remains intact.')));
-      });
+    async recover(workspace) {
+      if (!hasCorrupt) throw new Error('There is no unreadable save to recover.');
+      if (legacyCorrupt && JSON.stringify(await readLegacyFeeling()) !== JSON.stringify(corruptRow)) throw new Error('Another tab changed the legacy session. Reload before importing.');
+      await state.writeMany([{ name: 'apps.feeling.recovery', value: { original: corruptRow, from: legacyCorrupt ? 'megaapp-feeling-v1' : 'State', at: new Date().toISOString() } }, { name: FEELING_STATE, value: validateWorkspace(workspace) }], { expectedVersions: { [FEELING_STATE]: revision } });
+      revision = state.version(FEELING_STATE); corruptRow = null; hasCorrupt = false; legacyCorrupt = false;
     },
-    close() { db.close(); },
+    close() { /* The singleton owns its lifetime, not this adapter. */ },
   };
 }

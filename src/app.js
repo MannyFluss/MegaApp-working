@@ -8,7 +8,7 @@ import { readingPrefix } from "./reading-style.js";
 import { createFilesDemo } from "./files-demo.js";
 import { validateScene } from "./marble-physics.js";
 import {
-  createSampleStore,
+  MAX_STATE_BYTES,
   parseValue,
   serializeValue,
   validateSnapshot,
@@ -22,6 +22,7 @@ import { createDesign } from "./design.js";
 import { createMoments } from "./moments.js";
 import { createTaste } from "./taste.js";
 import { createOllamaConnection } from "./ollama-connection.js";
+import { temporaryStateBlock, FEELING_STATE } from './state-block.js';
 
 const $ = (id) => document.getElementById(id);
 let moments;
@@ -33,7 +34,8 @@ function notify(text) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => ($("toast").hidden = true), 6000);
 }
-const rawStoreReady = createSampleStore();
+const stateBlockReady = temporaryStateBlock();
+const rawStoreReady = stateBlockReady.then(block => block.store);
 function sceneFromRows(rows) {
   const row = rows.find((value) => value.name === "apps.marble.scene");
   if (!row) return null;
@@ -46,16 +48,19 @@ function sceneFromRows(rows) {
 const storeReady = rawStoreReady.then((raw) => ({
   ...raw,
   set(name, type, value) {
+    if (name === FEELING_STATE) return taste.replaceSavedWorkspace(value, () => raw.set(name, type, value));
     if (name !== "apps.marble.scene") return raw.set(name, type, value);
     const scene = sceneFromRows([{ name, type, value }]);
     return marble.replaceSavedScene(scene, () => raw.set(name, type, scene));
   },
   setMany(values) {
+    if (values.some(row => row.name === FEELING_STATE)) return taste.replaceSavedWorkspace(values.find(row => row.name === FEELING_STATE).value, () => values.some(row => row.name === 'apps.marble.scene') ? marble.replaceSavedScene(sceneFromRows(values), () => raw.setMany(values)) : raw.setMany(values));
     return values.some(row => row.name === 'apps.marble.scene')
       ? marble.replaceSavedScene(sceneFromRows(values), () => raw.setMany(values))
       : raw.setMany(values);
   },
   remove(name) {
+    if (name === FEELING_STATE) return taste.replaceSavedWorkspace(null, () => raw.remove(name));
     return name === "apps.marble.scene"
       ? marble.replaceSavedScene(null, () => raw.remove(name))
       : raw.remove(name);
@@ -63,10 +68,10 @@ const storeReady = rawStoreReady.then((raw) => ({
   replace(value) {
     const validated = validateSnapshot(value);
     const scene = sceneFromRows(validated.variables);
-    return marble.replaceSavedScene(scene, () => raw.replace(validated));
+    return taste.replaceSavedWorkspace(validated.variables.find(row => row.name === FEELING_STATE)?.value, () => marble.replaceSavedScene(scene, () => raw.replace(validated)));
   },
   reset() {
-    return marble.replaceSavedScene(null, () => raw.reset());
+    return taste.replaceSavedWorkspace(null, () => marble.replaceSavedScene(null, () => raw.reset()));
   },
 }));
 const drawing = createCanvas({
@@ -109,8 +114,8 @@ const design = createDesign({ input, notify, onFeedback: () => moments?.keep({ f
   renderState();
   applyPreferences();
 } });
-const ollama = createOllamaConnection();
-const taste = createTaste({ notify, connection: ollama, openConnection: () => { meta.open(); ollama.open(); }, onMoment: event => moments?.record(event) });
+const ollama = createOllamaConnection({ stateReady: stateBlockReady });
+const taste = createTaste({ stateReady: stateBlockReady, notify, connection: ollama, openConnection: () => { meta.open(); ollama.open(); }, onMoment: event => moments?.record(event) });
 const tabs = [...document.querySelectorAll("[data-panel]")];
 const results = new Map();
 const lastAppKey = storageName("megaapp.last-app.v1");
@@ -336,7 +341,9 @@ function renderState() {
     type.textContent = row.type;
     label.append(name, type);
     const value = document.createElement("code");
-    value.textContent = serializeValue(row);
+    const text = serializeValue(row);
+    value.textContent = text.length > 12000 ? `${text.slice(0,12000)} … Open Edit or export State for the full value.` : text;
+    if (row.private) item.setAttribute('data-moment-private', '');
     const actions = document.createElement("div");
     actions.className = "variable-row-actions";
     const edit = document.createElement("button");
@@ -344,6 +351,7 @@ function renderState() {
     edit.textContent = "Edit";
     edit.setAttribute("aria-label", `Edit ${row.name}`);
     edit.onclick = () => {
+      if (row.private) { meta.open(); ollama.open(); return; }
       $("variable-name").value = row.name;
       $("variable-type").value = row.type;
       $("variable-value").value = serializeValue(row);
@@ -359,7 +367,7 @@ function renderState() {
         await store.remove(row.name);
         renderState();
         applyPreferences();
-        notify("Sample value removed.");
+        notify("State value removed.");
       } catch (e) {
         notify(e.message);
       }
@@ -370,7 +378,7 @@ function renderState() {
   }
   if (!list.children.length) {
     const empty = document.createElement("p");
-    empty.textContent = "Add your first sample value above.";
+    empty.textContent = "Add a State value above.";
     list.append(empty);
   }
 }
@@ -416,23 +424,23 @@ $("export-state").onclick = async () => {
     new Blob([JSON.stringify(store.snapshot())], {
       type: "application/json",
     }),
-    "megaapp-sample.json",
+    "megaapp-state.json",
   );
-  notify("Sample snapshot ready in Downloads.");
+  notify("State snapshot ready in Downloads. Private keys are excluded.");
 };
 $("import-state").onclick = () => $("state-file").click();
 $("state-file").onchange = async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   try {
-    if (file.size > 2 * 1024 * 1024)
-      throw new Error("Keep sample snapshots below 2 MB.");
+    if (file.size > MAX_STATE_BYTES)
+      throw new Error("Keep State snapshots below 128 MB.");
     const snapshot = validateSnapshot(JSON.parse(await file.text()));
     store = await storeReady;
     await store.replace(snapshot);
     renderState();
     applyPreferences();
-    notify("Sample snapshot imported.");
+    notify("State snapshot imported.");
   } catch (error) {
     notify(`Import failed; existing values were kept. ${error.message}`);
   } finally {
@@ -445,7 +453,7 @@ $("reset-state").onclick = async () => {
     await store.reset();
     renderState();
     applyPreferences();
-    notify("Sample values reset.");
+    notify("State reset.");
   } catch (e) {
     notify(e.message);
   }
@@ -453,6 +461,7 @@ $("reset-state").onclick = async () => {
 storeReady
   .then((value) => {
     store = value;
+    store.subscribe(() => { renderState(); });
     renderState();
     applyPreferences();
     if (store.warning) notify(store.warning);

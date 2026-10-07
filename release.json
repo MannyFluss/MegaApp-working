@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "a01fa88aeae45ce4c4370388ef718d3aa8b06d5398e0ed302cffbd81bc587a85",
+  "sourceDigest": "4ef69ec63f80efcfab181e198aac053e6a74708b6d623306fc48168c1c6f1e24",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -61,7 +61,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "64fb3219cc50c9f6125c87a58e22ff853420655d9fc2fee7ea29afd0fe174a88"
+      "sha256": "08d9342c41c5325cbf88c816d1d22b3a79b42c8cdf21aa17a0a3d4775f2a9df3"
     },
     {
       "path": "manifest.webmanifest",
@@ -93,7 +93,7 @@
     },
     {
       "path": "src/app.js",
-      "sha256": "fe0687fa2c35ea17aceb0b3eea1b1ec088d3b1a042c4458a5676b9b9db1a0623"
+      "sha256": "9ecbc0945b342d0b5111e9832e6abb1133087f7cde7f79c11f4cfac9aa94955c"
     },
     {
       "path": "src/audio-worklet.js",
@@ -241,7 +241,7 @@
     },
     {
       "path": "src/ollama-connection.js",
-      "sha256": "d64fe71d0ec2d2e858c724c680abc5a321b4feedfdfb1616ed4310f662078560"
+      "sha256": "1ce269cd0a13147e619014f767c77253b62463c9477d7f43ae9c0115cfb9c1c2"
     },
     {
       "path": "src/page-markup.js",
@@ -296,8 +296,12 @@
       "sha256": "41b81dce37de0384fa35dd5f4b31b3173f7e705a768ddb6fdaf724d063a6824b"
     },
     {
+      "path": "src/state-block.js",
+      "sha256": "0f98a9ee95925a0c657fb3bbec45c5ac4edb217abf2ccbe2d89ff73cd740ccc3"
+    },
+    {
       "path": "src/state.js",
-      "sha256": "3e8679d8a3d5e4fe778e2d7fff0eb2e4a3bd382619ff9ac84d4f0081206ab31a"
+      "sha256": "e146d028686026984431a59e5f44376c7a4126b15d1c406979333259a5c56ef0"
     },
     {
       "path": "src/taste-artifact.js",
@@ -321,15 +325,15 @@
     },
     {
       "path": "src/taste-storage.js",
-      "sha256": "fabf33124e18798ddaacb67c87f2c19549abece07752a07c3f5e76c18d25ac17"
+      "sha256": "f9c5766c4bffdbaaba46bd8c281450f98f85fc362c399bb58df00c627f7eae2e"
     },
     {
       "path": "src/taste.js",
-      "sha256": "999c0162db6b287b92f86fd657cce73702cbc32ee39095225eaefed73ca41e8f"
+      "sha256": "98bd68c9ed5d618fc634444a9cb5dc85cbc287cff2a0da588e45eb743e268170"
     },
     {
       "path": "src/webmcp.js",
-      "sha256": "b26b35577b518849a0daa81b64f8a7c3081fb9f5dad86b29f4dac7d64d4467b9"
+      "sha256": "ec86777b774aef06d232ef29a094a023b411915cd1b3b962a888368b87974811"
     },
     {
       "path": "styles.css",
@@ -337,7 +341,7 @@
     },
     {
       "path": "sw.js",
-      "sha256": "03800914ebfaf365fbbaf8eaceebe47a760a3d9d9ceb1ced0053673893652b9e"
+      "sha256": "8757dd48e3a8803bd72eda6c30f3d6ab6cec4e635879e7bbdf438f00d5d4b86d"
     },
     {
       "path": "taste.css",

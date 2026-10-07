@@ -1,6 +1,8 @@
 import { MEGAAPP_ASSET_REPOSITORY } from "./reading-config.js";
 import { storageName } from "./environment.js";
 export const TYPES = ["string", "number", "boolean", "object", "array", "null"];
+export const MAX_STATE_BYTES = 128 * 1024 * 1024;
+export const PRIVATE_STATE_NAMES = new Set(['system.ollama.apiKey']);
 export const DEFAULTS = {
   schemaVersion: 1,
   variables: [
@@ -94,7 +96,7 @@ export function parseValue(type, raw) {
   }
   return validateValue(type, value);
 }
-export function validateSnapshot(data) {
+export function validateSnapshot(data, { privateValues = false } = {}) {
   if (
     !data ||
     data.schemaVersion !== 1 ||
@@ -109,147 +111,152 @@ export function validateSnapshot(data) {
     if (!row || typeof row !== "object")
       throw new Error("Each variable needs a name, type, and value.");
     validateName(row.name);
+    if (PRIVATE_STATE_NAMES.has(row.name))
+      throw new Error('Set private keys through their connection controls.');
     validateValue(row.type, row.value);
     if (seen.has(row.name)) throw new Error(`Duplicate variable: ${row.name}`);
     seen.add(row.name);
   }
-  if (new TextEncoder().encode(JSON.stringify(data)).length > 2 * 1024 * 1024)
-    throw new Error("Keep sample snapshots below 2 MB.");
+  if (new TextEncoder().encode(JSON.stringify(data)).length > MAX_STATE_BYTES)
+    throw new Error("Keep State snapshots below 128 MB.");
+  if (privateValues && data._versions) for (const [name, version] of Object.entries(data._versions)) {
+    validateName(name);
+    if (!Number.isSafeInteger(version) || version < 0) throw new Error('Invalid State revision.');
+  }
+  if (privateValues && data._private) for (const [name, value] of Object.entries(data._private)) {
+    if (!PRIVATE_STATE_NAMES.has(name) || !value || typeof value.key !== 'string' || !value.key.trim() || value.key.length > 4096 || /[\r\n\0]/.test(value.key) || typeof value.origin !== 'string') throw new Error('Invalid private State value.');
+  }
   return {
     schemaVersion: 1,
     variables: data.variables.map(({ name, type, value }) => ({
       name,
       type,
       value: structuredClone(value),
+      ...(PRIVATE_STATE_NAMES.has(name) ? { private: true } : {}),
     })),
+    ...(privateValues && data._versions ? { _versions: { ...data._versions } } : {}),
+    ...(privateValues && data._private ? { _private: structuredClone(data._private) } : {}),
   };
 }
 export function serializeValue(row) {
+  if (row.private) return 'Key set · private';
   return row.type === "string" ? row.value : JSON.stringify(row.value);
 }
 export async function createSampleStore() {
-  let data = structuredClone(DEFAULTS),
-    db = null,
-    mode = "session",
-    warning = "";
-  const fallbackKey = storageName("megaapp.sample.v1");
-  const testKey = storageName("megaapp.storage-test");
-  try {
-    db = await new Promise((resolve, reject) => {
-      const r = indexedDB.open(storageName("megaapp-sample"), 1);
-      r.onupgradeneeded = () => r.result.createObjectStore("snapshot");
-      r.onsuccess = () => resolve(r.result);
-      r.onerror = () => reject(r.error);
-      r.onblocked = () =>
-        reject(new Error("Close another MegaApp tab to open storage."));
-    });
-    const saved = await new Promise((resolve, reject) => {
-      const r = db
-        .transaction("snapshot")
-        .objectStore("snapshot")
-        .get("current");
-      r.onsuccess = () => resolve(r.result);
-      r.onerror = () => reject(r.error);
-    });
-    if (saved) data = validateSnapshot(saved);
-    mode = "indexeddb";
-    let fallback;
-    try {
-      const text = localStorage.getItem(fallbackKey);
-      if (text) fallback = validateSnapshot(JSON.parse(text));
-    } catch {
-      warning = "A fallback snapshot could not be read.";
-    }
-    // A fallback exists only after localStorage saves. It may contain edits
-    // made while IndexedDB was unavailable, even if IndexedDB has older data.
-    if (fallback) await commit(fallback);
-  } catch {
-    db?.close();
-    db = null;
-    mode = "session";
-    try {
-      const saved = localStorage.getItem(fallbackKey);
-      if (saved) data = validateSnapshot(JSON.parse(saved));
-      localStorage.setItem(testKey, "1");
-      localStorage.removeItem(testKey);
-      mode = "localstorage";
-      warning = "Using local storage because IndexedDB could not open.";
-    } catch {
-      warning =
-        "Storage is unavailable. Values last only for this session; export a copy.";
-    }
-  }
+  let data = structuredClone(DEFAULTS), db = null, mode = 'session', warning = '';
   let queue = Promise.resolve();
-  function mutate(operation) {
-    const result = queue.then(operation);
-    queue = result.catch(() => {});
-    return result;
+  const listeners = new Set(), fallbackKey = storageName('megaapp.sample.v1');
+  const privateRow = row => PRIVATE_STATE_NAMES.has(row.name);
+  const publicSnapshot = value => ({ schemaVersion: 1, variables: structuredClone(value.variables.filter(row => !privateRow(row))) });
+  const internal = value => validateSnapshot(value, { privateValues: true });
+  const rows = () => [...structuredClone(data.variables), ...Object.keys(data._private || {}).map(name => ({ name, type: 'object', value: null, private: true }))].sort((a, b) => a.name.localeCompare(b.name));
+  const channel = typeof window !== 'undefined' && typeof BroadcastChannel === 'function' ? new BroadcastChannel(storageName('megaapp-state-notify-v1')) : null;
+  function emit(names) { for (const callback of listeners) { try { callback(names); } catch { /* A view cannot roll back committed state. */ } } }
+  function prepare(base, operation) {
+    const next = internal(operation(structuredClone(base))), versions = { ...base._versions };
+    const names = new Set([...base.variables.map(row => row.name), ...next.variables.map(row => row.name), ...Object.keys(base._private || {}), ...Object.keys(next._private || {})]), changed = [];
+    for (const name of names) {
+      const before = PRIVATE_STATE_NAMES.has(name) ? base._private?.[name] : base.variables.find(row => row.name === name);
+      const after = PRIVATE_STATE_NAMES.has(name) ? next._private?.[name] : next.variables.find(row => row.name === name);
+      if (JSON.stringify(before) !== JSON.stringify(after)) { versions[name] = (versions[name] || 0) + 1; changed.push(name); }
+    }
+    if (Object.keys(versions).length) next._versions = versions;
+    return { next, changed };
   }
-  async function commit(next) {
-    const validated = validateSnapshot(next);
-    if (mode === "indexeddb") {
-      await new Promise((resolve, reject) => {
-        const tx = db.transaction("snapshot", "readwrite");
-        tx.objectStore("snapshot").put(validated, "current");
-        tx.oncomplete = resolve;
-        tx.onerror = () => reject(tx.error);
-        tx.onabort = () =>
-          reject(tx.error || new Error("Saving was interrupted."));
+  async function change(operation) {
+    let result;
+    if (mode === 'indexeddb') {
+      result = await new Promise((resolve, reject) => {
+        const tx = db.transaction('snapshot', 'readwrite'), objectStore = tx.objectStore('snapshot'), request = objectStore.get('current');
+        let prepared, issue;
+        request.onsuccess = () => {
+          try { prepared = prepare(request.result ? internal(request.result) : structuredClone(DEFAULTS), operation); objectStore.put(prepared.next, 'current'); }
+          catch (error) { issue = error; tx.abort(); }
+        };
+        tx.oncomplete = () => resolve(prepared);
+        tx.onabort = tx.onerror = () => reject(issue || tx.error || new Error('State could not be saved.'));
       });
-      try {
-        localStorage.removeItem(fallbackKey);
-      } catch {}
-    } else if (mode === "localstorage")
-      localStorage.setItem(fallbackKey, JSON.stringify(validated));
-    data = validated;
+      try { localStorage.removeItem(fallbackKey); } catch { /* IndexedDB owns the block. */ }
+    } else {
+      result = prepare(data, operation);
+      // Private values never spill into the weaker compatibility fallback.
+      if (mode === 'localstorage') localStorage.setItem(fallbackKey, JSON.stringify(publicSnapshot(result.next)));
+    }
+    data = result.next; emit(result.changed); channel?.postMessage(result.changed);
     return rows();
   }
-  function rows() {
-    return structuredClone(data.variables).sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
+  function mutate(operation) { const result = queue.then(() => change(operation)); queue = result.catch(() => {}); return result; }
+  try {
+    db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open(storageName('megaapp-sample'), 1);
+      request.onupgradeneeded = () => request.result.createObjectStore('snapshot');
+      request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+      request.onblocked = () => reject(new Error('Close another MegaApp tab to open State.'));
+    });
+    db.onversionchange = () => db.close();
+    const saved = await new Promise((resolve, reject) => {
+      const request = db.transaction('snapshot').objectStore('snapshot').get('current');
+      request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+    });
+    if (saved) data = internal(saved);
+    mode = 'indexeddb';
+    let fallback;
+    try {
+      const savedFallback = localStorage.getItem(fallbackKey);
+      if (savedFallback) fallback = validateSnapshot(JSON.parse(savedFallback));
+    } catch { warning = 'A fallback State snapshot could not be read.'; }
+    if (fallback) await change(base => ({ ...fallback, ...(base._private ? { _private: base._private } : {}) }));
+  } catch {
+    db?.close(); db = null; mode = 'session';
+    try {
+      const saved = localStorage.getItem(fallbackKey); if (saved) data = validateSnapshot(JSON.parse(saved));
+      const testKey = storageName('megaapp.storage-test'); localStorage.setItem(testKey, '1'); localStorage.removeItem(testKey);
+      mode = 'localstorage'; warning = 'Using local storage; private keys last only for this session.';
+    } catch { warning = 'Storage is unavailable. State lasts for this session; export a copy.'; }
+  }
+  if (channel) channel.onmessage = async event => {
+    if (!db || !Array.isArray(event.data)) return;
+    try {
+      const saved = await new Promise((resolve, reject) => { const request = db.transaction('snapshot').objectStore('snapshot').get('current'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+      if (saved) { data = internal(saved); emit(event.data.filter(name => typeof name === 'string')); }
+    } catch { /* Next atomic mutation still validates the durable block. */ }
+  };
+  function writeValues(values, { privateValues = false, expectedVersions = {} } = {}) {
+    const changes = values.map(({ name, type, value }) => {
+      validateName(name); if (PRIVATE_STATE_NAMES.has(name) && !privateValues) throw new Error('Set private keys through their connection controls.');
+      if (PRIVATE_STATE_NAMES.has(name) && (type !== 'object' || !value || typeof value.key !== 'string' || !value.key.trim() || value.key.length > 4096 || /[\r\n\0]/.test(value.key) || typeof value.origin !== 'string')) throw new Error('Enter a valid private key and destination.');
+      return { name, type, value: structuredClone(validateValue(type, value)), ...(PRIVATE_STATE_NAMES.has(name) ? { private: true } : {}) };
+    });
+    return mutate(base => {
+      for (const [name, version] of Object.entries(expectedVersions)) if ((base._versions?.[name] || 0) !== version) throw new Error('Another tab saved a newer session. Export your session, then reload before making more choices.');
+      for (const row of changes) {
+        if (PRIVATE_STATE_NAMES.has(row.name)) { base._private ||= {}; base._private[row.name] = row.value; }
+        else { const index = base.variables.findIndex(value => value.name === row.name); if (index < 0) base.variables.push(row); else base.variables[index] = row; }
+      }
+      return base;
+    });
   }
   return {
-    mode,
-    warning,
-    rows,
-    snapshot: () => structuredClone(data),
-    setMany(values) {
-      const changes = values.map(({ name, type, value }) => ({ name: validateName(name), type, value: structuredClone(validateValue(type, value)) }));
-      return mutate(() => {
-        const next = structuredClone(data);
-        for (const row of changes) {
-          const index = next.variables.findIndex(value => value.name === row.name);
-          if (index < 0) next.variables.push(row); else next.variables[index] = row;
-        }
-        return commit(next);
-      });
+    mode, warning, rows,
+    snapshot: () => publicSnapshot(data),
+    read(name, { privateValue = false } = {}) { if (PRIVATE_STATE_NAMES.has(name)) return privateValue ? structuredClone(data._private?.[name]) : undefined; return structuredClone(data.variables.find(row => row.name === name)?.value); },
+    version: name => data._versions?.[name] || 0,
+    subscribe(callback) { listeners.add(callback); return () => listeners.delete(callback); },
+    async refresh() {
+      await queue;
+      if (db) {
+        const saved = await new Promise((resolve, reject) => { const request = db.transaction('snapshot').objectStore('snapshot').get('current'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+        if (saved) data = internal(saved);
+      }
+      return rows();
     },
-    set(name, type, value) {
-      validateName(name);
-      validateValue(type, value);
-      const copiedValue = structuredClone(value);
-      return mutate(() => {
-        const next = structuredClone(data),
-          i = next.variables.findIndex((r) => r.name === name),
-          row = { name, type, value: copiedValue };
-        if (i < 0) next.variables.push(row);
-        else next.variables[i] = row;
-        return commit(next);
-      });
-    },
-    async remove(name) {
-      return mutate(() =>
-        commit({
-          ...data,
-          variables: data.variables.filter((r) => r.name !== name),
-        }),
-      );
-    },
-    replace: (next) => {
-      const validated = validateSnapshot(next);
-      return mutate(() => commit(validated));
-    },
-    reset: () => mutate(() => commit(structuredClone(DEFAULTS))),
+    setMany: values => writeValues(values),
+    set: (name, type, value) => writeValues([{ name, type, value }]),
+    // Internal block adapter only. Public exports/UI/tools always use redacted views.
+    writeBlock: (values, options) => writeValues(values, { ...options, privateValues: true }),
+    remove(name) { validateName(name); return mutate(base => { base.variables = base.variables.filter(row => row.name !== name); if (base._private) delete base._private[name]; return base; }); },
+    replace(value) { const next = validateSnapshot(value); return mutate(base => ({ ...next, ...(base._private ? { _private: base._private } : {}) })); },
+    reset: () => mutate(() => structuredClone(DEFAULTS)),
+    close() { channel?.close(); db?.close(); },
   };
 }
