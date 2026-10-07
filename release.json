@@ -1,7 +1,7 @@
 {
   "version": 1,
   "environment": "working",
-  "sourceDigest": "134f98e80e342a454b0aa260cf33c05c312a3aebc0694e9d69cf5fafcc21a4e8",
+  "sourceDigest": "22649a8bcfef30adf3af169dd7be2884c5c971c34937e81ac36cc2a77cbafe9f",
   "files": [
     {
       "path": "docs/canvas-apis.md",
@@ -28,6 +28,18 @@
       "sha256": "4a1cef505486b18773cdcec78292203b272bb1fbe4cfe26d353b8a45a7c2b45d"
     },
     {
+      "path": "feeling/curtain.html",
+      "sha256": "814ceac2e2ba97a6c6d85a277c2a9922a266cc26e28574113aa44e119099e8c0"
+    },
+    {
+      "path": "feeling/held-light.html",
+      "sha256": "f31fb640d5a8814256d992b27c8d679583e1b783dd4cc7452153dbc2760a6a60"
+    },
+    {
+      "path": "feeling/thread.html",
+      "sha256": "788d09c08e68461b5f44ce2da8342c47a58d72b6b8634059d2e53e82c71a8d25"
+    },
+    {
       "path": "files-demo.css",
       "sha256": "e5eb35f1861f28b2db1051d9b06c771930ffccd5870bfaab857015af38b0992d"
     },
@@ -49,7 +61,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "5daf0b63e71e0f5c0cf35176dad284e39ba868060a6edb3863671cdb36da24af"
+      "sha256": "29667e8376137eb07331920c31a960ee6a60e6f15fed0caf9f4e5934c15d859c"
     },
     {
       "path": "manifest.webmanifest",
@@ -284,12 +296,20 @@
       "sha256": "3e8679d8a3d5e4fe778e2d7fff0eb2e4a3bd382619ff9ac84d4f0081206ab31a"
     },
     {
+      "path": "src/taste-artifact.js",
+      "sha256": "41eb300a592f3e9af17eb40af52d16043b264eddb79b41a56af5acd3be815298"
+    },
+    {
+      "path": "src/taste-seeds.js",
+      "sha256": "bc9edf57b32bcbec986216e86c053c48b63d86270a29cb064b61924a93f15b44"
+    },
+    {
       "path": "src/taste-sketch.js",
       "sha256": "d88a7580d34e154fbd47008ac1a73b468955e29254f42f27db48e7bfb9852926"
     },
     {
       "path": "src/taste-state.js",
-      "sha256": "ef048c9034d46915535b6bc28220e92b0061e64393e31fa9e48bf54dc2ef7f35"
+      "sha256": "0e808b47c4fe6f94f33a9784196795281bf9f71bb058f10d4bf3f2688fcffdd6"
     },
     {
       "path": "src/taste-storage.js",
@@ -297,7 +317,7 @@
     },
     {
       "path": "src/taste.js",
-      "sha256": "12ad0c9af713704c3aedbec9c6b73ceef3f6da11a29f4b2056618d480edceb15"
+      "sha256": "9eadca650ef48d6e51dec197ef59fd59ff3f11eb7724ff7d1c314f5ccdf995c4"
     },
     {
       "path": "src/webmcp.js",
@@ -309,11 +329,11 @@
     },
     {
       "path": "sw.js",
-      "sha256": "0ff9976e3f2e4a573165d0370587b6de271df10b288380a21e7b056bb89d60a6"
+      "sha256": "72a5c42fe451cea6732e5a05187938984d566fd769f8835678e0c9373e6eee6e"
     },
     {
       "path": "taste.css",
-      "sha256": "78d7657390b15e30a45f7370466544cf31c3647ff676c57a7ed0a5630a2f533f"
+      "sha256": "fd65843fa71d097a5465a997f83b6e0ae83b76eab7d07ebc3d4566c4c9e73d96"
     },
     {
       "path": "vendor/pdfjs/LICENSE",

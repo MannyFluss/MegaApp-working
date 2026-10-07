@@ -774,25 +774,28 @@
             <label>Feeling to aim for<input id="taste-target" maxlength="4000" value="Quiet anticipation" data-taste-edit /></label>
             <button id="taste-start" class="quiet-button" type="button" data-taste-edit>Try this feeling</button>
           </div>
-          <p class="taste-method">Your picks evolve these sketches. Feeling words and notes are saved, but aren’t interpreted by AI yet.</p>
+          <p id="taste-method" class="taste-method">Three runnable HTML artifacts.</p>
           <div class="taste-directions"><p id="taste-gesture">Tap or drag inside each view.</p><button id="taste-mode" class="quiet-button" type="button" aria-pressed="false" data-taste-edit>Watch motion</button></div>
           <div id="taste-views" class="taste-views" aria-label="Three live feeling attempts"></div>
           <div class="taste-feedback">
             <label>What feels right or wrong? <span>(optional)</span><textarea id="taste-note" maxlength="4000" rows="2" placeholder="A feels spacious, but its response is too eager…" data-taste-edit></textarea></label>
             <label>How close is your choice?<select id="taste-match" data-taste-edit><option value="unsure">Not sure yet</option><option value="far">Still far away</option><option value="close">Getting close</option><option value="yes">This has the feeling</option></select></label>
           </div>
-          <div class="taste-alternatives"><button id="taste-none" class="quiet-button" type="button" data-taste-edit>None of these</button><button id="taste-tie" class="quiet-button" type="button" data-taste-edit>Can't tell</button><button id="taste-undo" class="quiet-button" type="button" data-taste-edit>Undo last choice</button></div>
+          <div class="taste-alternatives"><button id="taste-none" class="quiet-button" type="button" data-taste-edit data-taste-judge>None of these</button><button id="taste-tie" class="quiet-button" type="button" data-taste-edit data-taste-judge>Can't tell</button><button id="taste-undo" class="quiet-button" type="button" data-taste-edit>Undo last choice</button></div>
           <p id="taste-outcome" class="taste-outcome" role="status" aria-live="polite">Choose the closest; the next three will build on your feedback.</p>
+          <div id="taste-next-actions" class="taste-data-actions" hidden><button id="taste-next-brief" class="primary-button" type="button">Export AI brief</button><button id="taste-next-import" class="quiet-button" type="button">Import next round</button></div>
           <p id="taste-save" class="taste-save" role="alert" hidden></p>
           <div class="taste-save-actions"><button id="taste-retry" class="quiet-button" type="button" hidden>Try saving again</button><button id="taste-backup" class="quiet-button" type="button" hidden>Export unreadable backup</button></div>
           <details class="taste-data"><summary>History &amp; data</summary>
-            <p>Your picks steer movement, color, spacing, softness, and response in these three live materials. Your feeling and notes are kept for a future AI generation brief; this prototype does not interpret them or invent new behaviors with a connected model.</p>
-            <p>Choices, corrections, exact sketch settings, and up to 96 contact samples per view per round save on this device. They describe what you tried and chose, not what you felt. Export is yours to share.</p>
+            <p>Each HTML artifact is an actual program with its own behavior. Your AI brief includes exact code, choices and notes. Generate the next three HTML files through an agent, package them as a round, then import it here. Automatic generation inside the app still needs a model connection.</p>
+            <p>Previews are isolated from MegaApp storage and restart when you leave or open a larger view. Source, choices, corrections and notes stay on this device. Imported HTML resources are limited to inline code and local data; remote dependencies do not load.</p>
+            <p>Earlier sketch sessions still retain their parameter comparisons and bounded contact samples. The shell does not record arbitrary inputs inside HTML artifacts. Export is yours to share.</p>
             <label>Feeling session<select id="taste-sessions" data-taste-edit></select></label>
             <div class="taste-data-actions"><button id="taste-export" class="quiet-button" type="button">Export data</button><button id="taste-brief" class="quiet-button" type="button">Export AI brief</button><button id="taste-import" class="quiet-button" type="button">Import data</button></div>
             <input id="taste-file" type="file" accept="application/json,.json" hidden />
             <p id="taste-record-count">0 saved comparisons</p><ol id="taste-history" class="taste-history"></ol>
           </details>
+          <dialog id="taste-preview" class="taste-preview" aria-labelledby="taste-preview-title"><div class="taste-preview-heading"><h2 id="taste-preview-title">Live attempt</h2><div><button id="taste-preview-download" class="quiet-button" type="button">Save HTML</button><button id="taste-preview-close" class="quiet-button" type="button">Close</button></div></div><div id="taste-preview-body" class="taste-preview-body"></div><p id="taste-preview-issue" class="taste-runtime-issue" hidden></p><p>Closing restarts the inline previews. The HTML source and your feedback are kept.</p></dialog>
         </section>
         <section
           id="panel-design"

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>A curtain of light</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#202a37;color:#e0e6ec}canvas{width:100%;height:100%;display:block;touch-action:none;outline-offset:-5px}p{position:absolute;bottom:18px;left:0;right:0;text-align:center;font:14px/1.5 Georgia,serif;pointer-events:none;margin:0;color:#f1e6cc;text-shadow:0 1px 4px #0008}
+</style><canvas aria-label="Drag sideways to open a curtain of light. Arrow keys open and close it." tabindex="0"></canvas><p>Draw the curtain, slowly.</p>
+<script>
+const c=document.querySelector('canvas'),g=c.getContext('2d'),reduce=matchMedia('(prefers-reduced-motion: reduce)');
+let w=1,h=1,opening=.03,aim=.03,contact=null,frame=0,last=0;
+function size(){w=innerWidth;h=innerHeight;const d=Math.min(2,devicePixelRatio||1);c.width=w*d;c.height=h*d;g.setTransform(d,0,0,d,0,0);draw()}
+function draw(){
+ const sky=g.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#456b83');sky.addColorStop(.65,'#ddaf8c');sky.addColorStop(1,'#f2d3a4');g.fillStyle=sky;g.fillRect(0,0,w,h);
+ const glow=g.createRadialGradient(w*.5,h*.58,0,w*.5,h*.58,w*.6);glow.addColorStop(0,'#ffeccabb');glow.addColorStop(1,'#ffecca00');g.fillStyle=glow;g.fillRect(0,0,w,h);
+ g.beginPath();g.moveTo(0,h*.77);g.bezierCurveTo(w*.25,h*.68,w*.68,h*.91,w,h*.76);g.lineTo(w,h);g.lineTo(0,h);g.closePath();g.fillStyle='#344e55';g.fill();
+ const edge=w*.5*(1-opening);for(const side of [0,1]){
+  g.save();if(side){g.translate(w,0);g.scale(-1,1)}
+  g.beginPath();g.moveTo(0,0);g.lineTo(edge,0);g.bezierCurveTo(edge+w*.06*opening,h*.3,edge-w*.04*opening,h*.65,edge,h);g.lineTo(0,h);g.closePath();g.clip();
+  const cloth=g.createLinearGradient(0,0,edge+15,0);cloth.addColorStop(0,'#1c2834');cloth.addColorStop(.6,'#415467');cloth.addColorStop(1,'#233140');g.fillStyle=cloth;g.fillRect(0,0,edge+30,h);
+  for(let i=0;i<8;i++){g.beginPath();g.moveTo(i*edge/8,0);g.bezierCurveTo(i*edge/8+opening*20,h*.3,i*edge/8-opening*25,h*.8,i*edge/8,h);g.strokeStyle='#839aab12';g.lineWidth=10;g.stroke()}g.restore();
+ }
+}
+function tick(now){frame=0;const dt=Math.min(.04,(now-(last||now))/1000);last=now;opening+=(aim-opening)*(reduce.matches?1:Math.min(1,dt*5));draw();if(Math.abs(aim-opening)>.0002)frame=requestAnimationFrame(tick);else last=0}
+function wake(){if(!frame)frame=requestAnimationFrame(tick)}
+c.onpointerdown=e=>{if(contact!==null)return;contact=e.pointerId;c.setPointerCapture(contact);c.focus();aim=Math.min(.96,Math.max(.03,e.clientX/w));wake()};
+c.onpointermove=e=>{if(e.pointerId===contact){aim=Math.min(.96,Math.max(.03,e.clientX/w));wake()}};
+c.onpointerup=e=>{if(e.pointerId!==contact)return;contact=null;aim*=.82;wake()};c.onpointercancel=c.onlostpointercapture=()=>{contact=null};
+c.onkeydown=e=>{if(!['ArrowLeft','ArrowRight',' '].includes(e.key))return;e.preventDefault();aim=e.key===' '?aim<.4?.72:.03:Math.max(.03,Math.min(.96,aim+(e.key==='ArrowRight'?.12:-.12)));wake()};
+onresize=size;size();
+</script></html>

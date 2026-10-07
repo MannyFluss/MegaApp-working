@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>A held light</title>
+<style>
+*{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden;background:#ebe8df;color:#51433e}main{height:100%;display:grid;place-items:center;position:relative;background:radial-gradient(ellipse at 50% 62%,#f9efe0 0,#e7e4dc 65%)}button{border:0;background:transparent;color:inherit;padding:35px;touch-action:none;cursor:pointer;outline-offset:-4px}svg{width:min(55vw,250px);height:min(55vw,250px);overflow:visible;display:block}p{position:absolute;left:0;right:0;bottom:24px;margin:0;text-align:center;font:14px/1.5 Georgia,serif;pointer-events:none}#heart{transform-origin:center}#wave{opacity:0}
+</style><main><button aria-label="Hold the light, then release. Space also works."><svg viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="light"><stop stop-color="#fff0c8"/><stop offset=".7" stop-color="#d5a378"/><stop offset="1" stop-color="#906955"/></radialGradient><filter id="soft"><feGaussianBlur stdDeviation="9"/></filter></defs><circle cx="100" cy="100" r="55" fill="#cc9160" opacity=".2" filter="url(#soft)"/><circle id="wave" cx="100" cy="100" r="50" fill="none" stroke="#a0785b" stroke-width=".7"/><circle id="heart" cx="100" cy="100" r="32" fill="url(#light)"/><circle cx="100" cy="100" r="70" fill="none" stroke="#a7937a" stroke-width=".6" opacity=".3"/></svg></button><p>Hold a little light. Let it go.</p></main>
+<script>
+const button=document.querySelector('button'),heart=document.querySelector('#heart'),wave=document.querySelector('#wave'),reduce=matchMedia('(prefers-reduced-motion: reduce)');
+let held=false,charge=0,release=1,frame=0,last=0,pointer=null;
+function draw(){heart.style.transform='scale('+(1+charge*.32)+')';heart.style.filter='brightness('+(1+charge*.15)+')';wave.setAttribute('r',String(43+release*85));wave.style.opacity=String(release<1?(1-release)*.48:0)}
+function tick(now){frame=0;const dt=Math.min(.04,(now-(last||now))/1000);last=now;if(held)charge=Math.min(1,charge+dt*.28);else charge=Math.max(0,charge-dt*.25);release=Math.min(1,release+dt*.3);draw();if((held&&charge<1)||(!held&&charge>0)||release<1)frame=requestAnimationFrame(tick);else last=0}
+function wake(){if(!frame)frame=requestAnimationFrame(tick)}
+function start(){held=true;if(reduce.matches)charge=.65;draw();if(!reduce.matches)wake()}
+function end(){if(!held)return;held=false;release=reduce.matches?1:0;if(reduce.matches)charge=.15;draw();if(!reduce.matches)wake()}
+button.onpointerdown=e=>{if(pointer!==null)return;pointer=e.pointerId;button.setPointerCapture(pointer);start()};button.onpointerup=e=>{if(e.pointerId===pointer){pointer=null;end()}};button.onpointercancel=button.onlostpointercapture=()=>{pointer=null;end()};
+button.onkeydown=e=>{if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();start()}};button.onkeyup=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();end()}};button.onblur=end;draw();
+</script></html>

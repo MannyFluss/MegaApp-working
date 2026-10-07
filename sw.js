@@ -1,4 +1,4 @@
-const VERSION = "megaapp-shell-v37";
+const VERSION = "megaapp-shell-v38";
 const WORKING = self.location.pathname.startsWith("/MegaApp-working/");
 const CACHE_PREFIX = WORKING ? "megaapp-working-shell-" : "megaapp-shell-";
 const CACHE_VERSION = WORKING ? VERSION.replace("megaapp-shell-", CACHE_PREFIX) : VERSION;
@@ -8,6 +8,11 @@ const ASSETS = [
   "./src/taste-state.js",
   "./src/taste-sketch.js",
   "./src/taste-storage.js",
+  "./src/taste-artifact.js",
+  "./src/taste-seeds.js",
+  "./feeling/curtain.html",
+  "./feeling/held-light.html",
+  "./feeling/thread.html",
   "./src/design-canvas.js",
   "./src/design-canvas-state.js",
   "./src/page-markup.js",

@@ -1,6 +1,8 @@
-import { createWorkspace, currentSession, addSession, judge, undoJudgment, validateWorkspace, generationBrief } from './taste-state.js';
+import { createWorkspace, currentSession, judge, undoJudgment, validateWorkspace, generationBrief, createArtifactWorkspace, addArtifactSession, isArtifactRound, artifactFor, installArtifactRound, sameFeelingValue } from './taste-state.js';
 import { openTasteStorage } from './taste-storage.js';
 import { createTasteSketch } from './taste-sketch.js';
+import { createTasteArtifact } from './taste-artifact.js';
+import { loadFeelingArtifacts } from './taste-seeds.js';
 
 export function createTaste({ notify, onMoment } = {}) {
   const panel = document.getElementById('panel-taste');
@@ -8,18 +10,33 @@ export function createTaste({ notify, onMoment } = {}) {
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   let workspace = createWorkspace(), storage, sketches = [], visible = false, ready = false, blocked = false, corrupt;
   let saveQueue = Promise.resolve(), draftTimer, error = '', busy = false, saveToken = 0;
+  let largePreview;
   const labels = ['A', 'B', 'C'];
   const button = (label, action, className = 'quiet-button') => {
     const node = document.createElement('button'); node.type = 'button'; node.className = className;
     node.textContent = label; node.onclick = action; return node;
   };
-  function status(message = '', failed = false) {
+  function status(message = '', failed = false, retrySave = false) {
     $('save').textContent = message; $('save').hidden = !message; $('save').dataset.error = String(failed);
-    $('retry').hidden = !failed || blocked; $('backup').hidden = !corrupt;
+    $('retry').hidden = !failed || blocked || !retrySave; $('backup').hidden = !corrupt;
   }
   function download(value, name) {
     const link = document.createElement('a'), url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' }));
     link.href = url; link.download = name; link.click(); setTimeout(() => URL.revokeObjectURL(url), 15000);
+  }
+  function downloadHTML(artifact) {
+    const link = document.createElement('a'), url = URL.createObjectURL(new Blob([artifact.html], { type: 'text/html' }));
+    link.href = url; link.download = `${artifact.id}.html`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 15000);
+  }
+  function updatePreviewVisibility() {
+    sketches.forEach(s => s.setVisible(visible && !document.hidden && !$('preview').open));
+    largePreview?.setVisible(visible && !document.hidden && $('preview').open);
+  }
+  function openLarge(artifact, label) {
+    largePreview?.dispose(); const frame = document.createElement('iframe'); frame.className = 'taste-large-frame'; frame.title = `Live HTML attempt ${label}, larger view`;
+    $('preview-body').replaceChildren(frame); $('preview-title').textContent = `Live attempt ${label}`;
+    largePreview = createTasteArtifact(frame, artifact, { onIssue: message => { $('preview-issue').hidden = !message; $('preview-issue').textContent = message ? `Runtime reported: ${message}` : ''; } }); $('preview-download').onclick = () => downloadHTML(artifact);
+    $('preview').showModal(); updatePreviewVisibility(); $('preview-close').focus();
   }
   function persist() {
     clearTimeout(draftTimer);
@@ -31,12 +48,12 @@ export function createTaste({ notify, onMoment } = {}) {
       if (blocked) return;
       try {
         if (!storage) throw new Error('Local storage is unavailable.');
-        await storage.save(snapshot); error = ''; status(); if (token === saveToken) panel.dataset.saved = 'true';
+        await storage.save(snapshot); if (token === saveToken) { error = ''; status(); panel.dataset.saved = 'true'; }
       } catch (e) {
         error = e.message;
         panel.dataset.saved = 'session';
         if (/Another tab/.test(error)) { blocked = true; renderControls(); }
-        status(`${error} Your current session is still available through Export data.`, true);
+        status(`${error} Your current session is still available through Export data.`, true, !!storage);
       }
     });
     return saveQueue;
@@ -45,9 +62,14 @@ export function createTaste({ notify, onMoment } = {}) {
   function available() { return ready && !blocked && !busy; }
   function renderControls() {
     for (const node of panel.querySelectorAll('[data-taste-edit]')) node.disabled = !available();
+    for (const node of panel.querySelectorAll('[data-taste-judge]')) node.disabled = !available() || !!session().waitingForArtifacts;
+    $('note').disabled = $('match').disabled = !available() || !!session().waitingForArtifacts;
     $('undo').disabled = !available() || !session().feedback.some(r => !r.voided);
     $('export').disabled = !ready || !!corrupt; $('brief').disabled = !ready || !!corrupt;
     $('import').disabled = !ready || busy || (blocked && !corrupt);
+    $('import').textContent = session().waitingForArtifacts ? 'Import next round' : 'Import data';
+    $('next-actions').hidden = !session().waitingForArtifacts;
+    $('next-brief').disabled = !ready || !!corrupt; $('next-import').disabled = $('import').disabled;
   }
   function renderHistory() {
     const select = $('sessions'); select.replaceChildren();
@@ -71,37 +93,56 @@ export function createTaste({ notify, onMoment } = {}) {
   function render() {
     sketches.forEach(s => s.dispose()); sketches = [];
     const value = session(), views = $('views'); views.replaceChildren();
+    const htmlRound = isArtifactRound(value); panel.dataset.format = htmlRound ? 'html' : 'sketch';
     $('target').value = value.draft.target ?? value.target; $('note').value = value.draft.note; $('match').value = value.draft.match;
     $('round').textContent = `Round ${value.round.index}`;
+    $('mode').hidden = htmlRound; $('start').textContent = htmlRound ? 'Try this feeling' : 'Try HTML artifacts';
+    $('method').textContent = htmlRound ? 'These are runnable HTML artifacts. Choices and notes guide the next code round.' : 'This saved session uses the earlier parameter sketches. Try HTML artifacts to start a code session.';
     $('mode').setAttribute('aria-pressed', String(value.mode === 'watch'));
     $('mode').textContent = value.mode === 'watch' ? 'Return to touch' : 'Watch motion';
-    $('gesture').textContent = motion.matches ? 'Tap or drag to explore. Reduced motion is on.' : value.mode === 'watch' ? 'Watch each attempt, then choose the closest.' : 'Tap or drag inside each view. Arrow keys and space work too.';
+    $('gesture').textContent = htmlRound ? 'Try each live experience. Open larger to give it more room.' : motion.matches ? 'Tap or drag to explore. Reduced motion is on.' : value.mode === 'watch' ? 'Watch each attempt, then choose the closest.' : 'Tap or drag inside each view. Arrow keys and space work too.';
     value.round.candidates.forEach((candidate, index) => {
       const section = document.createElement('section'); section.className = 'taste-attempt'; section.dataset.candidateId = candidate.id;
-      const canvas = document.createElement('canvas'); canvas.className = 'taste-canvas'; canvas.tabIndex = 0;
-      canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', `Live attempt ${labels[index]}. Tap, drag, or use arrow keys and space to explore.`);
+      const artifact = artifactFor(workspace, candidate);
+      const canvas = document.createElement(artifact ? 'iframe' : 'canvas'); canvas.className = artifact ? 'taste-frame' : 'taste-canvas';
+      if (artifact) canvas.title = `Live HTML attempt ${labels[index]}`;
+      else { canvas.tabIndex = 0; canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', `Live attempt ${labels[index]}. Tap, drag, or use arrow keys and space to explore.`); }
       canvas.setAttribute('aria-describedby', 'taste-gesture');
       const footer = document.createElement('div'); footer.className = 'taste-attempt-footer';
       const label = document.createElement('span'); label.textContent = labels[index]; label.className = 'taste-letter';
       const choose = button('Closest to the feeling', () => pick(candidate.id), 'primary-button taste-choose');
       choose.setAttribute('aria-label', `Choose ${labels[index]} as closest to the feeling`); choose.setAttribute('data-taste-edit', '');
+      choose.setAttribute('data-taste-judge', '');
       footer.append(label, choose); section.append(canvas, footer); views.append(section);
-      const sketch = createTasteSketch(canvas, candidate, { mode: value.mode, reduced: motion.matches }); sketches.push(sketch); sketch.setVisible(visible && !document.hidden);
+      if (artifact) {
+        const actions = document.createElement('div'); actions.className = 'taste-artifact-actions';
+        actions.append(button('Open larger', () => openLarge(artifact, labels[index])), button('Save HTML', () => downloadHTML(artifact)));
+        const details = document.createElement('details'), summary = document.createElement('summary'), source = document.createElement('textarea');
+        summary.textContent = 'Source'; source.readOnly = true; source.value = artifact.html; source.setAttribute('aria-label', `HTML source for attempt ${labels[index]}`); source.className = 'taste-source';
+        details.append(summary, source); section.append(actions, details);
+      }
+      const issue = document.createElement('p'); issue.className = 'taste-runtime-issue'; issue.hidden = true;
+      if (artifact) section.append(issue);
+      const sketch = artifact ? createTasteArtifact(canvas, artifact, { onIssue: message => { issue.hidden = !message; issue.textContent = message ? `Runtime reported: ${message}` : ''; } }) : createTasteSketch(canvas, candidate, { mode: value.mode, reduced: motion.matches });
+      sketches.push(sketch); sketch.setVisible(visible && !document.hidden && !$('preview').open);
     });
+    if (value.waitingForArtifacts) $('outcome').textContent = 'Choice saved. Export the AI brief to generate three new HTML artifacts, then import their round bundle.';
     renderHistory(); renderControls();
   }
   function captureContext() {
     const value = session();
-    return { app: 'taste', coverage: 'Current target, procedural candidates and latest explicit judgment; bounded play samples are saved with judgments in the feeling workspace.', feeling: { sessionId: value.id, target: value.target, round: value.round, mode: value.mode, comparisons: value.feedback.filter(r => !r.voided).length, lastJudgment: value.feedback.findLast(r => !r.voided) || null, generation: 'Local parameter search; free-form words are retained without AI interpretation.' } };
+    return { app: 'taste', coverage: 'Current target, candidate identities and latest explicit judgment. Exact HTML source lives in the Feeling export; arbitrary iframe input is not recorded by the shell.', feeling: { sessionId: value.id, target: value.target, round: value.round, mode: value.mode, comparisons: value.feedback.filter(r => !r.voided).length, lastJudgment: value.feedback.findLast(r => !r.voided) || null, generation: isArtifactRound(value) ? 'Runnable HTML artifacts; next code round imports against the saved judgment.' : 'Legacy local parameter search.' } };
   }
   function pick(choice) {
     if (!available()) return;
     try {
       const previous = session(), selected = previous.round.candidates.findIndex(c => c.id === choice);
-      workspace = judge(workspace, choice, { observations: sketches.map(s => s.observation()) });
+      const presentation = isArtifactRound(previous) ? { version: 1, renderer: 'opaque-srcdoc-v1', width: innerWidth, height: innerHeight, reducedMotion: motion.matches, views: [...panel.querySelectorAll('.taste-attempt')].map((view, index) => { const rect = view.querySelector('iframe').getBoundingClientRect(); return { id: view.dataset.candidateId, width: rect.width, height: rect.height, diagnostics: sketches[index].diagnostics() }; }) } : null;
+      workspace = judge(workspace, choice, { observations: sketches.map(s => s.observation()).filter(Boolean), presentation });
       render(); persist();
-      if (selected >= 0) panel.querySelectorAll('.taste-choose')[selected]?.focus({ preventScroll: true });
-      $('outcome').textContent = selected >= 0 ? `Kept ${labels[selected]} and made two alternatives.` : choice === 'none' ? 'Trying three different directions.' : 'Kept the uncertainty and made three new attempts.';
+      if (session().waitingForArtifacts) $('next-brief').focus({ preventScroll: true });
+      else if (selected >= 0) panel.querySelectorAll('.taste-choose')[selected]?.focus({ preventScroll: true });
+      $('outcome').textContent = session().waitingForArtifacts ? `Choice saved${selected >= 0 ? ` for ${labels[selected]}` : ''}. Export the AI brief for three new HTML artifacts, then import the round bundle.` : selected >= 0 ? `Kept ${labels[selected]} and made two alternatives.` : choice === 'none' ? 'Trying three different directions.' : 'Kept the uncertainty and made three new attempts.';
       onMoment?.({ kind: 'action', app: 'taste', action: 'Compare feeling attempts', outcome: $('outcome').textContent, context: captureContext() });
     } catch (e) { status(e.message, true); }
   }
@@ -110,14 +151,17 @@ export function createTaste({ notify, onMoment } = {}) {
     if (!available()) return;
     workspace = undoJudgment(workspace); render(); persist(); $('outcome').textContent = 'Returned to the previous three. The corrected choice is kept in your export.';
   };
-  $('start').onclick = () => {
+  $('start').onclick = async () => {
     if (!available()) return;
     try {
       const target = $('target').value.trim();
-      if (target === session().target) { $('outcome').textContent = 'Already exploring this feeling. Choose an attempt below.'; return; }
+      if (target === session().target && isArtifactRound(session())) { $('outcome').textContent = 'Already exploring this feeling. Choose an attempt below.'; return; }
+      busy = true; saveToken++; panel.dataset.saved = 'false'; renderControls();
+      const artifacts = await loadFeelingArtifacts();
       const previous = structuredClone(workspace); currentSession(previous).draft.target = session().target;
-      workspace = addSession(previous, target); render(); persist(); $('outcome').textContent = 'Started a new feeling. Your previous session is kept in History & data.';
+      workspace = addArtifactSession(previous, target, artifacts); render(); persist(); $('outcome').textContent = 'Started a runnable HTML session. Your previous feeling is kept in History & data.';
     } catch (e) { status(e.message, true); }
+    finally { busy = false; renderControls(); }
   };
   $('target').onkeydown = event => { if (event.key === 'Enter') { event.preventDefault(); $('start').click(); } };
   $('target').oninput = () => { if (!available()) return; session().draft.target = $('target').value; clearTimeout(draftTimer); draftTimer = setTimeout(persist, 300); };
@@ -145,24 +189,37 @@ export function createTaste({ notify, onMoment } = {}) {
   };
   $('export').onclick = () => download(workspace, 'megaapp-feeling.json');
   $('brief').onclick = () => download(generationBrief(workspace), 'feeling-ai-brief.json');
+  $('next-brief').onclick = $('brief').onclick;
   $('backup').onclick = () => download(corrupt, 'unreadable-feeling-backup.json');
   $('retry').onclick = () => persist();
   $('import').onclick = () => $('file').click();
+  $('next-import').onclick = $('import').onclick;
   $('file').onchange = async () => {
     const file = $('file').files[0]; $('file').value = ''; if (!file) return;
     busy = true; renderControls();
     try {
       if (file.size > 128 * 1024 * 1024) throw new Error('Import accepts files up to 128 MB.');
-      const imported = validateWorkspace(JSON.parse(await file.text()));
+      const raw = JSON.parse(await file.text());
+      if (raw.format === 'megaapp-feeling-round') {
+        if (blocked) throw new Error('Recover or reload your workspace before importing a code round.');
+        workspace = installArtifactRound(workspace, raw); await persist(); render(); $('outcome').textContent = 'Loaded three new HTML artifacts from the saved feedback.';
+        return;
+      }
+      const imported = validateWorkspace(raw);
       if (corrupt) {
         if (!storage) throw new Error('Local storage must be available to preserve the unreadable save before recovery.');
         await saveQueue; await storage.recover(imported);
         workspace = imported; corrupt = null; blocked = false; panel.dataset.saved = 'true'; status();
       } else {
         const next = structuredClone(workspace);
+        for (const artifact of imported.artifacts) {
+          const existing = next.artifacts.find(a => a.id === artifact.id);
+          if (existing && !sameFeelingValue(existing, artifact)) throw new Error('An existing artifact identity has different source. Your original is intact.');
+          if (!existing) next.artifacts.push(artifact);
+        }
         for (const item of imported.sessions) {
           const existing = next.sessions.find(s => s.id === item.id);
-          if (existing && JSON.stringify(existing) !== JSON.stringify(item)) throw new Error('This file has a different version of an existing session. Your current sessions are intact; use another browser to inspect the competing copy.');
+          if (existing && !sameFeelingValue(existing, item)) throw new Error('This file has a different version of an existing session. Your current sessions are intact; use another browser to inspect the competing copy.');
           if (!existing) next.sessions.push(item);
         }
         next.activeSessionId = imported.activeSessionId; workspace = validateWorkspace(next); await persist();
@@ -173,9 +230,11 @@ export function createTaste({ notify, onMoment } = {}) {
   };
   motion.addEventListener('change', () => {
     sketches.forEach(s => s.configure(session().mode, motion.matches)); sketches.forEach(s => s.setVisible(visible && !document.hidden));
-    $('gesture').textContent = motion.matches ? 'Tap or drag to explore. Reduced motion is on.' : session().mode === 'watch' ? 'Watch each attempt, then choose the closest.' : 'Tap or drag inside each view. Arrow keys and space work too.';
+    $('gesture').textContent = isArtifactRound(session()) ? 'Try each live experience. Open larger to give it more room.' : motion.matches ? 'Tap or drag to explore. Reduced motion is on.' : session().mode === 'watch' ? 'Watch each attempt, then choose the closest.' : 'Tap or drag inside each view. Arrow keys and space work too.';
   });
-  document.addEventListener('visibilitychange', () => { sketches.forEach(s => s.setVisible(visible && !document.hidden)); if (document.hidden && draftTimer) persist(); });
+  $('preview-close').onclick = () => $('preview').close();
+  $('preview').addEventListener('close', () => { largePreview?.dispose(); largePreview = null; $('preview-body').replaceChildren(); updatePreviewVisibility(); });
+  document.addEventListener('visibilitychange', () => { updatePreviewVisibility(); if (document.hidden && draftTimer) persist(); });
   render();
   const loaded = (async () => {
     let existing = false;
@@ -184,6 +243,10 @@ export function createTaste({ notify, onMoment } = {}) {
       if (saved.corrupt) { corrupt = saved.corrupt; blocked = true; error = saved.error; }
       else if (saved.workspace) { workspace = saved.workspace; existing = true; }
     } catch (e) { error = e.message; }
+    if (!existing && !corrupt) {
+      try { workspace = createArtifactWorkspace('Quiet anticipation', await loadFeelingArtifacts()); }
+      catch (e) { error = `HTML candidates could not load: ${e.message}`; }
+    }
     ready = true; render();
     panel.dataset.ready = 'true';
     if (error) status(corrupt ? `The saved feeling workspace is unreadable. It has not been changed. Export its backup or import a valid file to recover. ${error}` : `Session only: ${error} Export data to keep your work.`, true);
@@ -191,6 +254,6 @@ export function createTaste({ notify, onMoment } = {}) {
     else await persist();
   })();
   return { loaded, captureContext,
-    setVisible(value) { visible = value; sketches.forEach(s => s.setVisible(value && !document.hidden)); if (!value && draftTimer) persist(); },
+    setVisible(value) { visible = value; if (!value && $('preview').open) $('preview').close(); updatePreviewVisibility(); if (!value && draftTimer) persist(); },
   };
 }
