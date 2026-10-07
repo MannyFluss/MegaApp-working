@@ -1,7 +1,7 @@
 import { applyReadingStyle, readingPrefix } from './reading-style.js';
 import { createReadingFont } from './reading-font.js';
 // The environment is a temporary surface; the current app keeps the workspace.
-export function createMeta({ onOpenChange, focusApp, input, onReach = async () => true, onReading = async () => true, onReadingFont = () => {} }) {
+export function createMeta({ onOpenChange, focusApp, input, inputConnection, onReach = async () => true, onReading = async () => true, onReadingFont = () => {} }) {
   const shell = document.querySelector(".app-shell");
   const topbar = shell.querySelector(".topbar");
   const dock = shell.querySelector(".dock");
@@ -35,6 +35,7 @@ export function createMeta({ onOpenChange, focusApp, input, onReach = async () =
   peek.innerHTML = '<strong>Meta</strong><span>Pull for apps and controls</span>';
   shell.append(trigger, edge, peek);
   document.body.append(dialog);
+  inputConnection?.mountMeta(dialog);
 
   const about = document.createElement("details"); about.className = "meta-about";
   about.innerHTML = '<summary>What is Meta?</summary><p>Meta is the temporary place for your apps and shared controls. Close it to return to your work. Hold the Meta button to open this explanation.</p>';
@@ -133,6 +134,7 @@ export function createMeta({ onOpenChange, focusApp, input, onReach = async () =
   }
   function close({ restoreFocus = true } = {}) {
     if (!dialog.open) return;
+    inputConnection?.clearKeyField();
     shell.inert = false;
     dialog.close(); about.open = false;
     document.body.classList.remove("meta-is-open");

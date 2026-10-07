@@ -3,14 +3,16 @@ import { openTasteStorage } from './taste-storage.js';
 import { createTasteSketch } from './taste-sketch.js';
 import { createTasteArtifact } from './taste-artifact.js';
 import { loadFeelingArtifacts } from './taste-seeds.js';
+import { focusedGenerationBrief } from './taste-generation.js';
 
-export function createTaste({ notify, onMoment } = {}) {
+export function createTaste({ notify, onMoment, connection, openConnection } = {}) {
   const panel = document.getElementById('panel-taste');
   const $ = id => panel.querySelector(`#taste-${id}`);
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   let workspace = createWorkspace(), storage, sketches = [], visible = false, ready = false, blocked = false, corrupt;
   let saveQueue = Promise.resolve(), draftTimer, error = '', busy = false, saveToken = 0;
   let largePreview;
+  let generationController, generationNumber = 0;
   const labels = ['A', 'B', 'C'];
   const button = (label, action, className = 'quiet-button') => {
     const node = document.createElement('button'); node.type = 'button'; node.className = className;
@@ -70,6 +72,10 @@ export function createTaste({ notify, onMoment } = {}) {
     $('import').textContent = session().waitingForArtifacts ? 'Import next round' : 'Import data';
     $('next-actions').hidden = !session().waitingForArtifacts;
     $('next-brief').disabled = !ready || !!corrupt; $('next-import').disabled = $('import').disabled;
+    $('generate').hidden = !isArtifactRound(session());
+    $('generate').disabled = !available();
+    $('generate').textContent = connection?.info().connected ? 'Generate three' : 'Connect Ollama';
+    $('cancel-generation').hidden = !generationController;
   }
   function renderHistory() {
     const select = $('sessions'); select.replaceChildren();
@@ -97,7 +103,7 @@ export function createTaste({ notify, onMoment } = {}) {
     $('target').value = value.draft.target ?? value.target; $('note').value = value.draft.note; $('match').value = value.draft.match;
     $('round').textContent = `Round ${value.round.index}`;
     $('mode').hidden = htmlRound; $('start').textContent = htmlRound ? 'Try this feeling' : 'Try HTML artifacts';
-    $('method').textContent = htmlRound ? 'These are runnable HTML artifacts. Choices and notes guide the next code round.' : 'This saved session uses the earlier parameter sketches. Try HTML artifacts to start a code session.';
+    $('method').textContent = htmlRound ? connection?.info().connected ? 'Ollama creates complete HTML programs from your target and saved feedback. A choice generates the next three.' : 'These are runnable HTML artifacts. Connect Ollama to generate new programs from your choices.' : 'This saved session uses the earlier parameter sketches. Try HTML artifacts to start a code session.';
     $('mode').setAttribute('aria-pressed', String(value.mode === 'watch'));
     $('mode').textContent = value.mode === 'watch' ? 'Return to touch' : 'Watch motion';
     $('gesture').textContent = htmlRound ? 'Try each live experience. Open larger to give it more room.' : motion.matches ? 'Tap or drag to explore. Reduced motion is on.' : value.mode === 'watch' ? 'Watch each attempt, then choose the closest.' : 'Tap or drag inside each view. Arrow keys and space work too.';
@@ -144,6 +150,7 @@ export function createTaste({ notify, onMoment } = {}) {
       else if (selected >= 0) panel.querySelectorAll('.taste-choose')[selected]?.focus({ preventScroll: true });
       $('outcome').textContent = session().waitingForArtifacts ? `Choice saved${selected >= 0 ? ` for ${labels[selected]}` : ''}. Export the AI brief for three new HTML artifacts, then import the round bundle.` : selected >= 0 ? `Kept ${labels[selected]} and made two alternatives.` : choice === 'none' ? 'Trying three different directions.' : 'Kept the uncertainty and made three new attempts.';
       onMoment?.({ kind: 'action', app: 'taste', action: 'Compare feeling attempts', outcome: $('outcome').textContent, context: captureContext() });
+      if (session().waitingForArtifacts && connection?.info().connected) generateNext();
     } catch (e) { status(e.message, true); }
   }
   $('none').onclick = () => pick('none'); $('tie').onclick = () => pick('tie');
@@ -153,16 +160,38 @@ export function createTaste({ notify, onMoment } = {}) {
   };
   $('start').onclick = async () => {
     if (!available()) return;
+    let created = false;
     try {
       const target = $('target').value.trim();
       if (target === session().target && isArtifactRound(session())) { $('outcome').textContent = 'Already exploring this feeling. Choose an attempt below.'; return; }
       busy = true; saveToken++; panel.dataset.saved = 'false'; renderControls();
       const artifacts = await loadFeelingArtifacts();
       const previous = structuredClone(workspace); currentSession(previous).draft.target = session().target;
-      workspace = addArtifactSession(previous, target, artifacts); render(); persist(); $('outcome').textContent = 'Started a runnable HTML session. Your previous feeling is kept in History & data.';
+      workspace = addArtifactSession(previous, target, artifacts); created = true; render(); await persist(); $('outcome').textContent = 'Started a runnable HTML session. Your previous feeling is kept in History & data.';
     } catch (e) { status(e.message, true); }
     finally { busy = false; renderControls(); }
+    if (created && connection?.info().connected && isArtifactRound(session())) generateNext();
   };
+  async function generateNext() {
+    if (!available()) return;
+    if (!connection?.info().connected) { openConnection?.(); return; }
+    const number = ++generationNumber, controller = new AbortController(); generationController = controller;
+    busy = true; renderControls(); $('outcome').textContent = `Ollama is writing three experiences with ${connection.info().model}… Your current code is kept until the new round is ready.`;
+    try {
+      await persist();
+      const brief = focusedGenerationBrief(workspace);
+      const bundle = await connection.generate(brief, { signal: controller.signal });
+      if (controller.signal.aborted || number !== generationNumber) return;
+      workspace = installArtifactRound(workspace, bundle); render(); await persist();
+      $('outcome').textContent = 'Three new HTML programs are ready. Try them and choose the closest to your feeling.';
+      onMoment?.({ kind: 'action', app: 'taste', action: 'Generate feeling code', outcome: 'Three validated HTML programs installed', context: captureContext() });
+    } catch (error) {
+      if (number === generationNumber) $('outcome').textContent = controller.signal.aborted ? 'Generation canceled. Your preceding programs and feedback are kept.' : `${error.message} Your preceding programs and feedback are kept.`;
+    } finally { if (number === generationNumber) { generationController = null; busy = false; renderControls(); } }
+  }
+  $('generate').onclick = generateNext;
+  $('cancel-generation').onclick = () => { generationController?.abort(); };
+  connection?.subscribe(() => { renderControls(); if (isArtifactRound(session())) $('method').textContent = connection.info().connected ? 'Ollama creates complete HTML programs from your target and saved feedback. A choice generates the next three.' : 'These are runnable HTML artifacts. Connect Ollama to generate new programs from your choices.'; });
   $('target').onkeydown = event => { if (event.key === 'Enter') { event.preventDefault(); $('start').click(); } };
   $('target').oninput = () => { if (!available()) return; session().draft.target = $('target').value; clearTimeout(draftTimer); draftTimer = setTimeout(persist, 300); };
   $('target').addEventListener('change', persist);

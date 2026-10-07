@@ -87,3 +87,10 @@ body.meta-is-open { overflow: hidden; }
 .meta-reading label { display: flex; align-items: center; gap: 10px; min-height: 44px; color: var(--ink); }
 .meta-reading input { width: 20px; height: 20px; }
 .meta-reading p { color: var(--muted); line-height: 1.5; margin-block: 8px; }
+.meta-ollama label { display: block; margin-top: 12px; color: var(--muted); font-size: .85rem; }
+.meta-ollama input, .meta-ollama select { display: block; width: 100%; margin-top: 6px; padding: 10px 12px; color: var(--ink); background-color: var(--surface); border: 1px solid var(--line); }
+.meta-ollama select { padding-right: 36px; }
+.meta-ollama p { color: var(--muted); font-size: .8rem; line-height: 1.5; }
+.meta-ollama-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.meta-ollama-address { margin-top: 12px; }
+#meta-ollama-status[data-error="true"] { color: var(--warning); }

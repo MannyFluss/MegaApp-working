@@ -21,6 +21,7 @@ import { createInputSystem } from "./input.js";
 import { createDesign } from "./design.js";
 import { createMoments } from "./moments.js";
 import { createTaste } from "./taste.js";
+import { createOllamaConnection } from "./ollama-connection.js";
 
 const $ = (id) => document.getElementById(id);
 let moments;
@@ -108,7 +109,8 @@ const design = createDesign({ input, notify, onFeedback: () => moments?.keep({ f
   renderState();
   applyPreferences();
 } });
-const taste = createTaste({ notify, onMoment: event => moments?.record(event) });
+const ollama = createOllamaConnection();
+const taste = createTaste({ notify, connection: ollama, openConnection: () => { meta.open(); ollama.open(); }, onMoment: event => moments?.record(event) });
 const tabs = [...document.querySelectorAll("[data-panel]")];
 const results = new Map();
 const lastAppKey = storageName("megaapp.last-app.v1");
@@ -177,6 +179,7 @@ function renderDevice() {
 }
 meta = createMeta({
   input,
+  inputConnection: ollama,
   onReading: async (enabled, prefix) => {
     store = await storeReady;
     await store.setMany([{ name: 'system.reading.emphasis', type: 'boolean', value: enabled }, { name: 'system.reading.prefix', type: 'number', value: readingPrefix(prefix) }]); renderState(); applyPreferences();
